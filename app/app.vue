@@ -1,6 +1,9 @@
+<script setup lang="ts">
+const store = useTestStore();
+
+await store.test();
+</script>
+
 <template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
-  </div>
+  <h1 class="text-3xl font-bold underline">Hello world!</h1>
 </template>

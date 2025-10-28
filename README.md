@@ -6,7 +6,7 @@
 
 - Nuxt3 4.2.0
 - TypeScript
-- Tailwind CSS 4.1.11
+- Tailwind CSS 4.1.16
 - Pinia 3.0.3
 - Naive UI 2.43.1
 
