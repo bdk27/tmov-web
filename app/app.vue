@@ -1,10 +1,17 @@
-<script setup lang="ts">
-const store = useTestStore();
-
-await store.test();
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <h1 class="text-3xl font-bold underline">Hello world!</h1>
-  <n-button>naive-ui</n-button>
+  <NConfigProvider>
+    <NLoadingBarProvider>
+      <NNotificationProvider>
+        <NMessageProvider>
+          <NDialogProvider>
+            <NuxtLayout>
+              <NuxtPage />
+            </NuxtLayout>
+          </NDialogProvider>
+        </NMessageProvider>
+      </NNotificationProvider>
+    </NLoadingBarProvider>
+  </NConfigProvider>
 </template>

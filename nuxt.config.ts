@@ -39,4 +39,14 @@ export default defineNuxtConfig({
     "nuxtjs-naive-ui",
   ],
   build: { transpile: ["naive-ui", "vueuc"] },
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.API_BASE || "http://localhost:8080",
+      tmdbImageBase: "https://image.tmdb.org/t/p",
+      tmdbPosterSize: "w342",
+      tmdbBackdropSize: "w780",
+      defaultLanguage: "zh-TW",
+      defaultRegion: "TW",
+    },
+  },
 });
