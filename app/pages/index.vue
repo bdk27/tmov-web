@@ -7,11 +7,10 @@ function handleSearch() {
     return;
   }
 
-  // 3. 不再呼叫 API，而是跳轉到 /search 頁面，並帶上 query 參數
   router.push({
     path: "/search",
     query: {
-      q: searchQuery.value, // 這會產生 /search?q=...
+      q: searchQuery.value,
     },
   });
 }
