@@ -5,35 +5,43 @@ const { search } = useTmdb();
 const message = useMessage();
 
 const route = useRoute();
+const router = useRouter();
 
+// 搜尋結果
 const results = ref<TmdbItem[]>([]);
 const isLoading = ref(false);
 const apiError = ref<string | null>(null);
 
-const currentQuery = ref("");
+// 分頁狀態
 const currentPage = ref(1);
 const totalPages = ref(0);
 const totalResults = ref(0);
 
-async function fetchData() {
-  const query = currentQuery.value;
-  if (!query.trim()) {
-    results.value = [];
-    return;
-  }
+// 篩選條件
+const currentQuery = ref("");
+const typeFilter = ref<TmdbSearchOptions["type"]>("multi");
+const adultFilter = ref(false);
+const yearFilter = ref<number | null>(null);
 
+async function fetchData() {
   isLoading.value = true;
   apiError.value = null;
 
   try {
-    const response = await search(query, {
-      type: "multi",
+    const options: TmdbSearchOptions = {
       page: currentPage.value,
-    });
+      type: typeFilter.value,
+      includeAdult: adultFilter.value,
+    };
+    if (yearFilter.value) {
+      options.year = yearFilter.value;
+    }
 
-    results.value = response.results;
-    totalPages.value = response.total_pages;
-    totalResults.value = response.total_results;
+    const res = await search(currentQuery.value, options);
+
+    results.value = res.results;
+    totalPages.value = res.total_pages;
+    totalResults.value = res.total_results;
   } catch (error: any) {
     const friendlyMessage = getErrorMessage(error);
     apiError.value = friendlyMessage;
@@ -47,52 +55,122 @@ async function fetchData() {
   }
 }
 
+function triggerSearch(resetFilters = false) {
+  if (resetFilters) {
+    typeFilter.value = "multi";
+    adultFilter.value = false;
+    yearFilter.value = null;
+  }
+
+  // 建立新的 query 物件
+  const query: Record<string, any> = {
+    q: currentQuery.value,
+    page: 1, // 任何「新搜尋」都重設回第 1 頁
+    type: typeFilter.value,
+  };
+
+  if (adultFilter.value) {
+    query.adult = "true";
+  }
+  if (yearFilter.value) {
+    query.year = yearFilter.value;
+  }
+
+  // 透過 router.push() 更新 URL
+  router.push({ query });
+}
+
 function handlePageChange(page: number) {
-  currentPage.value = page;
-  fetchData();
+  // 建立一個包含所有目前篩選條件的新 query
+  const newQuery = { ...route.query, page: page };
+  router.push({ query: newQuery });
   window.scrollTo(0, 0);
 }
 
 watch(
-  () => route.query.q,
+  () => route.query,
   (newQuery) => {
-    if (typeof newQuery === "string" && newQuery.trim()) {
-      // 檢查是否為「新的」搜尋 (不是換頁)
-      if (newQuery !== currentQuery.value) {
-        currentQuery.value = newQuery;
-        currentPage.value = 1; // 只有「新搜尋」才重設頁碼
-      }
-      // 呼叫 API
+    // 1. 從 URL 反向更新 ref
+    currentQuery.value = (newQuery.q as string) || "";
+    currentPage.value = parseInt(newQuery.page as string) || 1;
+    typeFilter.value = (newQuery.type as TmdbSearchOptions["type"]) || "multi";
+    adultFilter.value = newQuery.adult === "true";
+    yearFilter.value = newQuery.year ? parseInt(newQuery.year as string) : null;
+
+    // 2. 如果 query 存在，才抓取資料
+    if (currentQuery.value.trim()) {
       fetchData();
     } else {
-      // 如果 query 無效 (例如 /search 或 /search?q=)，則清空所有內容
+      // 如果 query 為空 (例如 /search)，則清空
       results.value = [];
-      currentQuery.value = "";
       totalPages.value = 0;
       totalResults.value = 0;
       apiError.value = null;
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
+
+// Naive UI 元件選項
+const typeOptions = [
+  { label: "綜合", value: "multi" },
+  { label: "電影", value: "movie" },
+  { label: "電視", value: "tv" },
+  { label: "人物", value: "person" },
+];
 </script>
 
 <template>
-  <div class="container mx-auto p-4 max-w-4xl">
+  <div class="container mx-auto p-4 max-w-6xl">
+    <!-- 標題和總結果 -->
     <div v-if="!isLoading && !apiError" class="mb-6 text-neutral-400 text-sm">
-      <div class="text-xl font-bold mb-2">
+      <div class="text-xl font-bold text-white mb-2">
         搜尋「<span class="text-primary">{{ currentQuery }}</span
         >」的結果
       </div>
       <div>共找到 {{ totalResults }} 筆資料</div>
     </div>
 
-    <!-- 載入中狀態 -->
-    <div v-if="isLoading" class="text-center py-10">
+    <!-- 進階篩選 -->
+    <n-collapse class="mb-6">
+      <n-collapse-item title="進階篩選" name="1">
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">類型</label>
+              <n-select v-model:value="typeFilter" :options="typeOptions" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">年份</label>
+              <n-input-number
+                v-model:value="yearFilter"
+                placeholder="例如：2023"
+                :min="1800"
+                :max="new Date().getFullYear() + 1"
+                clearable
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">包含成人內容</label>
+              <n-switch v-model:value="adultFilter" />
+            </div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <n-button @click="triggerSearch(true)">重設</n-button>
+            <n-button type="primary" @click="triggerSearch(false)"
+              >套用篩選</n-button
+            >
+          </div>
+        </div>
+      </n-collapse-item>
+    </n-collapse>
+
+    <!-- 載入中 -->
+    <div v-if="isLoading" class="text-center py-20">
       <n-spin size="large" />
     </div>
 
-    <!-- API 錯誤狀態 -->
+    <!-- 錯誤訊息 -->
     <div v-else-if="apiError" class="py-20">
       <n-result status="error" title="搜尋失敗" :description="apiError">
         <template #footer>
