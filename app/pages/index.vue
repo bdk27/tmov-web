@@ -39,7 +39,7 @@ function handleSearch(filters: {
 </script>
 
 <template>
-  <div class="container mx-auto p-4 max-w-xl" style="margin-top: 20vh">
+  <div class="container mx-auto p-4 max-w-xl">
     <h1 class="text-3xl font-bold text-center mb-6">TMDB 搜尋</h1>
     <!-- 搜尋欄 -->
     <SearchForm

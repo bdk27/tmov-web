@@ -63,7 +63,7 @@ const typeOptions = [
   <div class="space-y-4">
     <!-- 輸入框格線區域 -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <!-- 關鍵字輸入 (在桌面上佔 2 格) -->
+      <!-- 關鍵字輸入 -->
       <div class="md:col-span-2">
         <label class="block text-sm font-medium mb-1 text-neutral-400"
           >關鍵字</label
@@ -81,7 +81,7 @@ const typeOptions = [
         </n-input>
       </div>
 
-      <!-- 類型篩選 (在桌面上佔 1 格) -->
+      <!-- 類型篩選 -->
       <div>
         <label class="block text-sm font-medium mb-1 text-neutral-400"
           >類型</label
@@ -93,7 +93,7 @@ const typeOptions = [
         />
       </div>
 
-      <!-- 年份篩選 (在桌面上佔 1 格) -->
+      <!-- 年份篩選 -->
       <div>
         <label class="block text-sm font-medium mb-1 text-neutral-400"
           >年份</label

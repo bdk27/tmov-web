@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useMessage } from "naive-ui";
+
 const { search } = useTmdb();
 
 // Naive UI 元件
