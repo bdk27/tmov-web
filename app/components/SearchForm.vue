@@ -63,59 +63,49 @@ const typeOptions = [
   <div class="space-y-4">
     <!-- 輸入框格線區域 -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <!-- 關鍵字輸入 -->
-      <div class="md:col-span-2">
-        <label class="block text-sm font-medium mb-1 text-neutral-400"
-          >關鍵字</label
-        >
-        <n-input
-          v-model:value="localQuery"
+      <!-- 關鍵字輸入 (UInput) -->
+      <UFormGroup label="關鍵字" class="md:col-span-2">
+        <UInput
+          v-model="localQuery"
+          class="w-full"
           placeholder="搜尋電影、電視、演員..."
-          size="large"
+          size="xl"
+          icon="i-heroicons-magnifying-glass-20-solid"
           clearable
           @keyup.enter="handleSubmit(false)"
-        >
-          <template #prepend>
-            <n-icon name="search" />
-          </template>
-        </n-input>
-      </div>
-
-      <!-- 類型篩選 -->
-      <div>
-        <label class="block text-sm font-medium mb-1 text-neutral-400"
-          >類型</label
-        >
-        <n-select
-          v-model:value="localType"
-          :options="typeOptions"
-          size="large"
         />
-      </div>
+      </UFormGroup>
 
-      <!-- 年份篩選 -->
-      <div>
-        <label class="block text-sm font-medium mb-1 text-neutral-400"
-          >年份</label
-        >
-        <n-input-number
-          v-model:value="localYear"
+      <!-- 類型篩選 (USelect) -->
+      <UFormGroup label="類型">
+        <USelect
+          v-model="localType"
+          :items="typeOptions"
+          size="xl"
+          class="w-full"
+        />
+      </UFormGroup>
+
+      <!-- 年份篩選 (UInput type=number) -->
+      <UFormGroup label="年份">
+        <UInput
+          v-model.number="localYear"
+          type="number"
           placeholder="年份"
           :min="1800"
           :max="new Date().getFullYear() + 1"
-          clearable
-          size="large"
+          size="xl"
           class="w-full"
         />
-      </div>
+      </UFormGroup>
     </div>
 
-    <!-- 按鈕區域 (靠右對齊) -->
+    <!-- 按鈕區域 (UButton) -->
     <div class="flex justify-end gap-2">
-      <n-button size="large" @click="handleSubmit(true)"> 清空 </n-button>
-      <n-button type="primary" size="large" @click="handleSubmit(false)">
-        搜尋
-      </n-button>
+      <UButton size="lg" variant="ghost" @click="handleSubmit(true)">
+        清空
+      </UButton>
+      <UButton size="lg" @click="handleSubmit(false)"> 搜尋 </UButton>
     </div>
   </div>
 </template>
