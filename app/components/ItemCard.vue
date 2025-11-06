@@ -2,7 +2,6 @@
 const props = defineProps<{ item: any }>();
 const { posterUrl, titleOf, dateOf } = useTmdb();
 
-// 以 computed<string> 明確化型別，避免 Volar 推到 void
 const imgSrc = computed<string>(() =>
   posterUrl(props.item?.poster_path ?? props.item?.profile_path ?? null)
 );

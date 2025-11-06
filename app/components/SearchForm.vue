@@ -64,40 +64,34 @@ const typeOptions = [
     <!-- 輸入框格線區域 -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <!-- 關鍵字輸入 (UInput) -->
-      <UFormGroup label="關鍵字" class="md:col-span-2">
-        <UInput
-          v-model="localQuery"
-          class="w-full"
-          placeholder="搜尋電影、電視、演員..."
-          size="xl"
-          icon="i-heroicons-magnifying-glass-20-solid"
-          clearable
-          @keyup.enter="handleSubmit(false)"
-        />
-      </UFormGroup>
+      <UInput
+        v-model="localQuery"
+        class="w-full"
+        placeholder="搜尋電影、電視、演員..."
+        size="xl"
+        icon="i-heroicons-magnifying-glass-20-solid"
+        clearable
+        @keyup.enter="handleSubmit(false)"
+      />
 
       <!-- 類型篩選 (USelect) -->
-      <UFormGroup label="類型">
-        <USelect
-          v-model="localType"
-          :items="typeOptions"
-          size="xl"
-          class="w-full"
-        />
-      </UFormGroup>
+      <USelect
+        v-model="localType"
+        :items="typeOptions"
+        size="xl"
+        class="w-full"
+      />
 
       <!-- 年份篩選 (UInput type=number) -->
-      <UFormGroup label="年份">
-        <UInput
-          v-model.number="localYear"
-          type="number"
-          placeholder="年份"
-          :min="1800"
-          :max="new Date().getFullYear() + 1"
-          size="xl"
-          class="w-full"
-        />
-      </UFormGroup>
+      <UInput
+        v-model.number="localYear"
+        type="number"
+        placeholder="年份"
+        :min="1800"
+        :max="new Date().getFullYear() + 1"
+        size="xl"
+        class="w-full"
+      />
     </div>
 
     <!-- 按鈕區域 (UButton) -->

@@ -27,4 +27,16 @@ export default defineNuxtConfig({
     ],
     "@nuxt/ui",
   ],
+  fonts: {
+    families: [
+      { name: "Momo Trust Display", provider: "google", weights: [400] },
+      { name: "Noto Sans TC", provider: "google", weights: [400, 700] },
+    ],
+    // providers: {
+    //   google: true,
+    //   bunny: false, // 停用
+    //   fontshare: false, // 停用
+    //   adobe: false, // 停用
+    // },
+  },
 });

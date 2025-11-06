@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { useMessage } from "naive-ui";
+// [移除] import { useMessage } from "naive-ui";
+// [新增] 引入 Nuxt UI 的 useToast
+import { useToast } from "#imports";
 
 const { search } = useTmdb();
 
-// Naive UI 元件
-const message = useMessage();
+// [修改] Naive UI 元件 -> Nuxt UI 元S件
+const toast = useToast();
 
 const route = useRoute();
 const router = useRouter();
 
-// 搜尋結果
+// --- 狀態 ref (保持不變) ---
 const results = ref<TmdbItem[]>([]);
 const isLoading = ref(false);
 const apiError = ref<string | null>(null);
 
-// 分頁狀態
 const currentPage = ref(1);
-const totalPages = ref(0);
+const totalPages = ref(0); // 雖然 UPagination 不需要，但我們先保留
 const totalResults = ref(0);
 
-// 篩選條件
 const currentQuery = ref("");
 const typeFilter = ref<TmdbSearchOptions["type"]>("multi");
 const adultFilter = ref(false);
@@ -42,12 +42,19 @@ async function fetchData() {
     const res = await search(currentQuery.value, options);
 
     results.value = res.results;
-    totalPages.value = res.total_pages;
+    totalPages.value = res.total_pages; // 保留
     totalResults.value = res.total_results;
   } catch (error: any) {
     const friendlyMessage = getErrorMessage(error);
     apiError.value = friendlyMessage;
-    message.error(friendlyMessage);
+
+    // [修改] message.error -> toast.add
+    toast.add({
+      title: "搜尋失敗",
+      description: friendlyMessage,
+      color: "warning",
+      icon: "i-heroicons-exclamation-circle",
+    });
 
     results.value = [];
     totalPages.value = 0;
@@ -57,6 +64,7 @@ async function fetchData() {
   }
 }
 
+// --- triggerSearch 邏輯 (保持不變) ---
 function triggerSearch(resetFilters = false) {
   if (resetFilters) {
     typeFilter.value = "multi";
@@ -64,10 +72,9 @@ function triggerSearch(resetFilters = false) {
     yearFilter.value = null;
   }
 
-  // 建立新的 query 物件
   const query: Record<string, any> = {
     q: currentQuery.value,
-    page: 1, // 任何「新搜尋」都重設回第 1 頁
+    page: 1,
     type: typeFilter.value,
   };
 
@@ -78,32 +85,29 @@ function triggerSearch(resetFilters = false) {
     query.year = yearFilter.value;
   }
 
-  // 透過 router.push() 更新 URL
   router.push({ query });
 }
 
+// --- handlePageChange 邏輯 (保持不變) ---
 function handlePageChange(page: number) {
-  // 建立一個包含所有目前篩選條件的新 query
   const newQuery = { ...route.query, page: page };
   router.push({ query: newQuery });
   window.scrollTo(0, 0);
 }
 
+// --- watch 邏輯 (保持不變) ---
 watch(
   () => route.query,
   (newQuery) => {
-    // 1. 從 URL 反向更新 ref
     currentQuery.value = (newQuery.q as string) || "";
     currentPage.value = parseInt(newQuery.page as string) || 1;
     typeFilter.value = (newQuery.type as TmdbSearchOptions["type"]) || "multi";
     adultFilter.value = newQuery.adult === "true";
     yearFilter.value = newQuery.year ? parseInt(newQuery.year as string) : null;
 
-    // 2. 如果 query 存在，才抓取資料
     if (currentQuery.value.trim()) {
       fetchData();
     } else {
-      // 如果 query 為空 (例如 /search)，則清空
       results.value = [];
       totalPages.value = 0;
       totalResults.value = 0;
@@ -113,75 +117,99 @@ watch(
   { immediate: true, deep: true }
 );
 
-// Naive UI 元件選項
 const typeOptions = [
   { label: "綜合", value: "multi" },
   { label: "電影", value: "movie" },
   { label: "電視", value: "tv" },
   { label: "人物", value: "person" },
 ];
+
+// [新增] 為了 Nuxt UI 的 <UAccordion>
+const accordionItems = [
+  {
+    label: "進階篩選",
+    slot: "advanced-filters",
+    defaultOpen: false,
+  },
+];
 </script>
 
 <template>
   <div class="container mx-auto p-4 max-w-6xl">
-    <!-- 標題和總結果 -->
+    <!-- 標題和總結果 (保持不變) -->
     <div v-if="!isLoading && !apiError" class="mb-6 text-neutral-400 text-sm">
       <div class="text-xl font-bold text-white mb-2">
         搜尋「<span class="text-primary">{{ currentQuery }}</span
         >」的結果
       </div>
-      <div>共找到 {{ totalResults }} 筆資料</div>
+      <div v-if="totalResults > 0">共找到 {{ totalResults }} 筆資料</div>
     </div>
 
-    <!-- 進階篩選 -->
-    <n-collapse class="mb-6">
-      <n-collapse-item title="進階篩選" name="1">
-        <div class="space-y-4">
+    <!-- [修改] 進階篩選 n-collapse -> UAccordion -->
+    <UAccordion :items="accordionItems" class="mb-6">
+      <template #advanced-filters>
+        <div class="space-y-4 pt-4">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium mb-1">類型</label>
-              <n-select v-model:value="typeFilter" :options="typeOptions" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">年份</label>
-              <n-input-number
-                v-model:value="yearFilter"
-                placeholder="例如：2023"
-                :min="1800"
-                :max="new Date().getFullYear() + 1"
-                clearable
+              <!-- [修改] n-select -> USelect -->
+              <USelect
+                v-model="typeFilter"
+                :options="typeOptions"
+                option-attribute="label"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">包含成人內容</label>
-              <n-switch v-model:value="adultFilter" />
+              <label class="block text-sm font-medium mb-1">年份</label>
+              <!-- [修改] n-input-number -> UInput type="number" -->
+              <UInput
+                v-model.number="yearFilter"
+                type="number"
+                placeholder="例如：2023"
+                :min="1800"
+                :max="new Date().getFullYear() + 1"
+              />
+            </div>
+            <div class="pt-6">
+              <!-- [修改] n-switch -> UToggle -->
+              <UToggle v-model="adultFilter" />
+              <label class="ml-2 text-sm font-medium">包含成人內容</label>
             </div>
           </div>
           <div class="flex justify-end gap-2">
-            <n-button @click="triggerSearch(true)">重設</n-button>
-            <n-button type="primary" @click="triggerSearch(false)"
-              >套用篩選</n-button
+            <!-- [修改] n-button -> UButton -->
+            <UButton variant="outline" @click="triggerSearch(true)"
+              >重設</UButton
             >
+            <UButton @click="triggerSearch(false)">套用篩選</UButton>
           </div>
         </div>
-      </n-collapse-item>
-    </n-collapse>
+      </template>
+    </UAccordion>
 
-    <!-- 載入中 -->
+    <!-- [修改] 載入中 n-spin -> UIcon -->
     <div v-if="isLoading" class="text-center py-20">
-      <n-spin size="large" />
+      <UIcon
+        name="i-heroicons-arrow-path-20-solid"
+        class="animate-spin text-4xl text-primary"
+      />
     </div>
 
-    <!-- 錯誤訊息 -->
-    <div v-else-if="apiError" class="py-20">
-      <n-result status="error" title="搜尋失敗" :description="apiError">
-        <template #footer>
-          <n-button @click="fetchData">重試</n-button>
-        </template>
-      </n-result>
+    <!-- [修改] 錯誤訊息 n-result -> 自訂區塊 -->
+    <div
+      v-else-if="apiError"
+      class="flex flex-col items-center justify-center py-20 text-center"
+    >
+      <UIcon
+        name="i-heroicons-exclamation-circle"
+        class="text-6xl text-red-500 mb-4"
+      />
+      <h2 class="text-2xl font-semibold mb-2">搜尋失敗</h2>
+      <p class="text-neutral-400 mb-6">{{ apiError }}</p>
+      <UButton @click="fetchData">重試</UButton>
     </div>
 
-    <!-- 搜尋結果 -->
+    <!-- 搜尋結果 (保持不變) -->
     <div
       v-else-if="results.length > 0"
       class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
@@ -189,28 +217,29 @@ const typeOptions = [
       <ItemCard v-for="item in results" :key="item.id" :item="item" />
     </div>
 
-    <!-- 無結果 -->
+    <!-- [修改] 無結果 n-result -> 自訂區塊 -->
     <div
       v-else-if="currentQuery && !isLoading"
-      class="text-center text-neutral-500 py-20"
+      class="flex flex-col items-center justify-center py-20 text-center"
     >
-      <n-result
-        status="info"
-        title="找不到結果"
-        :description="`找不到符合「${currentQuery}」的項目。`"
-      >
-      </n-result>
+      <UIcon
+        name="i-heroicons-information-circle"
+        class="text-6xl text-blue-500 mb-4"
+      />
+      <h2 class="text-2xl font-semibold mb-2">找不到結果</h2>
+      <p class="text-neutral-400">找不到符合「{{ currentQuery }}」的項目。</p>
     </div>
 
-    <!-- 分頁 -->
+    <!-- [修改] 分頁 n-pagination -> UPagination -->
     <div
-      v-if="totalPages > 1 && !isLoading && !apiError"
+      v-if="totalResults > 20 && !isLoading && !apiError"
       class="flex justify-center mt-12"
     >
-      <n-pagination
-        v-model:page="currentPage"
-        :page-count="totalPages"
-        :on-update:page="handlePageChange"
+      <UPagination
+        :model-value="currentPage"
+        :page-count="20"
+        :total="totalResults"
+        @update:model-value="handlePageChange"
       />
     </div>
   </div>

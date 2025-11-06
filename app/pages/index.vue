@@ -40,7 +40,18 @@ function handleSearch(filters: {
 
 <template>
   <div class="container mx-auto p-4 max-w-xl">
-    <h1 class="text-3xl font-bold text-center mb-6">TMDB 搜尋</h1>
+    <h1
+      class="text-5xl sm:text-6xl font-extrabold mb-4 text-white leading-tight"
+    >
+      <!-- 將 '下一部必看' 使用品牌色突顯 -->
+      <span class="text-primary-400">下一部必看</span>
+      <!-- 在小螢幕上換行，大螢幕上保持一行 -->
+      <br class="sm:hidden" />
+      從 TMOV 開始
+    </h1>
+    <h3 class="text-xl sm:text-2xl text-gray-400 font-light mb-12">
+      上百萬部電影、電視節目和演員資料等你來探索
+    </h3>
     <!-- 搜尋欄 -->
     <SearchForm
       :query="query"

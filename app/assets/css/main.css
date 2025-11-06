@@ -2,3 +2,7 @@
 @import "@nuxt/ui";
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  font-family: "Momo Trust Display", "Noto Sans TC", sans-serif;
+}

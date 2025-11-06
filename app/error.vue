@@ -22,28 +22,48 @@ const statusType = computed(() => {
 const handleClearError = () => {
   clearError({ redirect: "/" });
 };
+
+const iconName = computed(() => {
+  switch (statusType.value) {
+    case "404":
+      return "i-heroicons-magnifying-glass-circle"; // 找不到
+    case "403":
+      return "i-heroicons-no-symbol"; // 禁止
+    case "418":
+      return "i-heroicons-beaker"; // Teapot
+    case "500":
+    case "error":
+    default:
+      return "i-heroicons-exclamation-triangle"; // 警告/錯誤
+  }
+});
 </script>
 
 <template>
-  <NConfigProvider
-    theme-name="dark"
-    class="h-screen"
-    :theme-overrides="{
-      common: { bodyColor: '#18181b', textColorBase: '#fff' },
-    }"
+  <div
+    class="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900 p-4"
   >
-    <div class="flex items-center justify-center min-h-full p-4">
-      <n-result
-        :status="statusType"
-        :title="String(statusCode)"
-        :description="friendlyMessage"
-      >
-        <template #footer>
-          <n-button type="primary" @click="handleClearError">
-            返回首頁
-          </n-button>
-        </template>
-      </n-result>
+    <div class="text-center">
+      <!-- 1. 圖示 -->
+      <UIcon
+        :name="iconName"
+        class="text-8xl text-primary-500 dark:text-primary-400"
+      />
+
+      <!-- 2. 狀態碼 (標題) -->
+      <h1 class="mt-4 text-5xl font-bold text-gray-900 dark:text-white">
+        {{ statusCode }}
+      </h1>
+
+      <!-- 3. 錯誤訊息 (描述) -->
+      <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">
+        {{ friendlyMessage }}
+      </p>
+
+      <!-- 4. 按鈕 (Footer) -->
+      <UButton @click="handleClearError" size="lg" class="mt-8">
+        返回首頁
+      </UButton>
     </div>
-  </NConfigProvider>
+  </div>
 </template>
