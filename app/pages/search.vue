@@ -135,8 +135,8 @@ const accordionItems = [
 </script>
 
 <template>
-  <div class="container mx-auto p-4 max-w-6xl">
-    <!-- 標題和總結果 (保持不變) -->
+  <div>
+    <!-- 標題和總結果-->
     <div v-if="!isLoading && !apiError" class="mb-6 text-neutral-400 text-sm">
       <div class="text-xl font-bold text-white mb-2">
         搜尋「<span class="text-primary">{{ currentQuery }}</span
@@ -145,14 +145,13 @@ const accordionItems = [
       <div v-if="totalResults > 0">共找到 {{ totalResults }} 筆資料</div>
     </div>
 
-    <!-- [修改] 進階篩選 n-collapse -> UAccordion -->
     <UAccordion :items="accordionItems" class="mb-6">
       <template #advanced-filters>
         <div class="space-y-4 pt-4">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium mb-1">類型</label>
-              <!-- [修改] n-select -> USelect -->
+              <!-- USelect -->
               <USelect
                 v-model="typeFilter"
                 :options="typeOptions"
@@ -161,7 +160,7 @@ const accordionItems = [
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">年份</label>
-              <!-- [修改] n-input-number -> UInput type="number" -->
+              <!-- UInput -->
               <UInput
                 v-model.number="yearFilter"
                 type="number"
@@ -171,13 +170,13 @@ const accordionItems = [
               />
             </div>
             <div class="pt-6">
-              <!-- [修改] n-switch -> UToggle -->
+              <!-- UToggle -->
               <UToggle v-model="adultFilter" />
               <label class="ml-2 text-sm font-medium">包含成人內容</label>
             </div>
           </div>
           <div class="flex justify-end gap-2">
-            <!-- [修改] n-button -> UButton -->
+            <!-- UButton -->
             <UButton variant="outline" @click="triggerSearch(true)"
               >重設</UButton
             >
@@ -187,7 +186,6 @@ const accordionItems = [
       </template>
     </UAccordion>
 
-    <!-- [修改] 載入中 n-spin -> UIcon -->
     <div v-if="isLoading" class="text-center py-20">
       <UIcon
         name="i-heroicons-arrow-path-20-solid"
@@ -195,7 +193,7 @@ const accordionItems = [
       />
     </div>
 
-    <!-- [修改] 錯誤訊息 n-result -> 自訂區塊 -->
+    <!-- 錯誤訊息 -->
     <div
       v-else-if="apiError"
       class="flex flex-col items-center justify-center py-20 text-center"
@@ -209,7 +207,7 @@ const accordionItems = [
       <UButton @click="fetchData">重試</UButton>
     </div>
 
-    <!-- 搜尋結果 (保持不變) -->
+    <!-- 搜尋結果 -->
     <div
       v-else-if="results.length > 0"
       class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
@@ -217,7 +215,6 @@ const accordionItems = [
       <ItemCard v-for="item in results" :key="item.id" :item="item" />
     </div>
 
-    <!-- [修改] 無結果 n-result -> 自訂區塊 -->
     <div
       v-else-if="currentQuery && !isLoading"
       class="flex flex-col items-center justify-center py-20 text-center"
@@ -230,7 +227,7 @@ const accordionItems = [
       <p class="text-neutral-400">找不到符合「{{ currentQuery }}」的項目。</p>
     </div>
 
-    <!-- [修改] 分頁 n-pagination -> UPagination -->
+    <!-- UPagination -->
     <div
       v-if="totalResults > 20 && !isLoading && !apiError"
       class="flex justify-center mt-12"

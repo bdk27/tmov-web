@@ -32,29 +32,9 @@ const items = computed<NavigationMenuItem[]>(() => [
 </script>
 
 <template>
-  <UHeader toggle-side="left">
-    <!-- logo -->
-    <!-- <template #title>
-      <NuxtLink
-        to="/"
-        class="flex items-center gap-1.5 font-bold text-xl text-white hover:text-primary-400 transition-colors sm:hidden"
-      >
-        <img src="/logo-white.png" alt="logo" class="w-6" />
-        <span>TMOV</span>
-      </NuxtLink>
-    </template> -->
+  <UHeader mode="slideover" toggleSide="right">
     <template #title>
-      <NuxtLink
-        to="/"
-        class="flex items-center gap-1.5 font-bold text-xl text-white hover:text-primary-400 transition-colors w-full"
-      >
-        <div
-          class="flex items-center gap-2 w-full justify-center md:justify-start"
-        >
-          <img src="/logo-white.png" alt="logo" class="w-6" />
-          <span>TMOV</span>
-        </div>
-      </NuxtLink>
+      <Logo />
     </template>
 
     <UNavigationMenu :items="items" />

@@ -63,17 +63,6 @@ const typeOptions = [
   <div class="space-y-4">
     <!-- 輸入框格線區域 -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <!-- 關鍵字輸入 (UInput) -->
-      <UInput
-        v-model="localQuery"
-        class="w-full"
-        placeholder="搜尋電影、電視、演員..."
-        size="xl"
-        icon="i-heroicons-magnifying-glass-20-solid"
-        clearable
-        @keyup.enter="handleSubmit(false)"
-      />
-
       <!-- 類型篩選 (USelect) -->
       <USelect
         v-model="localType"
@@ -81,7 +70,6 @@ const typeOptions = [
         size="xl"
         class="w-full"
       />
-
       <!-- 年份篩選 (UInput type=number) -->
       <UInput
         v-model.number="localYear"
@@ -93,13 +81,24 @@ const typeOptions = [
         class="w-full"
       />
     </div>
-
-    <!-- 按鈕區域 (UButton) -->
-    <div class="flex justify-end gap-2">
-      <UButton size="lg" variant="ghost" @click="handleSubmit(true)">
-        清空
-      </UButton>
-      <UButton size="lg" @click="handleSubmit(false)"> 搜尋 </UButton>
+    <div class="flex flex-col md:flex-row gap-3">
+      <!-- 關鍵字輸入 (UInput) -->
+      <UInput
+        v-model="localQuery"
+        class="w-full md:flex-1"
+        placeholder="搜尋電影、電視、演員..."
+        size="xl"
+        icon="i-lucide-search"
+        clearable
+        @keyup.enter="handleSubmit(false)"
+      />
+      <!-- 按鈕區域 (UButton) -->
+      <div class="flex justify-end gap-2 mt-3 md:mt-0">
+        <UButton size="lg" variant="ghost" @click="handleSubmit(true)">
+          清空
+        </UButton>
+        <UButton size="lg" @click="handleSubmit(false)"> 搜尋 </UButton>
+      </div>
     </div>
   </div>
 </template>

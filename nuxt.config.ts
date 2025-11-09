@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   runtimeConfig: {
     public: {
       apiBase: process.env.API_BASE || "http://localhost:8080",
@@ -32,11 +32,5 @@ export default defineNuxtConfig({
       { name: "Momo Trust Display", provider: "google", weights: [400] },
       { name: "Noto Sans TC", provider: "google", weights: [400, 700] },
     ],
-    // providers: {
-    //   google: true,
-    //   bunny: false, // 停用
-    //   fontshare: false, // 停用
-    //   adobe: false, // 停用
-    // },
   },
 });
