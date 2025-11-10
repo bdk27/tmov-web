@@ -55,6 +55,24 @@ export function useTmdb() {
     );
   };
 
+  const fetchBackdrop = async (): Promise<{
+    backdropDesktopUrl: string;
+    backdropMobileUrl: string;
+  }> => {
+    const apiUrl = `${api}/api/tmdb/popular-backdrop`;
+
+    try {
+      const response = await $fetch<{
+        backdropDesktopUrl: string;
+        backdropMobileUrl: string;
+      }>(apiUrl);
+      return response;
+    } catch (error) {
+      console.error(`取得背景圖片失敗`, error);
+      throw error;
+    }
+  };
+
   const posterUrl = (path: string | null, size = config.tmdbPosterSize) => {
     return path
       ? `${config.tmdbImageBase}/${size}${path}`
@@ -69,5 +87,5 @@ export function useTmdb() {
     return item.release_date || item.first_air_date || "Unknown";
   };
 
-  return { search, posterUrl, titleOf, dateOf };
+  return { search, fetchBackdrop, posterUrl, titleOf, dateOf };
 }

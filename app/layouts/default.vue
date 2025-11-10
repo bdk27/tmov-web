@@ -9,6 +9,6 @@
       <slot></slot>
     </main>
 
-    <Footer></Footer>
+    <!-- <Footer></Footer> -->
   </div>
 </template>

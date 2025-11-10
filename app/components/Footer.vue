@@ -1,31 +1,13 @@
-<script setup lang="ts">
-import type { NavigationMenuItem } from "@nuxt/ui";
-
-const items: NavigationMenuItem[] = [
-  {
-    label: "Figma Kit",
-    to: "https://go.nuxt.com/figma-ui",
-    target: "_blank",
-  },
-  {
-    label: "Playground",
-    to: "https://stackblitz.com/edit/nuxt-ui",
-    target: "_blank",
-  },
-  {
-    label: "Releases",
-    to: "https://github.com/nuxt/ui/releases",
-    target: "_blank",
-  },
-];
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <UFooter>
+  <UFooter class="border-t border-muted/20">
     <template #default>
-      <p class="text-muted text-sm">
-        Copyright © {{ new Date().getFullYear() }} by TMOV
-      </p>
+      <div>
+        <p class="text-muted text-sm">
+          Copyright © {{ new Date().getFullYear() }} by TMOV
+        </p>
+      </div>
     </template>
   </UFooter>
 </template>

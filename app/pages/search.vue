@@ -42,13 +42,12 @@ async function fetchData() {
     const res = await search(currentQuery.value, options);
 
     results.value = res.results;
-    totalPages.value = res.total_pages; // 保留
+    totalPages.value = res.total_pages;
     totalResults.value = res.total_results;
   } catch (error: any) {
     const friendlyMessage = getErrorMessage(error);
     apiError.value = friendlyMessage;
 
-    // [修改] message.error -> toast.add
     toast.add({
       title: "搜尋失敗",
       description: friendlyMessage,
@@ -64,7 +63,6 @@ async function fetchData() {
   }
 }
 
-// --- triggerSearch 邏輯 (保持不變) ---
 function triggerSearch(resetFilters = false) {
   if (resetFilters) {
     typeFilter.value = "multi";
@@ -88,14 +86,12 @@ function triggerSearch(resetFilters = false) {
   router.push({ query });
 }
 
-// --- handlePageChange 邏輯 (保持不變) ---
 function handlePageChange(page: number) {
   const newQuery = { ...route.query, page: page };
   router.push({ query: newQuery });
   window.scrollTo(0, 0);
 }
 
-// --- watch 邏輯 (保持不變) ---
 watch(
   () => route.query,
   (newQuery) => {
@@ -124,7 +120,6 @@ const typeOptions = [
   { label: "人物", value: "person" },
 ];
 
-// [新增] 為了 Nuxt UI 的 <UAccordion>
 const accordionItems = [
   {
     label: "進階篩選",
