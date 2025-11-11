@@ -1,7 +1,13 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-/* @custom-variant dark (&:where(.dark, .dark *)); */
+:root {
+  --hero-gradient: linear-gradient(to bottom, rgba(0, 0, 0, 0.6));
+}
+
+html.dark {
+  --hero-gradient: linear-gradient(to bottom, rgb(15, 23, 43, 0.7));
+}
 
 body {
   font-family: "Momo Trust Display", "Noto Sans TC", sans-serif;

@@ -59,14 +59,14 @@ export function useTmdb() {
     backdropDesktopUrl: string;
     backdropMobileUrl: string;
   }> => {
-    const apiUrl = `${api}/api/tmdb/popular-backdrop`;
+    const apiUrl = `${api}/api/tmdb/backdrop`;
 
     try {
-      const response = await $fetch<{
+      const res = await $fetch<{
         backdropDesktopUrl: string;
         backdropMobileUrl: string;
       }>(apiUrl);
-      return response;
+      return res;
     } catch (error) {
       console.error(`取得背景圖片失敗`, error);
       throw error;

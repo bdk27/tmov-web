@@ -6,7 +6,9 @@ const tmdbStore = useTmdbStore();
 
 // 背景圖片
 const { backdropDesktopUrl, backdropMobileUrl } = storeToRefs(tmdbStore);
-await tmdbStore.getBackdrop();
+onMounted(async () => {
+  await tmdbStore.getBackdrop();
+});
 
 const query = ref("");
 const type = ref<TmdbSearchOptions["type"]>("multi");
@@ -42,33 +44,35 @@ function handleSearch(filters: {
 <template>
   <div class="flex flex-1 items-start relative overflow-hidden">
     <!-- 背景圖片 -->
-    <picture class="absolute inset-0 -z-20 bg-white">
+    <picture v-if="backdropMobileUrl" class="absolute inset-0 -z-20 bg-white">
       <source
-        v-if="backdropMobileUrl"
-        :src="backdropMobileUrl"
+        v-if="backdropDesktopUrl"
+        :srcset="backdropDesktopUrl"
         media="(min-width: 768px)"
       />
       <img
-        v-if="backdropDesktopUrl"
-        :src="backdropDesktopUrl"
+        :src="backdropMobileUrl"
         alt="熱門電影背景"
         class="w-full h-full object-cover"
       />
     </picture>
     <div
-      class="absolute inset-0 -z-10 transition-all duration-1000 bg-linear-to-b from-[#0f172b] to-transparent"
+      class="absolute inset-0 -z-10 transition-all duration-1000"
+      :style="{ backgroundImage: 'var(--hero-gradient)' }"
     ></div>
     <!-- 標題 + 表單 -->
     <div
       class="container mx-auto px-4 max-w-xl relative z-10 pt-16 sm:pt-24 lg:pt-32 pb-16"
     >
       <div>
-        <h1 class="text-5xl sm:text-6xl font-extrabold mb-4 leading-tight">
+        <h1
+          class="text-white text-5xl sm:text-6xl font-extrabold mb-4 leading-tight"
+        >
           <span class="text-primary">下一部必看</span>
-          <br class="sm:hidden dark:text-white" />
+          <br />
           從 TMOV. 開始
         </h1>
-        <h3 class="text-xl sm:text-2xl font-light mb-12">
+        <h3 class="text-xl sm:text-2xl font-light mb-12 text-white">
           上百萬部電影、電視節目和演員資料等你來探索
         </h3>
         <!-- 搜尋欄 -->
