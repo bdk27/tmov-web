@@ -1,5 +1,6 @@
 export const useTmdbStore = defineStore("tmdb", () => {
-  const { search, fetchBackdrop } = useTmdb();
+  const { search, fetchBackdrop, fetchTrending, fetchPopularMovies } =
+    useTmdb();
 
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -11,6 +12,9 @@ export const useTmdbStore = defineStore("tmdb", () => {
   const lastType = ref<"multi" | "movie" | "tv" | "person">("multi");
   const backdropDesktopUrl = ref<string | null>(null);
   const backdropMobileUrl = ref<string | null>(null);
+  const trendingToday = ref<TmdbItem[]>([]);
+  const popularMovies = ref<TmdbItem[]>([]);
+  const trailerUrl = ref<string | null>(null);
 
   const doSearch = async (q: string, opts: TmdbSearchOptions = {}) => {
     loading.value = true;
@@ -41,11 +45,42 @@ export const useTmdbStore = defineStore("tmdb", () => {
       if (res) {
         backdropDesktopUrl.value = res.backdropDesktopUrl;
         backdropMobileUrl.value = res.backdropMobileUrl;
+        trailerUrl.value = res.trailerUrl;
       }
     } catch (error) {
       console.error("Pinia store (tmdb.ts): 無法獲取背景圖片:", error);
     }
     return null;
+  };
+
+  const getTrending = async () => {
+    if (trendingToday.value.length > 0) {
+      return;
+    }
+
+    try {
+      const response = await fetchTrending();
+      if (response && response.results) {
+        trendingToday.value = response.results;
+      }
+    } catch (error) {
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門趨勢:", error);
+    }
+  };
+
+  const getPopularMovies = async () => {
+    if (popularMovies.value.length > 0) {
+      return;
+    }
+
+    try {
+      const response = await fetchPopularMovies();
+      if (response && response.results) {
+        popularMovies.value = response.results;
+      }
+    } catch (error) {
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門電影:", error);
+    }
   };
 
   return {
@@ -59,7 +94,12 @@ export const useTmdbStore = defineStore("tmdb", () => {
     lastType,
     backdropDesktopUrl,
     backdropMobileUrl,
+    trendingToday,
+    popularMovies,
+    trailerUrl,
     doSearch,
     getBackdrop,
+    getTrending,
+    getPopularMovies,
   };
 });

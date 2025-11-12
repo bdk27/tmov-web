@@ -66,6 +66,9 @@ const typeOptions = [
         :items="typeOptions"
         size="xl"
         class="w-full"
+        :ui="{
+          base: '',
+        }"
       />
       <!-- 年份篩選 -->
       <UInput
@@ -82,7 +85,7 @@ const typeOptions = [
       <!-- 關鍵字輸入 -->
       <UInput
         v-model="localQuery"
-        class="w-full md:flex-1"
+        class="md:flex-1"
         placeholder="搜尋電影、電視、演員..."
         size="xl"
         icon="i-lucide-search"

@@ -2,10 +2,10 @@
 
 <template>
   <UApp>
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
+    <UMain>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </UMain>
   </UApp>
-
-  <!-- <UNotifications /> -->
 </template>

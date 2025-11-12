@@ -58,17 +58,44 @@ export function useTmdb() {
   const fetchBackdrop = async (): Promise<{
     backdropDesktopUrl: string;
     backdropMobileUrl: string;
+    trailerUrl: string;
   }> => {
-    const apiUrl = `${api}/api/tmdb/backdrop`;
+    const apiUrl = `${api}/api/tmdb/popular-backdrop`;
 
     try {
       const res = await $fetch<{
         backdropDesktopUrl: string;
         backdropMobileUrl: string;
+        trailerUrl: string;
       }>(apiUrl);
       return res;
     } catch (error) {
       console.error(`取得背景圖片失敗`, error);
+      throw error;
+    }
+  };
+
+  const fetchTrending = async (): Promise<TmdbPaginatedResponse<TmdbItem>> => {
+    const apiUrl = `${api}/api/tmdb/trending`;
+
+    try {
+      const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+      return response;
+    } catch (error) {
+      console.error(`取得熱門趨勢失敗`, error);
+      throw error;
+    }
+  };
+
+  const fetchPopularMovies = async (): Promise<
+    TmdbPaginatedResponse<TmdbItem>
+  > => {
+    const apiUrl = `${api}/api/tmdb/popular-movies`;
+    try {
+      const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+      return response;
+    } catch (error) {
+      console.error(`取得熱門電影失敗`, error);
       throw error;
     }
   };
@@ -87,5 +114,13 @@ export function useTmdb() {
     return item.release_date || item.first_air_date || "Unknown";
   };
 
-  return { search, fetchBackdrop, posterUrl, titleOf, dateOf };
+  return {
+    search,
+    fetchBackdrop,
+    fetchTrending,
+    fetchPopularMovies,
+    posterUrl,
+    titleOf,
+    dateOf,
+  };
 }
