@@ -65,9 +65,8 @@ const typeOptions = [
         v-model="localType"
         :items="typeOptions"
         size="xl"
-        class="w-full"
         :ui="{
-          base: '',
+          base: 'tracking-wide',
         }"
       />
       <!-- 年份篩選 -->
@@ -79,6 +78,9 @@ const typeOptions = [
         :max="new Date().getFullYear() + 1"
         size="xl"
         class="w-full"
+        :ui="{
+          base: 'tracking-wide',
+        }"
       />
     </div>
     <div class="flex flex-col md:flex-row gap-3">
@@ -91,13 +93,30 @@ const typeOptions = [
         icon="i-lucide-search"
         clearable
         @keyup.enter="handleSubmit(false)"
+        :ui="{
+          base: 'tracking-wide',
+        }"
       />
       <!-- 按鈕區域 (UButton) -->
       <div class="flex justify-end gap-2 mt-3 md:mt-0">
-        <UButton size="lg" variant="ghost" @click="handleSubmit(true)">
+        <UButton
+          size="lg"
+          variant="ghost"
+          @click="handleSubmit(true)"
+          :ui="{
+            base: 'tracking-wide',
+          }"
+        >
           清空
         </UButton>
-        <UButton size="lg" @click="handleSubmit(false)">搜尋</UButton>
+        <UButton
+          size="lg"
+          @click="handleSubmit(false)"
+          :ui="{
+            base: 'tracking-wide',
+          }"
+          >搜尋</UButton
+        >
       </div>
     </div>
   </div>
