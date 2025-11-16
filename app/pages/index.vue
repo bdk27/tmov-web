@@ -13,18 +13,15 @@ const {
   popularMovies,
 } = storeToRefs(tmdbStore);
 
-await useAsyncData("init", async () => {
-  try {
-    await Promise.all([
-      tmdbStore.getBackdrop(),
-      tmdbStore.getTrending(),
-      tmdbStore.getPopularMovies(),
-    ]);
-  } catch (err) {
-    console.error("一個或多個首頁 API 呼叫失敗:", err);
-  }
+await useAsyncData("hero-data", () => tmdbStore.getBackdrop());
 
-  return true;
+onMounted(() => {
+  tmdbStore.getTrending().catch((err) => {
+    console.error(err);
+  });
+  tmdbStore.getPopularMovies().catch((err) => {
+    console.error(err);
+  });
 });
 
 // 搜尋
@@ -47,7 +44,7 @@ function handleSearch(filters: {
 
   const newQuery: Record<string, any> = {
     q: filters.query,
-    page: 1, // 永遠從第 1 頁開始
+    page: 1,
     type: filters.type,
   };
 
@@ -107,7 +104,7 @@ function handleSearch(filters: {
         </template>
         <template #default>
           <div
-            class="w-full aspect-video rounded-lg shadow-2xl bg-t-card-bg relative"
+            class="w-full aspect-video rounded-lg shadow-2xl bg-t-card-bg relative hidden lg:block"
           >
             <iframe
               v-if="trailerUrl"
@@ -118,18 +115,6 @@ function handleSearch(filters: {
               allowfullscreen
               class="absolute inset-0 w-full h-full rounded-lg"
             ></iframe>
-            <div class="absolute inset-0 flex items-center justify-center">
-              <UIcon
-                v-if="trailerUrl"
-                name="i-heroicons-arrow-path"
-                class="text-4xl text-t-card-paragraph opacity-0 animate-spin"
-              />
-              <UIcon
-                v-else
-                name="i-heroicons-video-camera-slash"
-                class="text-4xl text-t-card-paragraph opacity-50"
-              />
-            </div>
           </div>
         </template>
       </UPageHero>
@@ -143,12 +128,22 @@ function handleSearch(filters: {
         <div v-if="popularMovies.length > 0">
           <Carousel :items="popularMovies" />
         </div>
-        <div v-else class="text-center text-t-subheadline">
-          載入熱門電影中...
+        <div
+          v-else
+          class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
+        >
+          <div
+            v-for="i in 6"
+            :key="`sk-movie-${i}`"
+            class="flex flex-col gap-2"
+          >
+            <USkeleton class="w-full aspect-2/3" />
+            <USkeleton class="h-5 w-3/4" />
+          </div>
         </div>
       </div>
 
-      <div>
+      <!-- <div>
         <div class="container mx-auto max-w-6xl px-4 py-16 sm:py-24">
           <h2 class="text-3xl font-bold text-center mb-12 text-t-headline">
             本日熱門趨勢
@@ -162,7 +157,7 @@ function handleSearch(filters: {
             載入熱門趨勢中...
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

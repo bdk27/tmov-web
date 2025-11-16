@@ -42,6 +42,8 @@ export const useTmdbStore = defineStore("tmdb", () => {
     try {
       console.log("Pinia store (tmdb.ts): 正在獲取新的背景圖片...");
       const res = await fetchBackdrop();
+      console.log("fetchBackdrop ", res);
+
       if (res) {
         backdropDesktopUrl.value = res.backdropDesktopUrl;
         backdropMobileUrl.value = res.backdropMobileUrl;
