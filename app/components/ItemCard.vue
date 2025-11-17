@@ -17,18 +17,19 @@ const rating = computed(() => {
   if (!props.item.vote_average) return 0;
   return Math.round(props.item.vote_average * 10);
 });
+const ratingColorClass = computed(() => {
+  const score = rating.value;
+  if (score >= 70) {
+    return "bg-primary";
+  }
+  if (score >= 40) {
+    return "bg-warning";
+  }
+  return "bg-error";
+});
 </script>
 
 <template>
-  <!-- <NuxtLink to="" class="group">
-    <div class="rounded-t-2xl overflow-hidden transition">
-      <img :src="imgSrc" :alt="title" class="w-full aspect-2/3 object-cover" />
-      <div class="pt-3">
-        <div class="font-medium truncate">{{ title }}</div>
-        <div class="text-xs opacity-70">{{ date }}</div>
-      </div>
-    </div>
-  </NuxtLink> -->
   <NuxtLink to="" class="group block h-full cursor-pointer">
     <UCard
       class="h-full"
@@ -40,26 +41,44 @@ const rating = computed(() => {
     >
       <template #header>
         <div class="relative">
+          <!-- 圖片 -->
           <img
             :src="imgSrc"
             :alt="title"
             class="w-full aspect-2/3 object-cover"
           />
+          <!-- 加入收藏 -->
+          <div
+            class="absolute top-0 left-0 p-1 cursor-pointer"
+            @click.prevent.stop="() => console.log('加入收藏')"
+            title="加入收藏"
+          >
+            <UIcon
+              name="i-heroicons-plus-circle-20-solid"
+              class="w-6 h-6 bg-white/50 hover:bg-white"
+            />
+          </div>
+          <!-- 評分表 -->
           <div
             v-if="rating > 0"
-            class="absolute bottom-0 right-0 w-full text-white bg-linear-to-r from-transparent to-primary flex items-center justify-end space-x-1 py-0.5 px-1"
+            class="absolute bottom-0 right-0 text-neutral-800 bg-primary p-1 w-10 h-10 flex items-center justify-center -mb-2 mr-1 rounded-full"
+            :class="ratingColorClass"
           >
-            <UIcon name="i-heroicons-star-20-solid" class="w-4 h-4" />
-            <p>{{ rating }}%</p>
+            <div
+              class="w-9 h-9 border-2 border-white absolute rounded-full"
+            ></div>
+            <p>{{ rating }}</p>
           </div>
         </div>
       </template>
 
       <template #footer>
         <div class="pt-2">
+          <!-- 標題 -->
           <h4 class="font-medium truncate">
             {{ title }}
           </h4>
+          <!-- 日期 -->
           <div class="text-xs opacity-70">
             {{ date }}
           </div>
