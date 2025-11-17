@@ -1,39 +1,16 @@
 export const useTmdbStore = defineStore("tmdb", () => {
-  const { search, fetchBackdrop, fetchTrending, fetchPopularMovies } =
-    useTmdb();
+  const {
+    search,
+    fetchBackdrop,
+    fetchTrending,
+    fetchPopularMovies,
+    fetchPopularTv,
+  } = useTmdb();
 
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-  const results = ref<any[]>([]);
-  const totalResults = ref(0);
-  const page = ref(1);
-  const totalPages = ref(1);
-  const lastQuery = ref("");
-  const lastType = ref<"multi" | "movie" | "tv" | "person">("multi");
+  // 背景圖 + 預告片
   const backdropDesktopUrl = ref<string | null>(null);
   const backdropMobileUrl = ref<string | null>(null);
-  const trendingToday = ref<TmdbItem[]>([]);
-  const popularMovies = ref<TmdbItem[]>([]);
   const trailerUrl = ref<string | null>(null);
-
-  const doSearch = async (q: string, opts: TmdbSearchOptions = {}) => {
-    loading.value = true;
-    error.value = null;
-    try {
-      const res: any = await search(q, opts); // 呼叫 composable
-      results.value = res?.results ?? [];
-      totalResults.value = res?.total_results ?? 0;
-      page.value = res?.page ?? 1;
-      totalPages.value = res?.total_pages ?? 1;
-      lastQuery.value = q;
-      lastType.value = (opts.type ?? "multi") as any;
-    } catch (e: any) {
-      error.value = e?.data?.error || e?.message || "搜尋失敗";
-    } finally {
-      loading.value = false;
-    }
-  };
-
   const getBackdrop = async () => {
     if (backdropDesktopUrl.value) {
       return;
@@ -55,21 +32,35 @@ export const useTmdbStore = defineStore("tmdb", () => {
     return null;
   };
 
-  const getTrending = async () => {
-    if (trendingToday.value.length > 0) {
-      return;
-    }
-
+  // 趨勢(每日、每週)
+  const trendingToday = ref<TmdbItem[]>([]);
+  const trendingWeek = ref<TmdbItem[]>([]);
+  const getTrendingToday = async () => {
+    if (trendingToday.value.length > 0) return;
     try {
-      const response = await fetchTrending();
+      const response = await fetchTrending("day");
       if (response && response.results) {
         trendingToday.value = response.results;
       }
     } catch (error) {
-      console.error("Pinia store (tmdb.ts): 無法獲取熱門趨勢:", error);
+      console.error("Pinia store (tmdb.ts): 無法獲取本日趨勢:", error);
+    }
+  };
+  const getTrendingWeek = async () => {
+    if (trendingWeek.value.length > 0) return;
+    try {
+      const response = await fetchTrending("week");
+      if (response && response.results) {
+        trendingWeek.value = response.results;
+      }
+    } catch (error) {
+      console.error("Pinia store (tmdb.ts): 無法獲取本週趨勢:", error);
     }
   };
 
+  // 熱門(電影、影集)
+  const popularMovies = ref<TmdbItem[]>([]);
+  const popularTv = ref<TmdbItem[]>([]);
   const getPopularMovies = async () => {
     if (popularMovies.value.length > 0) {
       return;
@@ -82,6 +73,44 @@ export const useTmdbStore = defineStore("tmdb", () => {
       }
     } catch (error) {
       console.error("Pinia store (tmdb.ts): 無法獲取熱門電影:", error);
+    }
+  };
+  const getPopularTv = async () => {
+    if (popularTv.value.length > 0) return;
+    try {
+      const response = await fetchPopularTv();
+      if (response && response.results) {
+        popularTv.value = response.results;
+      }
+    } catch (error) {
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門影集:", error);
+    }
+  };
+
+  // 搜尋
+  const loading = ref(false);
+  const error = ref<string | null>(null);
+  const results = ref<any[]>([]);
+  const totalResults = ref(0);
+  const page = ref(1);
+  const totalPages = ref(1);
+  const lastQuery = ref("");
+  const lastType = ref<"multi" | "movie" | "tv" | "person">("multi");
+  const doSearch = async (q: string, opts: TmdbSearchOptions = {}) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const res: any = await search(q, opts); // 呼叫 composable
+      results.value = res?.results ?? [];
+      totalResults.value = res?.total_results ?? 0;
+      page.value = res?.page ?? 1;
+      totalPages.value = res?.total_pages ?? 1;
+      lastQuery.value = q;
+      lastType.value = (opts.type ?? "multi") as any;
+    } catch (e: any) {
+      error.value = e?.data?.error || e?.message || "搜尋失敗";
+    } finally {
+      loading.value = false;
     }
   };
 
@@ -97,11 +126,15 @@ export const useTmdbStore = defineStore("tmdb", () => {
     backdropDesktopUrl,
     backdropMobileUrl,
     trendingToday,
+    trendingWeek,
     popularMovies,
+    popularTv,
     trailerUrl,
     doSearch,
     getBackdrop,
-    getTrending,
+    getTrendingToday,
+    getTrendingWeek,
     getPopularMovies,
+    getPopularTv,
   };
 });

@@ -1,15 +1,15 @@
 export type TmdbSearchType = "multi" | "movie" | "tv" | "person";
-
+// 搜尋選項
 export interface TmdbSearchOptions {
   type?: TmdbSearchType;
   page?: number;
   language?: string;
   region?: string;
   includeAdult?: boolean;
-  year?: number; // movie
-  firstAirDateYear?: number; // tv
+  year?: number;
+  firstAirDateYear?: number;
 }
-
+// 電影項目
 export interface TmdbItem {
   id: number;
   media_type?: "movie" | "tv" | "person";
@@ -21,7 +21,7 @@ export interface TmdbItem {
   first_air_date?: string;
   vote_average?: number;
 }
-
+// 分頁
 export interface TmdbPaginatedResponse<T> {
   page: number;
   results: T[];
@@ -56,6 +56,7 @@ export function useTmdb() {
     );
   };
 
+  // 背景圖 + 預告片
   const fetchBackdrop = async (): Promise<{
     backdropDesktopUrl: string;
     backdropMobileUrl: string;
@@ -71,13 +72,16 @@ export function useTmdb() {
       }>(apiUrl);
       return res;
     } catch (error) {
-      console.error(`取得背景圖片失敗`, error);
+      console.error(`取得背景圖片、預告片失敗`, error);
       throw error;
     }
   };
 
-  const fetchTrending = async (): Promise<TmdbPaginatedResponse<TmdbItem>> => {
-    const apiUrl = `${api}/api/tmdb/trending`;
+  // 趨勢(每日、每週)
+  const fetchTrending = async (
+    timeWindow: "day" | "week"
+  ): Promise<TmdbPaginatedResponse<TmdbItem>> => {
+    const apiUrl = `${api}/api/tmdb/trending?time_window=${timeWindow}`;
 
     try {
       const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
@@ -88,6 +92,7 @@ export function useTmdb() {
     }
   };
 
+  // 熱門(電影、影集)
   const fetchPopularMovies = async (): Promise<
     TmdbPaginatedResponse<TmdbItem>
   > => {
@@ -100,17 +105,26 @@ export function useTmdb() {
       throw error;
     }
   };
+  const fetchPopularTv = async (): Promise<TmdbPaginatedResponse<TmdbItem>> => {
+    const apiUrl = `${api}/api/tmdb/popular-tv`;
+    try {
+      const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+      return response;
+    } catch (error) {
+      console.error(`取得熱門影集失敗`, error);
+      throw error;
+    }
+  };
 
+  // 輔助函式(海報網址、標題、日期)
   const posterUrl = (path: string | null, size = config.tmdbPosterSize) => {
     return path
       ? `${config.tmdbImageBase}/${size}${path}`
       : "/placeholder-poster.png";
   };
-
   const titleOf = (item: TmdbItem) => {
     return item.title || item.name || "Untitled";
   };
-
   const dateOf = (item: TmdbItem) => {
     return item.release_date || item.first_air_date || "Unknown";
   };
@@ -120,6 +134,7 @@ export function useTmdb() {
     fetchBackdrop,
     fetchTrending,
     fetchPopularMovies,
+    fetchPopularTv,
     posterUrl,
     titleOf,
     dateOf,

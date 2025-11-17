@@ -5,24 +5,10 @@ const router = useRouter();
 const tmdbStore = useTmdbStore();
 
 // 背景圖片
-const {
-  backdropDesktopUrl,
-  backdropMobileUrl,
-  trailerUrl,
-  trendingToday,
-  popularMovies,
-} = storeToRefs(tmdbStore);
+const { backdropDesktopUrl, backdropMobileUrl, trailerUrl } =
+  storeToRefs(tmdbStore);
 
-await useAsyncData("hero-data", () => tmdbStore.getBackdrop());
-
-onMounted(() => {
-  tmdbStore.getTrending().catch((err) => {
-    console.error(err);
-  });
-  tmdbStore.getPopularMovies().catch((err) => {
-    console.error(err);
-  });
-});
+await useAsyncData("heroData", () => tmdbStore.getBackdrop());
 
 // 搜尋
 const query = ref("");
@@ -119,45 +105,7 @@ function handleSearch(filters: {
         </template>
       </UPageHero>
     </div>
-
-    <div class="container mx-auto max-w-6xl px-4 py-16 sm:py-24">
-      <div>
-        <h2 class="text-3xl font-bold text-center mb-12 text-t-headline">
-          時下熱門電影
-        </h2>
-        <div v-if="popularMovies.length > 0">
-          <Carousel :items="popularMovies" />
-        </div>
-        <div
-          v-else
-          class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
-        >
-          <div
-            v-for="i in 6"
-            :key="`sk-movie-${i}`"
-            class="flex flex-col gap-2"
-          >
-            <USkeleton class="w-full aspect-2/3" />
-            <USkeleton class="h-5 w-3/4" />
-          </div>
-        </div>
-      </div>
-
-      <!-- <div>
-        <div class="container mx-auto max-w-6xl px-4 py-16 sm:py-24">
-          <h2 class="text-3xl font-bold text-center mb-12 text-t-headline">
-            本日熱門趨勢
-          </h2>
-
-          <div v-if="trendingToday.length > 0">
-            <Carousel :items="trendingToday" />
-          </div>
-
-          <div v-else class="text-center text-t-subheadline">
-            載入熱門趨勢中...
-          </div>
-        </div>
-      </div> -->
-    </div>
+    <!-- 熱門電影 + 趨勢 -->
+    <ItemsCarouselSection />
   </div>
 </template>
