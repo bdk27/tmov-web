@@ -30,7 +30,7 @@ const ratingColorClass = computed(() => {
 </script>
 
 <template>
-  <NuxtLink to="" class="group block h-full cursor-pointer">
+  <NuxtLink to="" class="group block h-full">
     <UCard
       class="h-full"
       :ui="{
@@ -61,7 +61,7 @@ const ratingColorClass = computed(() => {
           <!-- 評分表 -->
           <div
             v-if="rating > 0"
-            class="absolute bottom-0 right-0 text-neutral-800 bg-primary p-1 w-10 h-10 flex items-center justify-center -mb-2 mr-1 rounded-full"
+            class="absolute bottom-0 right-0 text-neutral-800 p-1 w-10 h-10 flex items-center justify-center -mb-2 mr-1 rounded-full"
             :class="ratingColorClass"
           >
             <div

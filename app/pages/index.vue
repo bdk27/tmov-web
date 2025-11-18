@@ -4,11 +4,67 @@ import { storeToRefs } from "pinia";
 const router = useRouter();
 const tmdbStore = useTmdbStore();
 
-// 背景圖片
-const { backdropDesktopUrl, backdropMobileUrl, trailerUrl } =
-  storeToRefs(tmdbStore);
+const {
+  backdropDesktopUrl,
+  backdropMobileUrl,
+  trailerUrl,
+  trendingToday,
+  popularMovies,
+  popularTv,
+  trendingWeek,
+} = storeToRefs(tmdbStore);
 
+// 背景圖片
 await useAsyncData("heroData", () => tmdbStore.getBackdrop());
+
+onMounted(() => {
+  tmdbStore.getTrendingToday().catch((err) => {
+    console.error(err);
+  });
+  tmdbStore.getPopularMovies().catch((err) => {
+    console.error(err);
+  });
+});
+
+const popularTab = ref(0); // 0: 電影, 1: 影集
+const trendingTab = ref(0); // 0: 本日, 1: 本週
+const popularTabItems = [
+  { label: "熱門電影", value: 0 },
+  { label: "熱門影集", value: 1 },
+];
+const trendingTabItems = [
+  { label: "本日趨勢", value: 0 },
+  { label: "本週趨勢", value: 1 },
+];
+
+watch(popularTab, (newValue) => {
+  if (newValue === 1 && popularTv.value.length === 0) {
+    tmdbStore.getPopularTv();
+  }
+});
+watch(trendingTab, (newValue) => {
+  if (newValue === 1 && trendingWeek.value.length === 0) {
+    tmdbStore.getTrendingWeek();
+  }
+});
+const popularItems = computed((): TmdbItem[] => {
+  return popularTab.value === 0 ? popularMovies.value : popularTv.value;
+});
+const trendingItems = computed((): TmdbItem[] => {
+  return trendingTab.value === 0 ? trendingToday.value : trendingWeek.value;
+});
+// 切換熱門電影、影集 loading
+const isPopularLoading = computed(() => {
+  if (popularTab.value === 0) return popularMovies.value.length === 0;
+  if (popularTab.value === 1) return popularTv.value.length === 0;
+  return false;
+});
+// 切換趨勢本日、本週 loading
+const isTrendingLoading = computed(() => {
+  if (trendingTab.value === 0) return trendingToday.value.length === 0;
+  if (trendingTab.value === 1) return trendingWeek.value.length === 0;
+  return false;
+});
 
 // 搜尋
 const query = ref("");
@@ -19,15 +75,7 @@ function handleSearch(filters: {
   query: string;
   type: TmdbSearchOptions["type"];
   year: number | null;
-  reset: boolean;
 }) {
-  if (filters.reset) {
-    type.value = filters.type;
-    year.value = filters.year;
-
-    return;
-  }
-
   const newQuery: Record<string, any> = {
     q: filters.query,
     page: 1,
@@ -105,7 +153,18 @@ function handleSearch(filters: {
         </template>
       </UPageHero>
     </div>
-    <!-- 熱門電影 + 趨勢 -->
-    <ItemsCarouselSection />
+    <!-- 熱門 + 趨勢 -->
+    <ItemsCarouselSection
+      :tabs="popularTabItems"
+      v-model="popularTab"
+      :items="popularItems"
+      :loading="isPopularLoading"
+    />
+    <ItemsCarouselSection
+      :tabs="trendingTabItems"
+      v-model="trendingTab"
+      :items="trendingItems"
+      :loading="isTrendingLoading"
+    />
   </div>
 </template>

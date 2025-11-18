@@ -32,7 +32,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     return null;
   };
 
-  // 趨勢(每日、每週)
+  // 趨勢(今日、本週)
   const trendingToday = ref<TmdbItem[]>([]);
   const trendingWeek = ref<TmdbItem[]>([]);
   const getTrendingToday = async () => {

@@ -77,7 +77,7 @@ export function useTmdb() {
     }
   };
 
-  // 趨勢(每日、每週)
+  // 趨勢(今日、本週)
   const fetchTrending = async (
     timeWindow: "day" | "week"
   ): Promise<TmdbPaginatedResponse<TmdbItem>> => {

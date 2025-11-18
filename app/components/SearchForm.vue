@@ -12,7 +12,6 @@ const emit = defineEmits<{
       query: string;
       type: TmdbSearchOptions["type"];
       year: number | null;
-      reset: boolean;
     }
   ): void;
 }>();
@@ -45,7 +44,6 @@ function handleSubmit(reset = false) {
     query: localQuery.value,
     type: localType.value,
     year: localYear.value,
-    reset: reset,
   });
 }
 
