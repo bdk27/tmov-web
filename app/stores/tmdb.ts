@@ -5,6 +5,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     fetchTrending,
     fetchPopularMovies,
     fetchPopularTv,
+    fetchPopularPerson,
   } = useTmdb();
 
   // 背景圖 + 預告片
@@ -43,7 +44,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
         trendingToday.value = response.results;
       }
     } catch (error) {
-      console.error("Pinia store (tmdb.ts): 無法獲取本日趨勢:", error);
+      console.error("Pinia store (tmdb.ts): 無法獲取今日趨勢:", error);
     }
   };
   const getTrendingWeek = async () => {
@@ -58,9 +59,10 @@ export const useTmdbStore = defineStore("tmdb", () => {
     }
   };
 
-  // 熱門(電影、影集)
+  // 熱門(電影、影集、人物)
   const popularMovies = ref<TmdbItem[]>([]);
   const popularTv = ref<TmdbItem[]>([]);
+  const popularPerson = ref<TmdbItem[]>([]);
   const getPopularMovies = async () => {
     if (popularMovies.value.length > 0) {
       return;
@@ -84,6 +86,15 @@ export const useTmdbStore = defineStore("tmdb", () => {
       }
     } catch (error) {
       console.error("Pinia store (tmdb.ts): 無法獲取熱門影集:", error);
+    }
+  };
+  const getPopularPerson = async () => {
+    if (popularPerson.value.length > 0) return;
+    try {
+      const response = await fetchPopularPerson();
+      if (response && response.results) popularPerson.value = response.results;
+    } catch (error) {
+      console.error("Pinia: 無法獲取熱門人物", error);
     }
   };
 
@@ -129,6 +140,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     trendingWeek,
     popularMovies,
     popularTv,
+    popularPerson,
     trailerUrl,
     doSearch,
     getBackdrop,
@@ -136,5 +148,6 @@ export const useTmdbStore = defineStore("tmdb", () => {
     getTrendingWeek,
     getPopularMovies,
     getPopularTv,
+    getPopularPerson,
   };
 });

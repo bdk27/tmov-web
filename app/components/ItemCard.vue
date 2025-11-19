@@ -4,6 +4,12 @@ const { posterUrl, titleOf, dateOf } = useTmdb();
 
 console.log(props.item);
 
+const itemPath = computed(() => {
+  if (props.item.media_type === "person") return `/person/${props.item.id}`;
+  if (props.item.media_type === "tv") return `/tv/${props.item.id}`;
+  return `/movie/${props.item.id}`;
+});
+
 // 圖片
 const imgSrc = computed(() =>
   posterUrl(props.item?.poster_path ?? props.item?.profile_path ?? null)
@@ -79,7 +85,7 @@ const ratingColorClass = computed(() => {
             {{ title }}
           </h4>
           <!-- 日期 -->
-          <div class="text-xs opacity-70">
+          <div v-if="date !== 'Unknown'" class="text-xs opacity-70">
             {{ date }}
           </div>
         </div>

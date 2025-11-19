@@ -92,13 +92,19 @@ export function useTmdb() {
     }
   };
 
-  // 熱門(電影、影集)
+  // 熱門(電影、影集、人物)
   const fetchPopularMovies = async (): Promise<
     TmdbPaginatedResponse<TmdbItem>
   > => {
     const apiUrl = `${api}/api/tmdb/popular-movies`;
     try {
       const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+      if (response.results) {
+        response.results = response.results.map((item) => ({
+          ...item,
+          media_type: "movie",
+        }));
+      }
       return response;
     } catch (error) {
       console.error(`取得熱門電影失敗`, error);
@@ -109,9 +115,33 @@ export function useTmdb() {
     const apiUrl = `${api}/api/tmdb/popular-tv`;
     try {
       const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+      if (response.results) {
+        response.results = response.results.map((item) => ({
+          ...item,
+          media_type: "tv",
+        }));
+      }
       return response;
     } catch (error) {
       console.error(`取得熱門影集失敗`, error);
+      throw error;
+    }
+  };
+  const fetchPopularPerson = async (): Promise<
+    TmdbPaginatedResponse<TmdbItem>
+  > => {
+    const apiUrl = `${api}/api/tmdb/popular-person`;
+    try {
+      const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+      if (response.results) {
+        response.results = response.results.map((item) => ({
+          ...item,
+          media_type: "person",
+        }));
+      }
+      return response;
+    } catch (error) {
+      console.error(`取得熱門人物失敗`, error);
       throw error;
     }
   };
@@ -135,6 +165,7 @@ export function useTmdb() {
     fetchTrending,
     fetchPopularMovies,
     fetchPopularTv,
+    fetchPopularPerson,
     posterUrl,
     titleOf,
     dateOf,

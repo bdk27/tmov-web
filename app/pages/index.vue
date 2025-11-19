@@ -11,6 +11,7 @@ const {
   trendingToday,
   popularMovies,
   popularTv,
+  popularPerson,
   trendingWeek,
 } = storeToRefs(tmdbStore);
 
@@ -26,20 +27,23 @@ onMounted(() => {
   });
 });
 
-const popularTab = ref(0); // 0: 電影, 1: 影集
-const trendingTab = ref(0); // 0: 本日, 1: 本週
+const popularTab = ref(0); // 0: 電影, 1: 影集, 2: 人物
+const trendingTab = ref(0); // 0: 今日, 1: 本週
 const popularTabItems = [
   { label: "熱門電影", value: 0 },
   { label: "熱門影集", value: 1 },
+  { label: "熱門人物", value: 2 },
 ];
 const trendingTabItems = [
-  { label: "本日趨勢", value: 0 },
+  { label: "今日趨勢", value: 0 },
   { label: "本週趨勢", value: 1 },
 ];
 
 watch(popularTab, (newValue) => {
   if (newValue === 1 && popularTv.value.length === 0) {
     tmdbStore.getPopularTv();
+  } else if (newValue === 2 && popularPerson.value.length === 0) {
+    tmdbStore.getPopularPerson();
   }
 });
 watch(trendingTab, (newValue) => {
@@ -48,7 +52,9 @@ watch(trendingTab, (newValue) => {
   }
 });
 const popularItems = computed((): TmdbItem[] => {
-  return popularTab.value === 0 ? popularMovies.value : popularTv.value;
+  if (popularTab.value === 0) return popularMovies?.value || [];
+  if (popularTab.value === 1) return popularTv?.value || [];
+  return popularPerson?.value || [];
 });
 const trendingItems = computed((): TmdbItem[] => {
   return trendingTab.value === 0 ? trendingToday.value : trendingWeek.value;
@@ -59,7 +65,7 @@ const isPopularLoading = computed(() => {
   if (popularTab.value === 1) return popularTv.value.length === 0;
   return false;
 });
-// 切換趨勢本日、本週 loading
+// 切換趨勢今日、本週 loading
 const isTrendingLoading = computed(() => {
   if (trendingTab.value === 0) return trendingToday.value.length === 0;
   if (trendingTab.value === 1) return trendingWeek.value.length === 0;
@@ -155,16 +161,16 @@ function handleSearch(filters: {
     </div>
     <!-- 熱門 + 趨勢 -->
     <ItemsCarouselSection
-      :tabs="popularTabItems"
-      v-model="popularTab"
-      :items="popularItems"
-      :loading="isPopularLoading"
-    />
-    <ItemsCarouselSection
       :tabs="trendingTabItems"
       v-model="trendingTab"
       :items="trendingItems"
       :loading="isTrendingLoading"
+    />
+    <ItemsCarouselSection
+      :tabs="popularTabItems"
+      v-model="popularTab"
+      :items="popularItems"
+      :loading="isPopularLoading"
     />
   </div>
 </template>
