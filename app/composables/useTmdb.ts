@@ -20,6 +20,7 @@ export interface TmdbItem {
   release_date?: string;
   first_air_date?: string;
   vote_average?: number;
+  overview?: string;
 }
 // 分頁
 export interface TmdbPaginatedResponse<T> {
@@ -146,7 +147,33 @@ export function useTmdb() {
     }
   };
 
-  // 輔助函式(海報網址、標題、日期)
+  const fetchNowPlaying = async (): Promise<
+    TmdbPaginatedResponse<TmdbItem>
+  > => {
+    const apiUrl = `${api}/api/tmdb/now-playing`;
+    const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+    if (response.results) {
+      response.results = response.results.map((item) => ({
+        ...item,
+        media_type: "movie",
+      }));
+    }
+    return response;
+  };
+
+  const fetchUpcoming = async (): Promise<TmdbPaginatedResponse<TmdbItem>> => {
+    const apiUrl = `${api}/api/tmdb/upcoming`;
+    const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+    if (response.results) {
+      response.results = response.results.map((item) => ({
+        ...item,
+        media_type: "movie",
+      }));
+    }
+    return response;
+  };
+
+  // 輔助函式(海報網址、標題、日期、評分)
   const posterUrl = (path: string | null, size = config.tmdbPosterSize) => {
     return path
       ? `${config.tmdbImageBase}/${size}${path}`
@@ -158,6 +185,15 @@ export function useTmdb() {
   const dateOf = (item: TmdbItem) => {
     return item.release_date || item.first_air_date || "Unknown";
   };
+  const getRating = (item: TmdbItem) => {
+    if (!item.vote_average) return 0;
+    return Math.round(item.vote_average * 10);
+  };
+  const getRatingColor = (rating: number) => {
+    if (rating >= 70) return "text-primary";
+    if (rating >= 40) return "text-warning";
+    return "text-error";
+  };
 
   return {
     search,
@@ -166,8 +202,12 @@ export function useTmdb() {
     fetchPopularMovies,
     fetchPopularTv,
     fetchPopularPerson,
+    fetchNowPlaying,
+    fetchUpcoming,
     posterUrl,
     titleOf,
     dateOf,
+    getRating,
+    getRatingColor,
   };
 }

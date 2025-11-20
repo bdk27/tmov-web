@@ -13,6 +13,8 @@ const {
   popularTv,
   popularPerson,
   trendingWeek,
+  nowPlaying,
+  upcoming,
 } = storeToRefs(tmdbStore);
 
 // 背景圖片
@@ -25,6 +27,8 @@ onMounted(() => {
   tmdbStore.getPopularMovies().catch((err) => {
     console.error(err);
   });
+  tmdbStore.getNowPlaying().catch((err) => console.error(err));
+  tmdbStore.getUpcoming().catch((err) => console.error(err));
 });
 
 const popularTab = ref(0); // 0: 電影, 1: 影集, 2: 人物
@@ -59,10 +63,11 @@ const popularItems = computed((): TmdbItem[] => {
 const trendingItems = computed((): TmdbItem[] => {
   return trendingTab.value === 0 ? trendingToday.value : trendingWeek.value;
 });
-// 切換熱門電影、影集 loading
+// 切換熱門電影、影集、人物 loading
 const isPopularLoading = computed(() => {
   if (popularTab.value === 0) return popularMovies.value.length === 0;
   if (popularTab.value === 1) return popularTv.value.length === 0;
+  if (popularTab.value === 2) return popularPerson.value.length === 0;
   return false;
 });
 // 切換趨勢今日、本週 loading
@@ -71,6 +76,9 @@ const isTrendingLoading = computed(() => {
   if (trendingTab.value === 1) return trendingWeek.value.length === 0;
   return false;
 });
+
+const isNowPlayingLoading = computed(() => nowPlaying.value.length === 0);
+const isUpcomingLoading = computed(() => upcoming.value.length === 0);
 
 // 搜尋
 const query = ref("");
@@ -159,13 +167,26 @@ function handleSearch(filters: {
         </template>
       </UPageHero>
     </div>
-    <!-- 熱門 + 趨勢 -->
+    <!-- 現正熱映 -->
+    <BentoGridSection
+      title="現正熱映"
+      :items="nowPlaying"
+      :loading="isNowPlayingLoading"
+    />
+    <!-- 熱門 -->
     <ItemsCarouselSection
       :tabs="trendingTabItems"
       v-model="trendingTab"
       :items="trendingItems"
       :loading="isTrendingLoading"
     />
+    <!-- 即將上映 -->
+    <!-- <TrailerListSection
+      title="最新預告片"
+      :items="upcoming"
+      :loading="isUpcomingLoading"
+    /> -->
+    <!-- 趨勢 -->
     <ItemsCarouselSection
       :tabs="popularTabItems"
       v-model="popularTab"

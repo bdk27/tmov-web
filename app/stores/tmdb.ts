@@ -6,6 +6,8 @@ export const useTmdbStore = defineStore("tmdb", () => {
     fetchPopularMovies,
     fetchPopularTv,
     fetchPopularPerson,
+    fetchNowPlaying,
+    fetchUpcoming,
   } = useTmdb();
 
   // 背景圖 + 預告片
@@ -98,6 +100,27 @@ export const useTmdbStore = defineStore("tmdb", () => {
     }
   };
 
+  const nowPlaying = ref<TmdbItem[]>([]);
+  const upcoming = ref<TmdbItem[]>([]);
+  const getNowPlaying = async () => {
+    if (nowPlaying.value.length > 0) return;
+    try {
+      const response = await fetchNowPlaying();
+      if (response && response.results) nowPlaying.value = response.results;
+    } catch (error) {
+      console.error("Pinia: 無法獲取現正熱映", error);
+    }
+  };
+  const getUpcoming = async () => {
+    if (upcoming.value.length > 0) return;
+    try {
+      const response = await fetchUpcoming();
+      if (response && response.results) upcoming.value = response.results;
+    } catch (error) {
+      console.error("Pinia: 無法獲取即將上映", error);
+    }
+  };
+
   // 搜尋
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -141,6 +164,8 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularMovies,
     popularTv,
     popularPerson,
+    nowPlaying,
+    upcoming,
     trailerUrl,
     doSearch,
     getBackdrop,
@@ -149,5 +174,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     getPopularMovies,
     getPopularTv,
     getPopularPerson,
+    getNowPlaying,
+    getUpcoming,
   };
 });

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{ item: TmdbItem }>();
-const { posterUrl, titleOf, dateOf } = useTmdb();
+const { posterUrl, titleOf, dateOf, getRating, getRatingColor } = useTmdb();
 
 console.log(props.item);
 
@@ -18,25 +18,10 @@ const imgSrc = computed(() =>
 const title = computed(() => titleOf(props.item));
 // 日期
 const date = computed(() => dateOf(props.item));
-// 評分
-const rating = computed(() => {
-  if (!props.item.vote_average) return 0;
-  return Math.round(props.item.vote_average * 10);
-});
-const ratingColorClass = computed(() => {
-  const score = rating.value;
-  if (score >= 70) {
-    return "bg-primary";
-  }
-  if (score >= 40) {
-    return "bg-warning";
-  }
-  return "bg-error";
-});
 </script>
 
 <template>
-  <NuxtLink to="" class="group block h-full">
+  <NuxtLink :to="itemPath" class="group block h-full">
     <UCard
       class="h-full"
       :ui="{
@@ -51,7 +36,7 @@ const ratingColorClass = computed(() => {
           <img
             :src="imgSrc"
             :alt="title"
-            class="w-full aspect-2/3 object-cover"
+            class="w-full aspect-2/3 object-cover hover:scale-[1.05] transition-transform duration-300"
           />
           <!-- 加入收藏 -->
           <div
@@ -64,17 +49,6 @@ const ratingColorClass = computed(() => {
               class="w-6 h-6 bg-white/50 hover:bg-white"
             />
           </div>
-          <!-- 評分表 -->
-          <div
-            v-if="rating > 0"
-            class="absolute bottom-0 right-0 text-neutral-800 p-1 w-10 h-10 flex items-center justify-center -mb-2 mr-1 rounded-full"
-            :class="ratingColorClass"
-          >
-            <div
-              class="w-9 h-9 border-2 border-white absolute rounded-full"
-            ></div>
-            <p>{{ rating }}</p>
-          </div>
         </div>
       </template>
 
@@ -84,9 +58,20 @@ const ratingColorClass = computed(() => {
           <h4 class="font-medium truncate">
             {{ title }}
           </h4>
-          <!-- 日期 -->
-          <div v-if="date !== 'Unknown'" class="text-xs opacity-70">
-            {{ date }}
+          <div class="flex items-center">
+            <!-- 日期 -->
+            <div v-if="date !== 'Unknown'" class="text-xs opacity-70 mr-3">
+              {{ date }}
+            </div>
+            <!-- 評分表 -->
+            <div
+              v-if="item.vote_average"
+              class="flex items-center font-bold text-sm"
+              :class="getRatingColor(getRating(item))"
+            >
+              <UIcon name="i-heroicons-star-20-solid" class="w-3 h-3 mr-0.5" />
+              {{ item.vote_average.toFixed(1) }}
+            </div>
           </div>
         </div>
       </template>
