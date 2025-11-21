@@ -15,6 +15,7 @@ export interface TmdbItem {
   media_type?: "movie" | "tv" | "person";
   poster_path?: string | null;
   profile_path?: string | null;
+  backdrop_path?: string | null;
   title?: string;
   name?: string;
   release_date?: string;
@@ -147,6 +148,7 @@ export function useTmdb() {
     }
   };
 
+  // 現正熱映
   const fetchNowPlaying = async (): Promise<
     TmdbPaginatedResponse<TmdbItem>
   > => {
@@ -161,6 +163,7 @@ export function useTmdb() {
     return response;
   };
 
+  // 即將上映
   const fetchUpcoming = async (): Promise<TmdbPaginatedResponse<TmdbItem>> => {
     const apiUrl = `${api}/api/tmdb/upcoming`;
     const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
@@ -173,11 +176,32 @@ export function useTmdb() {
     return response;
   };
 
+  // 獲取電影預告片
+  const fetchMovieTrailer = async (
+    movieId: number
+  ): Promise<{ trailerUrl: string }> => {
+    const apiUrl = `${api}/api/tmdb/movie/${movieId}/trailer`;
+    try {
+      const response = await $fetch<{ trailerUrl: string }>(apiUrl);
+      console.log("response", response);
+
+      return response;
+    } catch (error) {
+      console.error(`取得電影預告片失敗 ID:${movieId}`, error);
+      return { trailerUrl: "" };
+    }
+  };
+
   // 輔助函式(海報網址、標題、日期、評分)
   const posterUrl = (path: string | null, size = config.tmdbPosterSize) => {
     return path
       ? `${config.tmdbImageBase}/${size}${path}`
       : "/placeholder-poster.png";
+  };
+  const backdropUrl = (path: string | null | undefined, size = "w1280") => {
+    return path
+      ? `${config.tmdbImageBase}/${size}${path}`
+      : "/placeholder-backdrop.png";
   };
   const titleOf = (item: TmdbItem) => {
     return item.title || item.name || "Untitled";
@@ -205,9 +229,11 @@ export function useTmdb() {
     fetchNowPlaying,
     fetchUpcoming,
     posterUrl,
+    backdropUrl,
     titleOf,
     dateOf,
     getRating,
     getRatingColor,
+    fetchMovieTrailer,
   };
 }

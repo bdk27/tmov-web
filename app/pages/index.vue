@@ -181,11 +181,11 @@ function handleSearch(filters: {
       :loading="isTrendingLoading"
     />
     <!-- 即將上映 -->
-    <!-- <TrailerListSection
+    <TrailerListSection
       title="最新預告片"
       :items="upcoming"
       :loading="isUpcomingLoading"
-    /> -->
+    />
     <!-- 趨勢 -->
     <ItemsCarouselSection
       :tabs="popularTabItems"
