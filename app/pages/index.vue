@@ -31,11 +31,11 @@ onMounted(() => {
   tmdbStore.getUpcoming().catch((err) => console.error(err));
 });
 
-const popularTab = ref(0); // 0: 電影, 1: 影集, 2: 人物
+const popularTab = ref(0); // 0: 電影, 1: 電視節目, 2: 人物
 const trendingTab = ref(0); // 0: 今日, 1: 本週
 const popularTabItems = [
   { label: "熱門電影", value: 0 },
-  { label: "熱門影集", value: 1 },
+  { label: "熱門電視節目", value: 1 },
   { label: "熱門人物", value: 2 },
 ];
 const trendingTabItems = [
@@ -90,6 +90,8 @@ function handleSearch(filters: {
   type: TmdbSearchOptions["type"];
   year: number | null;
 }) {
+  if (!filters.query.trim()) return;
+
   const newQuery: Record<string, any> = {
     q: filters.query,
     page: 1,
@@ -173,6 +175,7 @@ function handleSearch(filters: {
       :items="nowPlaying"
       :loading="isNowPlayingLoading"
     />
+
     <!-- 熱門 -->
     <ItemsCarouselSection
       :tabs="trendingTabItems"
@@ -180,12 +183,14 @@ function handleSearch(filters: {
       :items="trendingItems"
       :loading="isTrendingLoading"
     />
+
     <!-- 即將上映 -->
     <TrailerListSection
       title="最新預告片"
       :items="upcoming"
       :loading="isUpcomingLoading"
     />
+
     <!-- 趨勢 -->
     <ItemsCarouselSection
       :tabs="popularTabItems"

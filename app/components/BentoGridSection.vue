@@ -6,8 +6,10 @@ const props = defineProps<{
 }>();
 
 const { posterUrl, titleOf, dateOf, getRating, getRatingColor } = useTmdb();
+
 // 1 ~ 3名
 const topItems = computed(() => props.items.slice(0, 3));
+
 // 4 ~ 10名
 const bottomItems = computed(() => props.items.slice(3, 10));
 </script>

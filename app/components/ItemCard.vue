@@ -2,8 +2,6 @@
 const props = defineProps<{ item: TmdbItem }>();
 const { posterUrl, titleOf, dateOf, getRating, getRatingColor } = useTmdb();
 
-console.log(props.item);
-
 const itemPath = computed(() => {
   if (props.item.media_type === "person") return `/person/${props.item.id}`;
   if (props.item.media_type === "tv") return `/tv/${props.item.id}`;
@@ -14,8 +12,10 @@ const itemPath = computed(() => {
 const imgSrc = computed(() =>
   posterUrl(props.item?.poster_path ?? props.item?.profile_path ?? null)
 );
+
 // 標題
 const title = computed(() => titleOf(props.item));
+
 // 日期
 const date = computed(() => dateOf(props.item));
 </script>

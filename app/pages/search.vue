@@ -1,72 +1,98 @@
 <script setup lang="ts">
-// [移除] import { useMessage } from "naive-ui";
-// [新增] 引入 Nuxt UI 的 useToast
-import { useToast } from "#imports";
-
-const { search } = useTmdb();
-
-// [修改] Naive UI 元件 -> Nuxt UI 元S件
+const tmdbStore = useTmdbStore();
 const toast = useToast();
-
 const route = useRoute();
 const router = useRouter();
 
-// --- 狀態 ref (保持不變) ---
-const results = ref<TmdbItem[]>([]);
-const isLoading = ref(false);
-const apiError = ref<string | null>(null);
+const { results, totalPages, totalResults, loading } = storeToRefs(tmdbStore);
 
-const currentPage = ref(1);
-const totalPages = ref(0); // 雖然 UPagination 不需要，但我們先保留
-const totalResults = ref(0);
+const typeOptions = [
+  { label: "綜合", value: "multi" },
+  { label: "電影", value: "movie" },
+  { label: "電視節目", value: "tv" },
+  { label: "人物", value: "person" },
+];
 
+// 篩選條件
 const currentQuery = ref("");
 const typeFilter = ref<TmdbSearchOptions["type"]>("multi");
-const adultFilter = ref(false);
 const yearFilter = ref<number | null>(null);
-
+const apiError = ref<string | null>(null);
+const currentPage = ref(1);
 async function fetchData() {
-  isLoading.value = true;
+  if (!currentQuery.value.trim()) return;
+
   apiError.value = null;
 
   try {
     const options: TmdbSearchOptions = {
       page: currentPage.value,
       type: typeFilter.value,
-      includeAdult: adultFilter.value,
     };
     if (yearFilter.value) {
       options.year = yearFilter.value;
     }
 
-    const res = await search(currentQuery.value, options);
-
-    results.value = res.results;
-    totalPages.value = res.total_pages;
-    totalResults.value = res.total_results;
+    await tmdbStore.doSearch(currentQuery.value, options);
   } catch (error: any) {
-    const friendlyMessage = getErrorMessage(error);
-    apiError.value = friendlyMessage;
-
+    apiError.value = "搜尋發生錯誤";
     toast.add({
       title: "搜尋失敗",
-      description: friendlyMessage,
-      color: "warning",
+      description: apiError.value,
+      color: "error",
       icon: "i-heroicons-exclamation-circle",
     });
-
-    results.value = [];
-    totalPages.value = 0;
-    totalResults.value = 0;
-  } finally {
-    isLoading.value = false;
   }
 }
+
+// 排序
+const sortBy = ref("relevance"); // 預設：關聯性
+const sortOptions = [
+  { label: "關聯性", value: "relevance" },
+  { label: "日期 : 新 → 舊", value: "date-desc" },
+  { label: "日期 : 舊 → 新", value: "date-asc" },
+  { label: "人氣 : 高 → 低", value: "popularity-desc" },
+  { label: "人氣 : 低 → 高", value: "popularity-asc" },
+  { label: "評分 : 高 → 低", value: "rating-desc" },
+  { label: "評分 : 低 → 高", value: "rating-asc" },
+];
+const sortedResults = computed(() => {
+  const items = [...results.value];
+
+  const getDate = (item: TmdbItem) => {
+    const dateStr = item.release_date || item.first_air_date;
+    return dateStr ? new Date(dateStr).getTime() : 0;
+  };
+
+  switch (sortBy.value) {
+    case "date-desc":
+      return items.sort((a, b) => getDate(b) - getDate(a));
+    case "date-asc":
+      return items.sort((a, b) => getDate(a) - getDate(b));
+
+    case "popularity-desc":
+      return items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    case "popularity-asc":
+      return items.sort((a, b) => (a.popularity || 0) - (b.popularity || 0));
+
+    case "rating-desc":
+      return items.sort(
+        (a, b) => (b.vote_average || 0) - (a.vote_average || 0)
+      );
+    case "rating-asc":
+      return items.sort(
+        (a, b) => (a.vote_average || 0) - (b.vote_average || 0)
+      );
+
+    case "relevance":
+    default:
+      return items; // 保持 API 原本的順序
+  }
+});
 
 function triggerSearch(resetFilters = false) {
   if (resetFilters) {
     typeFilter.value = "multi";
-    adultFilter.value = false;
     yearFilter.value = null;
   }
 
@@ -76,9 +102,6 @@ function triggerSearch(resetFilters = false) {
     type: typeFilter.value,
   };
 
-  if (adultFilter.value) {
-    query.adult = "true";
-  }
   if (yearFilter.value) {
     query.year = yearFilter.value;
   }
@@ -98,90 +121,52 @@ watch(
     currentQuery.value = (newQuery.q as string) || "";
     currentPage.value = parseInt(newQuery.page as string) || 1;
     typeFilter.value = (newQuery.type as TmdbSearchOptions["type"]) || "multi";
-    adultFilter.value = newQuery.adult === "true";
     yearFilter.value = newQuery.year ? parseInt(newQuery.year as string) : null;
+
+    // (可選) 從 URL 讀取排序
+    // sortBy.value = (newQuery.sort as string) || 'relevance';
 
     if (currentQuery.value.trim()) {
       fetchData();
     } else {
-      results.value = [];
-      totalPages.value = 0;
-      totalResults.value = 0;
-      apiError.value = null;
+      // store 的重置邏輯可能需要補上，這裡先手動清空 store 比較麻煩，
+      // 通常 store 會有一個 clearResults action，如果沒有就算了
     }
   },
   { immediate: true, deep: true }
 );
-
-const typeOptions = [
-  { label: "綜合", value: "multi" },
-  { label: "電影", value: "movie" },
-  { label: "電視", value: "tv" },
-  { label: "人物", value: "person" },
-];
-
-const accordionItems = [
-  {
-    label: "進階篩選",
-    slot: "advanced-filters",
-    defaultOpen: false,
-  },
-];
 </script>
 
 <template>
-  <div>
-    <!-- 標題和總結果-->
-    <div v-if="!isLoading && !apiError" class="mb-6 text-neutral-400 text-sm">
-      <div class="text-xl font-bold text-white mb-2">
-        搜尋「<span class="text-primary">{{ currentQuery }}</span
-        >」的結果
+  <div class="container mx-auto max-w-6xl px-4 py-8">
+    <!-- 標題列 + 排序選單-->
+    <div
+      v-if="!loading && !apiError"
+      class="w-full mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4"
+    >
+      <!-- 搜尋結果資訊 -->
+      <div class="text-neutral-400 text-sm">
+        <div class="text-xl font-bold text-neutral-900 dark:text-white mb-1">
+          搜尋「<span class="text-primary">{{ currentQuery }}</span
+          >」的結果
+        </div>
+        <div v-if="totalResults > 0">共找到 {{ totalResults }} 筆資料</div>
       </div>
-      <div v-if="totalResults > 0">共找到 {{ totalResults }} 筆資料</div>
+
+      <!-- 排序選單 -->
+      <div class="">
+        <USelect
+          v-model="sortBy"
+          :items="sortOptions"
+          option-attribute="label"
+          icon="i-heroicons-arrows-up-down"
+          placeholder="排序方式"
+        />
+      </div>
     </div>
 
-    <UAccordion :items="accordionItems" class="mb-6">
-      <template #advanced-filters>
-        <div class="space-y-4 pt-4">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-sm font-medium mb-1">類型</label>
-              <!-- USelect -->
-              <USelect
-                v-model="typeFilter"
-                :options="typeOptions"
-                option-attribute="label"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">年份</label>
-              <!-- UInput -->
-              <UInput
-                v-model.number="yearFilter"
-                type="number"
-                placeholder="例如：2023"
-                :min="1800"
-                :max="new Date().getFullYear() + 1"
-              />
-            </div>
-            <div class="pt-6">
-              <!-- UToggle -->
-              <UToggle v-model="adultFilter" />
-              <label class="ml-2 text-sm font-medium">包含成人內容</label>
-            </div>
-          </div>
-          <div class="flex justify-end gap-2">
-            <!-- UButton -->
-            <UButton variant="outline" @click="triggerSearch(true)"
-              >重設</UButton
-            >
-            <UButton @click="triggerSearch(false)">套用篩選</UButton>
-          </div>
-        </div>
-      </template>
-    </UAccordion>
-
-    <div v-if="isLoading" class="text-center py-20">
+    <!-- 載入中 -->
+    <div v-if="loading" class="text-center py-20">
       <UIcon
         name="i-heroicons-arrow-path-20-solid"
         class="animate-spin text-4xl text-primary"
@@ -204,14 +189,15 @@ const accordionItems = [
 
     <!-- 搜尋結果 -->
     <div
-      v-else-if="results.length > 0"
+      v-else-if="sortedResults.length > 0"
       class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
     >
-      <ItemCard v-for="item in results" :key="item.id" :item="item" />
+      <ItemCard v-for="item in sortedResults" :key="item.id" :item="item" />
     </div>
 
+    <!-- 無結果 -->
     <div
-      v-else-if="currentQuery && !isLoading"
+      v-else-if="currentQuery && !loading"
       class="flex flex-col items-center justify-center py-20 text-center"
     >
       <UIcon
@@ -224,7 +210,7 @@ const accordionItems = [
 
     <!-- UPagination -->
     <div
-      v-if="totalResults > 20 && !isLoading && !apiError"
+      v-if="totalResults > 20 && !loading && !apiError"
       class="flex justify-center mt-12"
     >
       <UPagination

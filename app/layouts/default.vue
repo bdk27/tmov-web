@@ -1,13 +1,13 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div>
+  <div class="flex flex-col min-h-screen">
     <Header></Header>
 
-    <main>
+    <main class="flex-1">
       <slot></slot>
     </main>
 
-    <!-- <Footer></Footer> -->
+    <Footer></Footer>
   </div>
 </template>

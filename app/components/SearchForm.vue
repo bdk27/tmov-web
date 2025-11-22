@@ -38,6 +38,7 @@ function handleSubmit(reset = false) {
     localQuery.value = "";
     localType.value = "multi";
     localYear.value = null;
+    return;
   }
 
   emit("submitSearch", {
@@ -50,7 +51,7 @@ function handleSubmit(reset = false) {
 const typeOptions = [
   { label: "全部", value: "multi" },
   { label: "電影", value: "movie" },
-  { label: "電視", value: "tv" },
+  { label: "電視節目", value: "tv" },
   { label: "人物", value: "person" },
 ];
 </script>
@@ -64,7 +65,7 @@ const typeOptions = [
         :items="typeOptions"
         size="xl"
         :ui="{
-          base: 'tracking-wide',
+          base: 'tracking-wide font-normal',
         }"
       />
       <!-- 年份篩選 -->
@@ -77,7 +78,7 @@ const typeOptions = [
         size="xl"
         class="w-full"
         :ui="{
-          base: 'tracking-wide',
+          base: 'tracking-wide font-normal',
         }"
       />
     </div>
@@ -92,7 +93,7 @@ const typeOptions = [
         clearable
         @keyup.enter="handleSubmit(false)"
         :ui="{
-          base: 'tracking-wide',
+          base: 'tracking-wide font-normal',
         }"
       />
       <!-- 按鈕區域 (UButton) -->
