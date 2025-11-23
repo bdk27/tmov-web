@@ -3,6 +3,7 @@ import { storeToRefs } from "pinia";
 
 const router = useRouter();
 const tmdbStore = useTmdbStore();
+const { handleSearch } = useSearch();
 
 const {
   backdropDesktopUrl,
@@ -84,26 +85,6 @@ const isUpcomingLoading = computed(() => upcoming.value.length === 0);
 const query = ref("");
 const type = ref<TmdbSearchOptions["type"]>("multi");
 const year = ref<number | null>(null);
-
-function handleSearch(filters: {
-  query: string;
-  type: TmdbSearchOptions["type"];
-  year: number | null;
-}) {
-  if (!filters.query.trim()) return;
-
-  const newQuery: Record<string, any> = {
-    q: filters.query,
-    page: 1,
-    type: filters.type,
-  };
-
-  if (filters.year) {
-    newQuery.year = filters.year;
-  }
-
-  router.push({ path: "/search", query: newQuery });
-}
 </script>
 
 <template>

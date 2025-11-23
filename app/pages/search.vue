@@ -1,24 +1,30 @@
 <script setup lang="ts">
 const tmdbStore = useTmdbStore();
-const toast = useToast();
 const route = useRoute();
 const router = useRouter();
+const { handleSearch } = useSearch();
 
 const { results, totalPages, totalResults, loading } = storeToRefs(tmdbStore);
 
-const typeOptions = [
-  { label: "綜合", value: "multi" },
-  { label: "電影", value: "movie" },
-  { label: "電視節目", value: "tv" },
-  { label: "人物", value: "person" },
-];
+const currentPage = computed({
+  get: () => parseInt(route.query.page as string) || 1,
+
+  set: (val) => {
+    router.push({ query: { ...route.query, page: val } });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  },
+});
+// const paginationTotal = computed(() => {
+//   const MAX_PAGES = 500;
+//   const pages = totalPages.value > MAX_PAGES ? MAX_PAGES : totalPages.value;
+//   return pages * 20;
+// });
 
 // 篩選條件
 const currentQuery = ref("");
 const typeFilter = ref<TmdbSearchOptions["type"]>("multi");
 const yearFilter = ref<number | null>(null);
 const apiError = ref<string | null>(null);
-const currentPage = ref(1);
 async function fetchData() {
   if (!currentQuery.value.trim()) return;
 
@@ -36,12 +42,6 @@ async function fetchData() {
     await tmdbStore.doSearch(currentQuery.value, options);
   } catch (error: any) {
     apiError.value = "搜尋發生錯誤";
-    toast.add({
-      title: "搜尋失敗",
-      description: apiError.value,
-      color: "error",
-      icon: "i-heroicons-exclamation-circle",
-    });
   }
 }
 
@@ -69,12 +69,10 @@ const sortedResults = computed(() => {
       return items.sort((a, b) => getDate(b) - getDate(a));
     case "date-asc":
       return items.sort((a, b) => getDate(a) - getDate(b));
-
     case "popularity-desc":
       return items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
     case "popularity-asc":
       return items.sort((a, b) => (a.popularity || 0) - (b.popularity || 0));
-
     case "rating-desc":
       return items.sort(
         (a, b) => (b.vote_average || 0) - (a.vote_average || 0)
@@ -83,37 +81,11 @@ const sortedResults = computed(() => {
       return items.sort(
         (a, b) => (a.vote_average || 0) - (b.vote_average || 0)
       );
-
     case "relevance":
     default:
-      return items; // 保持 API 原本的順序
+      return items;
   }
 });
-
-function triggerSearch(resetFilters = false) {
-  if (resetFilters) {
-    typeFilter.value = "multi";
-    yearFilter.value = null;
-  }
-
-  const query: Record<string, any> = {
-    q: currentQuery.value,
-    page: 1,
-    type: typeFilter.value,
-  };
-
-  if (yearFilter.value) {
-    query.year = yearFilter.value;
-  }
-
-  router.push({ query });
-}
-
-function handlePageChange(page: number) {
-  const newQuery = { ...route.query, page: page };
-  router.push({ query: newQuery });
-  window.scrollTo(0, 0);
-}
 
 watch(
   () => route.query,
@@ -123,14 +95,8 @@ watch(
     typeFilter.value = (newQuery.type as TmdbSearchOptions["type"]) || "multi";
     yearFilter.value = newQuery.year ? parseInt(newQuery.year as string) : null;
 
-    // (可選) 從 URL 讀取排序
-    // sortBy.value = (newQuery.sort as string) || 'relevance';
-
     if (currentQuery.value.trim()) {
       fetchData();
-    } else {
-      // store 的重置邏輯可能需要補上，這裡先手動清空 store 比較麻煩，
-      // 通常 store 會有一個 clearResults action，如果沒有就算了
     }
   },
   { immediate: true, deep: true }
@@ -139,6 +105,16 @@ watch(
 
 <template>
   <div class="container mx-auto max-w-6xl px-4 py-8">
+    <!-- 搜尋 -->
+    <SearchForm
+      :query="currentQuery"
+      :type="typeFilter"
+      :year="yearFilter"
+      :variant="'row'"
+      @submit-search="handleSearch"
+      class="mb-8"
+    />
+
     <!-- 標題列 + 排序選單-->
     <div
       v-if="!loading && !apiError"
@@ -147,14 +123,13 @@ watch(
       <!-- 搜尋結果資訊 -->
       <div class="text-neutral-400 text-sm">
         <div class="text-xl font-bold text-neutral-900 dark:text-white mb-1">
-          搜尋「<span class="text-primary">{{ currentQuery }}</span
-          >」的結果
+          搜尋「 <span class="text-primary">{{ currentQuery }}</span> 」的結果
         </div>
         <div v-if="totalResults > 0">共找到 {{ totalResults }} 筆資料</div>
       </div>
 
       <!-- 排序選單 -->
-      <div class="">
+      <div>
         <USelect
           v-model="sortBy"
           :items="sortOptions"
@@ -166,11 +141,21 @@ watch(
     </div>
 
     <!-- 載入中 -->
-    <div v-if="loading" class="text-center py-20">
-      <UIcon
-        name="i-heroicons-arrow-path-20-solid"
-        class="animate-spin text-4xl text-primary"
-      />
+    <div
+      v-if="loading"
+      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+    >
+      <div
+        v-for="i in 12"
+        :key="`sk-${i}`"
+        class="flex flex-col h-full rounded-lg overflow-hidden"
+      >
+        <USkeleton class="w-full aspect-2/3" />
+        <div class="p-3 space-y-2">
+          <USkeleton class="h-4 w-3/4" />
+          <USkeleton class="h-3 w-1/2" />
+        </div>
+      </div>
     </div>
 
     <!-- 錯誤訊息 -->
@@ -190,7 +175,7 @@ watch(
     <!-- 搜尋結果 -->
     <div
       v-else-if="sortedResults.length > 0"
-      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
+      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
     >
       <ItemCard v-for="item in sortedResults" :key="item.id" :item="item" />
     </div>
@@ -208,16 +193,15 @@ watch(
       <p class="text-neutral-400">找不到符合「{{ currentQuery }}」的項目。</p>
     </div>
 
-    <!-- UPagination -->
+    <!-- 分頁 -->
     <div
-      v-if="totalResults > 20 && !loading && !apiError"
+      v-if="totalResults > 20 && !apiError"
       class="flex justify-center mt-12"
     >
       <UPagination
-        :model-value="currentPage"
-        :page-count="20"
+        v-model:page="currentPage"
+        :itemsPerPage="20"
         :total="totalResults"
-        @update:model-value="handlePageChange"
       />
     </div>
   </div>

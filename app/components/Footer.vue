@@ -4,8 +4,8 @@
   <UFooter class="border-t border-muted/20">
     <template #default>
       <div>
-        <p class="text-muted text-sm">
-          Copyright © {{ new Date().getFullYear() }} by TMOV
+        <p class="text-muted md:text-sm text-xs">
+          Copyright © {{ new Date().getFullYear() }} TMOV. All rights reserved.
         </p>
       </div>
     </template>

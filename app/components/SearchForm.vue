@@ -1,9 +1,15 @@
 <script setup lang="ts">
-const props = defineProps<{
-  query: string;
-  type: TmdbSearchOptions["type"];
-  year: number | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    query: string;
+    type: TmdbSearchOptions["type"];
+    year: number | null;
+    variant?: "hero" | "row";
+  }>(),
+  {
+    variant: "hero",
+  }
+);
 
 const emit = defineEmits<{
   (
@@ -57,7 +63,7 @@ const typeOptions = [
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div v-if="variant === 'hero'" class="space-y-4 w-full">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <!-- 類型篩選 -->
       <USelect
@@ -117,6 +123,58 @@ const typeOptions = [
           >搜尋</UButton
         >
       </div>
+    </div>
+  </div>
+
+  <div
+    v-else
+    class="flex flex-col md:flex-row gap-3 w-full items-start md:items-center"
+  >
+    <!-- 類型 -->
+    <USelect
+      v-model="localType"
+      :items="typeOptions"
+      size="xl"
+      class="hidden md:block w-full md:w-32"
+    />
+
+    <!-- 年份 -->
+    <UInput
+      v-model.number="localYear"
+      type="number"
+      placeholder="年份"
+      :min="1800"
+      :max="new Date().getFullYear() + 1"
+      size="xl"
+      class="hidden md:block w-full md:w-28"
+    />
+
+    <!-- 搜尋框 -->
+    <UInput
+      v-model="localQuery"
+      class="w-full md:flex-1"
+      placeholder="搜尋電影、電視、演員..."
+      size="xl"
+      icon="i-lucide-search"
+      @keydown.enter="handleSubmit(false)"
+    >
+      <template #trailing>
+        <UButton
+          variant="link"
+          size="xl"
+          class="md:hidden"
+          @click="handleSubmit(false)"
+          >搜尋</UButton
+        >
+      </template>
+    </UInput>
+
+    <!-- 按鈕 -->
+    <div class="hidden md:flex gap-2 w-full md:w-auto justify-end">
+      <UButton size="md" variant="ghost" @click="handleSubmit(true)">
+        清空
+      </UButton>
+      <UButton size="md" @click="handleSubmit(false)"> 搜尋 </UButton>
     </div>
   </div>
 </template>

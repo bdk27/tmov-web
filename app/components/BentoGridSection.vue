@@ -17,9 +17,12 @@ const bottomItems = computed(() => props.items.slice(3, 10));
 <template>
   <div class="container mx-auto max-w-6xl px-4 py-16 sm:py-24">
     <!-- 大標題 -->
-    <h2 class="text-3xl font-bold text-center mb-12 text-t-headline">
-      {{ title }}
-    </h2>
+    <div class="flex items-center justify-center mb-12 gap-3">
+      <span class="w-2 h-8 bg-primary rounded-full block"></span>
+      <h2 class="text-3xl font-bold">
+        {{ title }}
+      </h2>
+    </div>
 
     <div v-if="!loading && items.length > 0" class="flex flex-col gap-8">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

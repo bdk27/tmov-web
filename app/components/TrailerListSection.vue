@@ -47,11 +47,12 @@ async function selectItem(item: TmdbItem) {
     class="container mx-auto max-w-6xl bg-gray-100 dark:bg-neutral-900/50 px-4 py-16 rounded-3xl"
   >
     <!-- 大標題 -->
-    <h2
-      class="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white"
-    >
-      {{ title }}
-    </h2>
+    <div class="flex items-center justify-center mb-12 gap-3">
+      <span class="w-2 h-8 bg-primary rounded-full block"></span>
+      <h2 class="text-3xl font-bold">
+        {{ title }}
+      </h2>
+    </div>
 
     <!-- 內容 -->
     <div
