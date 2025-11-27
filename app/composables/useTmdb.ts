@@ -1,4 +1,11 @@
 export type TmdbSearchType = "multi" | "movie" | "tv" | "person";
+export type TmdbPopularCategory =
+  | "movie"
+  | "tv"
+  | "anime"
+  | "variety"
+  | "person";
+
 // 搜尋選項
 export interface TmdbSearchOptions {
   type?: TmdbSearchType;
@@ -59,12 +66,14 @@ export function useTmdb() {
   };
 
   // 背景圖 + 預告片
-  const fetchBackdrop = async (): Promise<{
+  const fetchBackdrop = async (
+    category: TmdbPopularCategory = "movie"
+  ): Promise<{
     backdropDesktopUrl: string;
     backdropMobileUrl: string;
     trailerUrl: string;
   }> => {
-    const apiUrl = `${api}/api/tmdb/popular-backdrop`;
+    const apiUrl = `${api}/api/tmdb/popular-backdrop?category=${category}`;
 
     try {
       const res = await $fetch<{
@@ -94,56 +103,54 @@ export function useTmdb() {
     }
   };
 
-  // 熱門(電影、影集、人物)
-  const fetchPopularMovies = async (): Promise<
-    TmdbPaginatedResponse<TmdbItem>
-  > => {
-    const apiUrl = `${api}/api/tmdb/popular-movies`;
-    try {
-      const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
-      if (response.results) {
-        response.results = response.results.map((item) => ({
-          ...item,
-          media_type: "movie",
-        }));
-      }
-      return response;
-    } catch (error) {
-      console.error(`取得熱門電影失敗`, error);
-      throw error;
+  // 熱門列表(電影、電視劇、動畫、綜藝、人物)
+  const fetchPopular = async (
+    category: TmdbPopularCategory,
+    page: number = 1
+  ): Promise<TmdbPaginatedResponse<TmdbItem>> => {
+    let endpoint = "";
+    let mediaType: "movie" | "tv" | "person" = "movie";
+
+    switch (category) {
+      case "movie":
+        endpoint = "/api/tmdb/popular-movies";
+        mediaType = "movie";
+        break;
+      case "tv":
+        endpoint = "/api/tmdb/popular-tv";
+        mediaType = "tv";
+        break;
+      case "anime":
+        endpoint = "/api/tmdb/popular-anime";
+        mediaType = "tv";
+        break;
+      case "variety":
+        endpoint = "/api/tmdb/popular-variety";
+        mediaType = "tv";
+        break;
+      case "person":
+        endpoint = "/api/tmdb/popular-person";
+        mediaType = "person";
+        break;
     }
-  };
-  const fetchPopularTv = async (): Promise<TmdbPaginatedResponse<TmdbItem>> => {
-    const apiUrl = `${api}/api/tmdb/popular-tv`;
+
+    const apiUrl = `${api}${endpoint}`;
+
     try {
-      const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+      // 呼叫後端 API
+      const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl, {
+        params: { page },
+      });
+
       if (response.results) {
         response.results = response.results.map((item) => ({
           ...item,
-          media_type: "tv",
+          media_type: item.media_type || mediaType,
         }));
       }
       return response;
     } catch (error) {
-      console.error(`取得熱門影集失敗`, error);
-      throw error;
-    }
-  };
-  const fetchPopularPerson = async (): Promise<
-    TmdbPaginatedResponse<TmdbItem>
-  > => {
-    const apiUrl = `${api}/api/tmdb/popular-person`;
-    try {
-      const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
-      if (response.results) {
-        response.results = response.results.map((item) => ({
-          ...item,
-          media_type: "person",
-        }));
-      }
-      return response;
-    } catch (error) {
-      console.error(`取得熱門人物失敗`, error);
+      console.error(`取得熱門列表失敗 (${category})`, error);
       throw error;
     }
   };
@@ -204,10 +211,10 @@ export function useTmdb() {
       : "/placeholder-backdrop.png";
   };
   const titleOf = (item: TmdbItem) => {
-    return item.title || item.name || "Untitled";
+    return item.title || item.name || "查無標題";
   };
   const dateOf = (item: TmdbItem) => {
-    return item.release_date || item.first_air_date || "Unknown";
+    return item.release_date || item.first_air_date || "未知日期";
   };
   const getRating = (item: TmdbItem) => {
     if (!item.vote_average) return 0;
@@ -223,9 +230,7 @@ export function useTmdb() {
     search,
     fetchBackdrop,
     fetchTrending,
-    fetchPopularMovies,
-    fetchPopularTv,
-    fetchPopularPerson,
+    fetchPopular,
     fetchNowPlaying,
     fetchUpcoming,
     posterUrl,

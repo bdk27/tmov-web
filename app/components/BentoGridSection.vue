@@ -15,13 +15,25 @@ const bottomItems = computed(() => props.items.slice(3, 10));
 </script>
 
 <template>
-  <div class="container mx-auto max-w-6xl px-4 py-16 sm:py-24">
+  <div
+    class="container mx-auto max-w-6xl py-16 border-b border-gray-200 dark:border-gray-800 last:border-0"
+  >
     <!-- 大標題 -->
-    <div class="flex items-center justify-center mb-12 gap-3">
-      <span class="w-2 h-8 bg-primary rounded-full block"></span>
-      <h2 class="text-3xl font-bold">
-        {{ title }}
-      </h2>
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center justify-center gap-2">
+        <span class="w-1.5 h-6 bg-primary-500 rounded-full block"></span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ title }}
+        </h2>
+      </div>
+
+      <NuxtLink
+        to=""
+        class="flex items-center justify-center hover:text-primary"
+      >
+        <p>更多</p>
+        <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
+      </NuxtLink>
     </div>
 
     <div v-if="!loading && items.length > 0" class="flex flex-col gap-8">

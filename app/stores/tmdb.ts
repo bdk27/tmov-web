@@ -3,9 +3,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     search,
     fetchBackdrop,
     fetchTrending,
-    fetchPopularMovies,
-    fetchPopularTv,
-    fetchPopularPerson,
+    fetchPopular,
     fetchNowPlaying,
     fetchUpcoming,
   } = useTmdb();
@@ -14,14 +12,14 @@ export const useTmdbStore = defineStore("tmdb", () => {
   const backdropDesktopUrl = ref<string | null>(null);
   const backdropMobileUrl = ref<string | null>(null);
   const trailerUrl = ref<string | null>(null);
-  const getBackdrop = async () => {
+  const getBackdrop = async (category: TmdbPopularCategory = "movie") => {
     if (backdropDesktopUrl.value) {
       return;
     }
 
     try {
       console.log("Pinia store (tmdb.ts): 正在獲取新的背景圖片...");
-      const res = await fetchBackdrop();
+      const res = await fetchBackdrop(category);
       console.log("fetchBackdrop ", res);
 
       if (res) {
@@ -61,17 +59,39 @@ export const useTmdbStore = defineStore("tmdb", () => {
     }
   };
 
-  // 熱門(電影、影集、人物)
+  // 熱門動畫
+  const popularAnime = ref<TmdbItem[]>([]);
+  const getPopularAnime = async () => {
+    if (popularAnime.value.length) return;
+    try {
+      const res = await fetchPopular("anime");
+      if (res?.results) popularAnime.value = res.results;
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // 熱門綜藝
+  const popularVariety = ref<TmdbItem[]>([]);
+  const getPopularVariety = async () => {
+    if (popularVariety.value.length) return;
+    try {
+      const res = await fetchPopular("variety");
+      if (res?.results) popularVariety.value = res.results;
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // 熱門電影、影集、人物)
   const popularMovies = ref<TmdbItem[]>([]);
-  const popularTv = ref<TmdbItem[]>([]);
-  const popularPerson = ref<TmdbItem[]>([]);
   const getPopularMovies = async () => {
     if (popularMovies.value.length > 0) {
       return;
     }
 
     try {
-      const response = await fetchPopularMovies();
+      const response = await fetchPopular("movie");
       if (response && response.results) {
         popularMovies.value = response.results;
       }
@@ -79,29 +99,35 @@ export const useTmdbStore = defineStore("tmdb", () => {
       console.error("Pinia store (tmdb.ts): 無法獲取熱門電影:", error);
     }
   };
+
+  // 熱門電視劇
+  const popularTv = ref<TmdbItem[]>([]);
   const getPopularTv = async () => {
     if (popularTv.value.length > 0) return;
     try {
-      const response = await fetchPopularTv();
+      const response = await fetchPopular("tv");
       if (response && response.results) {
         popularTv.value = response.results;
       }
     } catch (error) {
-      console.error("Pinia store (tmdb.ts): 無法獲取熱門影集:", error);
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門電視劇:", error);
     }
   };
+
+  // 熱門人物
+  const popularPerson = ref<TmdbItem[]>([]);
   const getPopularPerson = async () => {
     if (popularPerson.value.length > 0) return;
     try {
-      const response = await fetchPopularPerson();
+      const response = await fetchPopular("person");
       if (response && response.results) popularPerson.value = response.results;
     } catch (error) {
       console.error("Pinia: 無法獲取熱門人物", error);
     }
   };
 
+  // 現正熱映
   const nowPlaying = ref<TmdbItem[]>([]);
-  const upcoming = ref<TmdbItem[]>([]);
   const getNowPlaying = async () => {
     if (nowPlaying.value.length > 0) return;
     try {
@@ -111,6 +137,9 @@ export const useTmdbStore = defineStore("tmdb", () => {
       console.error("Pinia: 無法獲取現正熱映", error);
     }
   };
+
+  // 即將上映
+  const upcoming = ref<TmdbItem[]>([]);
   const getUpcoming = async () => {
     if (upcoming.value.length > 0) return;
     try {
@@ -164,6 +193,8 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularMovies,
     popularTv,
     popularPerson,
+    popularAnime,
+    popularVariety,
     nowPlaying,
     upcoming,
     trailerUrl,
@@ -174,6 +205,8 @@ export const useTmdbStore = defineStore("tmdb", () => {
     getPopularMovies,
     getPopularTv,
     getPopularPerson,
+    getPopularAnime,
+    getPopularVariety,
     getNowPlaying,
     getUpcoming,
   };

@@ -7,18 +7,40 @@ const items = computed<NavigationMenuItem[]>(() => [
   {
     label: "首頁",
     to: "/",
-    icon: "i-lucide-home",
+    // icon: "i-lucide-home",
     // active: route.path.startsWith("/docs/getting-started"),
   },
   {
     label: "電影",
-    // to: "/docs/getting-started",
-    icon: "i-lucide-film",
+    to: "/movie",
+    children: [
+      {
+        label: "現正熱映",
+        // to: "/docs/installation",
+        // icon: "i-lucide-download",
+      },
+      {
+        label: "即將上映",
+        // to: "/docs/installation",
+        // icon: "i-lucide-download",
+      },
+      {
+        label: "好評推薦",
+        // to: "/docs/installation",
+        // icon: "i-lucide-download",
+      },
+      {
+        label: "類型推薦",
+        // to: "/docs/installation",
+        // icon: "i-lucide-download",
+      },
+    ],
+    // icon: "i-lucide-film",
     // active: route.path.startsWith("/docs/getting-started"),
   },
   {
     label: "電視節目",
-    icon: "i-lucide-tv",
+    // icon: "i-lucide-tv",
     children: [
       {
         label: "所有",
@@ -47,13 +69,13 @@ const items = computed<NavigationMenuItem[]>(() => [
   },
   {
     label: "戲院",
-    icon: "i-lucide-ticket",
+    // icon: "i-lucide-ticket",
     // to: "https://go.nuxt.com/figma-ui",
     target: "_blank",
   },
   {
     label: "消息",
-    icon: "i-lucide-newspaper",
+    // icon: "i-lucide-newspaper",
     to: "https://github.com/nuxt/ui/releases",
     target: "_blank",
   },
@@ -73,7 +95,7 @@ const items = computed<NavigationMenuItem[]>(() => [
       <UTooltip text="歷史紀錄">
         <UButton
           icon="i-heroicons-clock"
-          to="/history"
+          to=""
           variant="ghost"
           color="neutral"
           aria-label="歷史紀錄"

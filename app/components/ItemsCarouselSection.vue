@@ -19,7 +19,7 @@ const selectedTab = computed({
 </script>
 
 <template>
-  <div class="container mx-auto max-w-6xl py-16">
+  <div class="container mx-auto max-w-6xl px-4 py-12 sm:py-16">
     <UTabs :items="tabs" v-model="selectedTab" class="mb-12" variant="link" />
 
     <div v-if="!loading">

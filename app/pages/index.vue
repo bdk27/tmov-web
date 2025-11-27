@@ -8,83 +8,60 @@ const { handleSearch } = useSearch();
 const {
   backdropDesktopUrl,
   backdropMobileUrl,
+  nowPlaying,
   trailerUrl,
   trendingToday,
+  trendingWeek,
   popularMovies,
   popularTv,
-  popularPerson,
-  trendingWeek,
-  nowPlaying,
-  upcoming,
+  popularAnime,
+  popularVariety,
 } = storeToRefs(tmdbStore);
 
 // 背景圖片
 await useAsyncData("heroData", () => tmdbStore.getBackdrop());
 
 onMounted(() => {
-  tmdbStore.getTrendingToday().catch((err) => {
-    console.error(err);
-  });
-  tmdbStore.getPopularMovies().catch((err) => {
-    console.error(err);
-  });
-  tmdbStore.getNowPlaying().catch((err) => console.error(err));
-  tmdbStore.getUpcoming().catch((err) => console.error(err));
+  tmdbStore.getNowPlaying();
+  tmdbStore.getTrendingToday();
+  tmdbStore.getTrendingWeek();
+  tmdbStore.getPopularMovies();
+  tmdbStore.getPopularTv();
+  tmdbStore.getPopularAnime();
+  tmdbStore.getPopularVariety();
 });
 
-const popularTab = ref(0); // 0: 電影, 1: 電視節目, 2: 人物
-const trendingTab = ref(0); // 0: 今日, 1: 本週
-const popularTabItems = [
-  { label: "熱門電影", value: 0 },
-  { label: "熱門電視節目", value: 1 },
-  { label: "熱門人物", value: 2 },
-];
-const trendingTabItems = [
-  { label: "今日趨勢", value: 0 },
-  { label: "本週趨勢", value: 1 },
-];
-
-watch(popularTab, (newValue) => {
-  if (newValue === 1 && popularTv.value.length === 0) {
-    tmdbStore.getPopularTv();
-  } else if (newValue === 2 && popularPerson.value.length === 0) {
-    tmdbStore.getPopularPerson();
-  }
-});
-watch(trendingTab, (newValue) => {
-  if (newValue === 1 && trendingWeek.value.length === 0) {
-    tmdbStore.getTrendingWeek();
-  }
-});
-const popularItems = computed((): TmdbItem[] => {
-  if (popularTab.value === 0) return popularMovies?.value || [];
-  if (popularTab.value === 1) return popularTv?.value || [];
-  return popularPerson?.value || [];
-});
-const trendingItems = computed((): TmdbItem[] => {
-  return trendingTab.value === 0 ? trendingToday.value : trendingWeek.value;
-});
-// 切換熱門電影、影集、人物 loading
-const isPopularLoading = computed(() => {
-  if (popularTab.value === 0) return popularMovies.value.length === 0;
-  if (popularTab.value === 1) return popularTv.value.length === 0;
-  if (popularTab.value === 2) return popularPerson.value.length === 0;
-  return false;
-});
-// 切換趨勢今日、本週 loading
-const isTrendingLoading = computed(() => {
-  if (trendingTab.value === 0) return trendingToday.value.length === 0;
-  if (trendingTab.value === 1) return trendingWeek.value.length === 0;
-  return false;
-});
-
+// loading 狀態
 const isNowPlayingLoading = computed(() => nowPlaying.value.length === 0);
-const isUpcomingLoading = computed(() => upcoming.value.length === 0);
+// const isUpcomingLoading = computed(() => upcoming.value.length === 0);
+const isMovieLoading = computed(() => popularMovies.value.length === 0);
+const isTvLoading = computed(() => popularTv.value.length === 0);
+const isAnimeLoading = computed(() => popularAnime.value.length === 0);
+const isVarietyLoading = computed(() => popularVariety.value.length === 0);
 
 // 搜尋
 const query = ref("");
 const type = ref<TmdbSearchOptions["type"]>("multi");
 const year = ref<number | null>(null);
+
+const trendingTab = ref(0); // 0: 今日, 1: 本週;
+const trendingTabItems = [
+  { label: "今日趨勢", value: 0 },
+  { label: "本週趨勢", value: 1 },
+];
+watch(trendingTab, (newValue) => {
+  if (newValue === 1 && trendingWeek.value.length === 0) {
+    tmdbStore.getTrendingWeek();
+  }
+});
+const trendingItems = computed((): TmdbItem[] => {
+  return trendingTab.value === 0 ? trendingToday.value : trendingWeek.value;
+});
+const isTrendingLoading = computed(() =>
+  trendingTab.value === 0
+    ? trendingToday.value.length === 0
+    : trendingWeek.value.length === 0
+);
 </script>
 
 <template>
@@ -150,14 +127,8 @@ const year = ref<number | null>(null);
         </template>
       </UPageHero>
     </div>
-    <!-- 現正熱映 -->
-    <BentoGridSection
-      title="現正熱映"
-      :items="nowPlaying"
-      :loading="isNowPlayingLoading"
-    />
 
-    <!-- 熱門 -->
+    <!-- 趨勢 -->
     <ItemsCarouselSection
       :tabs="trendingTabItems"
       v-model="trendingTab"
@@ -165,19 +136,39 @@ const year = ref<number | null>(null);
       :loading="isTrendingLoading"
     />
 
-    <!-- 即將上映 -->
-    <TrailerListSection
-      title="最新預告片"
-      :items="upcoming"
-      :loading="isUpcomingLoading"
+    <!-- 現正熱映 -->
+    <BentoGridSection
+      title="現正熱映"
+      :items="nowPlaying"
+      :loading="isNowPlayingLoading"
     />
 
-    <!-- 趨勢 -->
-    <ItemsCarouselSection
-      :tabs="popularTabItems"
-      v-model="popularTab"
-      :items="popularItems"
-      :loading="isPopularLoading"
+    <!-- 熱門電影 -->
+    <CategoryCarouselSection
+      title="熱門電影"
+      :items="popularMovies"
+      :loading="isMovieLoading"
+    />
+
+    <!-- 熱門電視劇 -->
+    <CategoryCarouselSection
+      title="熱門電視劇"
+      :items="popularTv"
+      :loading="isTvLoading"
+    />
+
+    <!-- 熱門動畫 -->
+    <CategoryCarouselSection
+      title="熱門動畫"
+      :items="popularAnime"
+      :loading="isAnimeLoading"
+    />
+
+    <!-- 熱門綜藝 -->
+    <CategoryCarouselSection
+      title="熱門綜藝"
+      :items="popularVariety"
+      :loading="isVarietyLoading"
     />
   </div>
 </template>
