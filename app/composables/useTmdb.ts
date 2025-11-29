@@ -138,7 +138,6 @@ export function useTmdb() {
     const apiUrl = `${api}${endpoint}`;
 
     try {
-      // 呼叫後端 API
       const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl, {
         params: { page },
       });
@@ -157,11 +156,13 @@ export function useTmdb() {
   };
 
   // 現正熱映
-  const fetchNowPlaying = async (): Promise<
-    TmdbPaginatedResponse<TmdbItem>
-  > => {
+  const fetchNowPlaying = async (
+    page = 1
+  ): Promise<TmdbPaginatedResponse<TmdbItem>> => {
     const apiUrl = `${api}/api/tmdb/now-playing`;
-    const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+    const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl, {
+      params: { page },
+    });
     if (response.results) {
       response.results = response.results.map((item) => ({
         ...item,
@@ -172,9 +173,13 @@ export function useTmdb() {
   };
 
   // 即將上映
-  const fetchUpcoming = async (): Promise<TmdbPaginatedResponse<TmdbItem>> => {
+  const fetchUpcoming = async (
+    page: number = 1
+  ): Promise<TmdbPaginatedResponse<TmdbItem>> => {
     const apiUrl = `${api}/api/tmdb/upcoming`;
-    const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
+    const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl, {
+      params: { page },
+    });
     if (response.results) {
       response.results = response.results.map((item) => ({
         ...item,

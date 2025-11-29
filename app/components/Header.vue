@@ -7,7 +7,6 @@ const items = computed<NavigationMenuItem[]>(() => [
   {
     label: "首頁",
     to: "/",
-    // icon: "i-lucide-home",
     // active: route.path.startsWith("/docs/getting-started"),
   },
   {
@@ -17,22 +16,18 @@ const items = computed<NavigationMenuItem[]>(() => [
       {
         label: "熱門",
         to: "/movie",
-        // icon: "i-lucide-download",
       },
       {
         label: "現正熱映",
         to: "/movie/now-playing",
-        // icon: "i-lucide-download",
       },
       {
         label: "即將上映",
-        // to: "/docs/installation",
-        // icon: "i-lucide-download",
+        to: "/movie/upcoming",
       },
       {
         label: "好評推薦",
-        // to: "/docs/installation",
-        // icon: "i-lucide-download",
+        to: "/movie/top-rated",
       },
     ],
     // icon: "i-lucide-film",
@@ -43,7 +38,7 @@ const items = computed<NavigationMenuItem[]>(() => [
     // icon: "i-lucide-tv",
     children: [
       {
-        label: "所有",
+        label: "熱門",
         // to: "/docs/installation",
         // icon: "i-lucide-download",
       },

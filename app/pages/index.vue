@@ -8,7 +8,7 @@ const { handleSearch } = useSearch();
 const {
   backdropDesktopUrl,
   backdropMobileUrl,
-  nowPlaying,
+  nowPlayingMovies,
   trailerUrl,
   trendingToday,
   trendingWeek,
@@ -22,7 +22,7 @@ const {
 await useAsyncData("heroData", () => tmdbStore.getBackdrop());
 
 onMounted(() => {
-  tmdbStore.getNowPlaying();
+  tmdbStore.getNowPlayingMovies();
   tmdbStore.getTrendingToday();
   tmdbStore.getTrendingWeek();
   tmdbStore.getPopularMovies();
@@ -32,7 +32,7 @@ onMounted(() => {
 });
 
 // loading 狀態
-const isNowPlayingLoading = computed(() => nowPlaying.value.length === 0);
+const isNowPlayingLoading = computed(() => nowPlayingMovies.value.length === 0);
 // const isUpcomingLoading = computed(() => upcoming.value.length === 0);
 const isMovieLoading = computed(() => popularMovies.value.length === 0);
 const isTvLoading = computed(() => popularTv.value.length === 0);
@@ -139,7 +139,7 @@ const isTrendingLoading = computed(() =>
     <!-- 現正熱映 -->
     <BentoGridSection
       title="現正熱映"
-      :items="nowPlaying"
+      :items="nowPlayingMovies"
       :loading="isNowPlayingLoading"
     />
 

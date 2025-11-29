@@ -92,7 +92,7 @@ const emit = defineEmits<{
       v-if="loading"
       class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
     >
-      <div v-for="i in 10" :key="`sk-${i}`" class="flex flex-col gap-2">
+      <div v-for="i in 20" :key="`sk-${i}`" class="flex flex-col gap-2">
         <USkeleton class="w-full aspect-2/3 rounded-lg" />
         <USkeleton class="h-4 w-3/4" />
         <USkeleton class="h-3 w-1/2" />
@@ -131,7 +131,7 @@ const emit = defineEmits<{
         class="text-6xl text-blue-500 mb-4"
       />
       <h2 class="text-2xl font-semibold mb-2">找不到結果</h2>
-      <p class="text-neutral-400">沒有找到相關資料。</p>
+      <p class="text-neutral-400">沒有找到相關資料</p>
     </div>
 
     <!-- 分頁 -->

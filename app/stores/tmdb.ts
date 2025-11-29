@@ -89,17 +89,17 @@ export const useTmdbStore = defineStore("tmdb", () => {
   const popularMoviesError = ref<string | null>(null);
   const getPopularMovies = async (page = 1) => {
     popularMoviesLoading.value = true;
+    popularMoviesError.value = null;
     try {
       const response = await fetchPopular("movie", page);
       if (response && response.results) {
         popularMovies.value = response.results;
-        popularMoviesTotal.value = Math.min(response.total_results, 10000);
+        popularMoviesTotal.value = response.total_results;
       }
-    } catch (error) {
-      console.error(
-        "Pinia store (tmdb.ts): 無法獲取熱門電影:",
-        popularMoviesError.value
-      );
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      popularMoviesError.value = msg;
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門電影:");
     } finally {
       popularMoviesLoading.value = false;
     }
@@ -132,26 +132,48 @@ export const useTmdbStore = defineStore("tmdb", () => {
   };
 
   // 現正熱映
-  const nowPlaying = ref<TmdbItem[]>([]);
-  const getNowPlaying = async () => {
-    if (nowPlaying.value.length > 0) return;
+  const nowPlayingMovies = ref<TmdbItem[]>([]);
+  const nowPlayingMoviesTotal = ref(0);
+  const nowPlayingMoviesLoading = ref(false);
+  const nowPlayingMoviesError = ref<string | null>(null);
+  const getNowPlayingMovies = async (page = 1) => {
+    nowPlayingMoviesLoading.value = true;
+    nowPlayingMoviesError.value = null;
     try {
-      const response = await fetchNowPlaying();
-      if (response && response.results) nowPlaying.value = response.results;
-    } catch (error) {
-      console.error("Pinia: 無法獲取現正熱映", error);
+      const response = await fetchNowPlaying(page);
+      if (response && response.results) {
+        nowPlayingMovies.value = response.results;
+        nowPlayingMoviesTotal.value = response.total_results;
+      }
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      nowPlayingMoviesError.value = msg;
+      console.error("Pinia: 無法獲取現正熱映", msg);
+    } finally {
+      nowPlayingMoviesLoading.value = false;
     }
   };
 
   // 即將上映
-  const upcoming = ref<TmdbItem[]>([]);
-  const getUpcoming = async () => {
-    if (upcoming.value.length > 0) return;
+  const upcomingMovies = ref<TmdbItem[]>([]);
+  const upcomingMoviesTotal = ref(0);
+  const upcomingMoviesLoading = ref(false);
+  const upcomingMoviesError = ref<string | null>(null);
+  const getUpcomingMovies = async (page = 1) => {
+    upcomingMoviesLoading.value = true;
+    upcomingMoviesError.value = null;
     try {
-      const response = await fetchUpcoming();
-      if (response && response.results) upcoming.value = response.results;
-    } catch (error) {
-      console.error("Pinia: 無法獲取即將上映", error);
+      const response = await fetchUpcoming(page);
+      if (response && response.results) {
+        upcomingMovies.value = response.results;
+        upcomingMoviesTotal.value = response.total_results;
+      }
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      upcomingMoviesError.value = msg;
+      console.error("Pinia: 無法獲取即將上映", msg);
+    } finally {
+      upcomingMoviesLoading.value = false;
     }
   };
 
@@ -203,8 +225,14 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularPerson,
     popularAnime,
     popularVariety,
-    nowPlaying,
-    upcoming,
+    nowPlayingMovies,
+    nowPlayingMoviesTotal,
+    nowPlayingMoviesLoading,
+    nowPlayingMoviesError,
+    upcomingMovies,
+    upcomingMoviesTotal,
+    upcomingMoviesLoading,
+    upcomingMoviesError,
     trailerUrl,
     doSearch,
     getBackdrop,
@@ -215,7 +243,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     getPopularPerson,
     getPopularAnime,
     getPopularVariety,
-    getNowPlaying,
-    getUpcoming,
+    getNowPlayingMovies,
+    getUpcomingMovies,
   };
 });

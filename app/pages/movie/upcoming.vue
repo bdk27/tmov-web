@@ -4,8 +4,12 @@ const route = useRoute();
 const router = useRouter();
 
 // 使用 Store 中對應的狀態
-const { popularMovies, popularMoviesTotal, popularMoviesLoading, error } =
-  storeToRefs(tmdbStore);
+const {
+  upcomingMovies,
+  upcomingMoviesTotal,
+  upcomingMoviesLoading,
+  upcomingMoviesError,
+} = storeToRefs(tmdbStore);
 
 // 分頁邏輯 (一樣同步 URL)
 const currentPage = computed({
@@ -18,7 +22,7 @@ const currentPage = computed({
 
 // 獲取資料
 async function fetchData() {
-  await tmdbStore.getPopularMovies(currentPage.value);
+  await tmdbStore.getUpcomingMovies(currentPage.value);
 }
 
 // 監聽分頁變化
@@ -29,10 +33,10 @@ watch(currentPage, fetchData, { immediate: true });
   <div class="container mx-auto max-w-6xl px-4 py-8">
     <PagedMediaGrid
       title="即將上映"
-      :items="popularMovies"
-      :loading="popularMoviesLoading"
-      :error="error"
-      :total-results="popularMoviesTotal"
+      :items="upcomingMovies"
+      :loading="upcomingMoviesLoading"
+      :error="upcomingMoviesError"
+      :total-results="upcomingMoviesTotal"
       v-model:current-page="currentPage"
       @retry="fetchData"
     />
