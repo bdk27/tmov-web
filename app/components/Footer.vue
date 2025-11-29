@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <UFooter class="border-t border-muted/20">
+  <UFooter class="border-t border-muted/50">
     <template #default>
       <div>
         <p class="text-muted md:text-sm text-xs">

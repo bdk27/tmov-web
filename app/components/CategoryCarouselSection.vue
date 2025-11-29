@@ -15,7 +15,7 @@ defineProps<{
     <!-- 標題 -->
     <div class="flex items-center justify-between mb-8">
       <div class="flex items-center justify-center gap-2">
-        <span class="w-1.5 h-6 bg-primary-500 rounded-full block"></span>
+        <span class="w-1.5 h-6 bg-primary rounded-full block"></span>
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
           {{ title }}
         </h2>

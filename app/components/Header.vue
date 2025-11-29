@@ -15,8 +15,13 @@ const items = computed<NavigationMenuItem[]>(() => [
     to: "/movie",
     children: [
       {
+        label: "熱門",
+        to: "/movie",
+        // icon: "i-lucide-download",
+      },
+      {
         label: "現正熱映",
-        // to: "/docs/installation",
+        to: "/movie/now-playing",
         // icon: "i-lucide-download",
       },
       {
@@ -26,11 +31,6 @@ const items = computed<NavigationMenuItem[]>(() => [
       },
       {
         label: "好評推薦",
-        // to: "/docs/installation",
-        // icon: "i-lucide-download",
-      },
-      {
-        label: "類型推薦",
         // to: "/docs/installation",
         // icon: "i-lucide-download",
       },

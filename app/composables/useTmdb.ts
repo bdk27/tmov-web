@@ -29,6 +29,7 @@ export interface TmdbItem {
   first_air_date?: string;
   vote_average?: number;
   overview?: string;
+  popularity?: number;
 }
 // 分頁
 export interface TmdbPaginatedResponse<T> {

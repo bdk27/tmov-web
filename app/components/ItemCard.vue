@@ -46,7 +46,7 @@ const date = computed(() => dateOf(props.item));
           >
             <UIcon
               name="i-heroicons-plus-circle-20-solid"
-              class="w-6 h-6 bg-white/50 hover:bg-white"
+              class="w-6 h-6 bg-white/50 hover:bg-primary"
             />
           </div>
         </div>

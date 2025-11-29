@@ -14,11 +14,6 @@ const currentPage = computed({
     window.scrollTo({ top: 0, behavior: "smooth" });
   },
 });
-// const paginationTotal = computed(() => {
-//   const MAX_PAGES = 500;
-//   const pages = totalPages.value > MAX_PAGES ? MAX_PAGES : totalPages.value;
-//   return pages * 20;
-// });
 
 // 篩選條件
 const currentQuery = ref("");
@@ -115,94 +110,19 @@ watch(
       class="mb-8"
     />
 
-    <!-- 標題列 + 排序選單-->
-    <div
-      v-if="!loading && !apiError"
-      class="w-full mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4"
+    <PagedMediaGrid
+      title="搜尋結果"
+      :items="results"
+      :loading="loading"
+      :error="apiError"
+      :total-results="totalResults"
+      v-model:current-page="currentPage"
+      @retry="fetchData"
     >
-      <!-- 搜尋結果資訊 -->
-      <div class="text-neutral-400 text-sm">
-        <div class="text-xl font-bold text-neutral-900 dark:text-white mb-1">
-          搜尋「 <span class="text-primary">{{ currentQuery }}</span> 」的結果
-        </div>
-        <div v-if="totalResults > 0">共找到 {{ totalResults }} 筆資料</div>
-      </div>
-
-      <!-- 排序選單 -->
-      <div>
-        <USelect
-          v-model="sortBy"
-          :items="sortOptions"
-          option-attribute="label"
-          icon="i-heroicons-arrows-up-down"
-          placeholder="排序方式"
-        />
-      </div>
-    </div>
-
-    <!-- 載入中 -->
-    <div
-      v-if="loading"
-      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
-    >
-      <div
-        v-for="i in 12"
-        :key="`sk-${i}`"
-        class="flex flex-col h-full rounded-lg overflow-hidden"
-      >
-        <USkeleton class="w-full aspect-2/3" />
-        <div class="p-3 space-y-2">
-          <USkeleton class="h-4 w-3/4" />
-          <USkeleton class="h-3 w-1/2" />
-        </div>
-      </div>
-    </div>
-
-    <!-- 錯誤訊息 -->
-    <div
-      v-else-if="apiError"
-      class="flex flex-col items-center justify-center py-20 text-center"
-    >
-      <UIcon
-        name="i-heroicons-exclamation-circle"
-        class="text-6xl text-red-500 mb-4"
-      />
-      <h2 class="text-2xl font-semibold mb-2">搜尋失敗</h2>
-      <p class="text-neutral-400 mb-6">{{ apiError }}</p>
-      <UButton @click="fetchData">重試</UButton>
-    </div>
-
-    <!-- 搜尋結果 -->
-    <div
-      v-else-if="sortedResults.length > 0"
-      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
-    >
-      <ItemCard v-for="item in sortedResults" :key="item.id" :item="item" />
-    </div>
-
-    <!-- 無結果 -->
-    <div
-      v-else-if="currentQuery && !loading"
-      class="flex flex-col items-center justify-center py-20 text-center"
-    >
-      <UIcon
-        name="i-heroicons-information-circle"
-        class="text-6xl text-blue-500 mb-4"
-      />
-      <h2 class="text-2xl font-semibold mb-2">找不到結果</h2>
-      <p class="text-neutral-400">找不到符合「{{ currentQuery }}」的項目。</p>
-    </div>
-
-    <!-- 分頁 -->
-    <div
-      v-if="totalResults > 20 && !apiError"
-      class="flex justify-center mt-12"
-    >
-      <UPagination
-        v-model:page="currentPage"
-        :itemsPerPage="20"
-        :total="totalResults"
-      />
-    </div>
+      <template #title>
+        搜尋「<span class="text-primary">{{ currentQuery }}</span
+        >」的結果
+      </template>
+    </PagedMediaGrid>
   </div>
 </template>

@@ -28,7 +28,7 @@ const bottomItems = computed(() => props.items.slice(3, 10));
       </div>
 
       <NuxtLink
-        to=""
+        to="/movie"
         class="flex items-center justify-center hover:text-primary"
       >
         <p>更多</p>

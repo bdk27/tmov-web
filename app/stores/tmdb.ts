@@ -20,7 +20,6 @@ export const useTmdbStore = defineStore("tmdb", () => {
     try {
       console.log("Pinia store (tmdb.ts): 正在獲取新的背景圖片...");
       const res = await fetchBackdrop(category);
-      console.log("fetchBackdrop ", res);
 
       if (res) {
         backdropDesktopUrl.value = res.backdropDesktopUrl;
@@ -85,18 +84,24 @@ export const useTmdbStore = defineStore("tmdb", () => {
 
   // 熱門電影、影集、人物)
   const popularMovies = ref<TmdbItem[]>([]);
-  const getPopularMovies = async () => {
-    if (popularMovies.value.length > 0) {
-      return;
-    }
-
+  const popularMoviesTotal = ref(0);
+  const popularMoviesLoading = ref(false);
+  const popularMoviesError = ref<string | null>(null);
+  const getPopularMovies = async (page = 1) => {
+    popularMoviesLoading.value = true;
     try {
-      const response = await fetchPopular("movie");
+      const response = await fetchPopular("movie", page);
       if (response && response.results) {
         popularMovies.value = response.results;
+        popularMoviesTotal.value = Math.min(response.total_results, 10000);
       }
     } catch (error) {
-      console.error("Pinia store (tmdb.ts): 無法獲取熱門電影:", error);
+      console.error(
+        "Pinia store (tmdb.ts): 無法獲取熱門電影:",
+        popularMoviesError.value
+      );
+    } finally {
+      popularMoviesLoading.value = false;
     }
   };
 
@@ -191,6 +196,9 @@ export const useTmdbStore = defineStore("tmdb", () => {
     trendingToday,
     trendingWeek,
     popularMovies,
+    popularMoviesTotal,
+    popularMoviesLoading,
+    popularMoviesError,
     popularTv,
     popularPerson,
     popularAnime,
