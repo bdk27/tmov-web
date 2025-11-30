@@ -6,6 +6,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     fetchPopular,
     fetchNowPlaying,
     fetchUpcoming,
+    fetchTopRated,
   } = useTmdb();
 
   // 背景圖 + 預告片
@@ -94,7 +95,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
       const response = await fetchPopular("movie", page);
       if (response && response.results) {
         popularMovies.value = response.results;
-        popularMoviesTotal.value = response.total_results;
+        popularMoviesTotal.value = Math.min(response.total_results, 10000);
       }
     } catch (error: any) {
       const msg = error?.message || "載入失敗";
@@ -177,6 +178,29 @@ export const useTmdbStore = defineStore("tmdb", () => {
     }
   };
 
+  // 好評推薦
+  const topRatedMovies = ref<TmdbItem[]>([]);
+  const topRatedMoviesTotal = ref(0);
+  const topRatedMoviesLoading = ref(false);
+  const topRatedMoviesError = ref<string | null>(null);
+  const getTopRatedMovies = async (page = 1) => {
+    topRatedMoviesLoading.value = true;
+    topRatedMoviesError.value = null;
+    try {
+      const response = await fetchTopRated(page);
+      if (response && response.results) {
+        topRatedMovies.value = response.results;
+        topRatedMoviesTotal.value = Math.min(response.total_results, 10000);
+      }
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      topRatedMoviesError.value = msg;
+      console.error("Pinia: 無法獲取即將上映", msg);
+    } finally {
+      topRatedMoviesLoading.value = false;
+    }
+  };
+
   // 搜尋
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -233,6 +257,10 @@ export const useTmdbStore = defineStore("tmdb", () => {
     upcomingMoviesTotal,
     upcomingMoviesLoading,
     upcomingMoviesError,
+    topRatedMovies,
+    topRatedMoviesTotal,
+    topRatedMoviesLoading,
+    topRatedMoviesError,
     trailerUrl,
     doSearch,
     getBackdrop,
@@ -245,5 +273,6 @@ export const useTmdbStore = defineStore("tmdb", () => {
     getPopularVariety,
     getNowPlayingMovies,
     getUpcomingMovies,
+    getTopRatedMovies,
   };
 });

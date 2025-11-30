@@ -189,6 +189,23 @@ export function useTmdb() {
     return response;
   };
 
+  // 好評推薦
+  const fetchTopRated = async (
+    page: number = 1
+  ): Promise<TmdbPaginatedResponse<TmdbItem>> => {
+    const apiUrl = `${api}/api/tmdb/top-rated`;
+    const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl, {
+      params: { page },
+    });
+    if (response.results) {
+      response.results = response.results.map((item) => ({
+        ...item,
+        media_type: "movie",
+      }));
+    }
+    return response;
+  };
+
   // 獲取電影預告片
   const fetchMovieTrailer = async (
     movieId: number
@@ -246,5 +263,6 @@ export function useTmdb() {
     getRating,
     getRatingColor,
     fetchMovieTrailer,
+    fetchTopRated,
   };
 }
