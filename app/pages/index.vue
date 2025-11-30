@@ -22,9 +22,9 @@ const {
 await useAsyncData("heroData", () => tmdbStore.getBackdrop());
 
 onMounted(() => {
-  tmdbStore.getNowPlayingMovies();
   tmdbStore.getTrendingToday();
   tmdbStore.getTrendingWeek();
+  tmdbStore.getNowPlayingMovies();
   tmdbStore.getPopularMovies();
   tmdbStore.getPopularTv();
   tmdbStore.getPopularAnime();

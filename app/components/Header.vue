@@ -7,7 +7,6 @@ const items = computed<NavigationMenuItem[]>(() => [
   {
     label: "首頁",
     to: "/",
-    // active: route.path.startsWith("/docs/getting-started"),
   },
   {
     label: "電影",
@@ -30,37 +29,28 @@ const items = computed<NavigationMenuItem[]>(() => [
         to: "/movie/top-rated",
       },
     ],
-    // icon: "i-lucide-film",
-    // active: route.path.startsWith("/docs/getting-started"),
   },
   {
     label: "電視節目",
-    // icon: "i-lucide-tv",
+    to: "/tv",
     children: [
       {
         label: "熱門",
-        // to: "/docs/installation",
-        // icon: "i-lucide-download",
+        to: "/tv",
       },
       {
         label: "動畫",
-        // to: "/docs/installation",
-        // icon: "i-lucide-download",
+        to: "/tv/anime",
       },
       {
         label: "電視劇",
-        // to: "/docs/upgrade-guide",
-        // icon: "i-lucide-arrow-up-circle",
+        to: "/tv/drama",
       },
       {
         label: "綜藝",
-        // to: "/docs/upgrade-guide",
-        // icon: "i-lucide-arrow-up-circle",
+        to: "/tv/variety",
       },
     ],
-    // to: "/docs/components",
-    // icon: "i-lucide-box",
-    // active: route.path.startsWith("/docs/components"),
   },
   {
     label: "戲院",

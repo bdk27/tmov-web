@@ -14,7 +14,6 @@ nuxtApp.hook("page:finish", () => {
 
 <template>
   <div>
-    <NuxtLoadingIndicator color="rgb(var(--color-primary-500))" />
     <div
       v-if="isLoading"
       class="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-white/90 dark:bg-gray-950/90 backdrop-blur-sm transition-all duration-300"

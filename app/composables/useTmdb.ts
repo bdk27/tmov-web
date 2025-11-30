@@ -3,6 +3,7 @@ export type TmdbPopularCategory =
   | "movie"
   | "tv"
   | "anime"
+  | "drama"
   | "variety"
   | "person";
 
@@ -123,6 +124,10 @@ export function useTmdb() {
         break;
       case "anime":
         endpoint = "/api/tmdb/popular-anime";
+        mediaType = "tv";
+        break;
+      case "drama":
+        endpoint = "/api/tmdb/popular-drama";
         mediaType = "tv";
         break;
       case "variety":

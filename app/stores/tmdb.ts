@@ -61,13 +61,47 @@ export const useTmdbStore = defineStore("tmdb", () => {
 
   // 熱門動畫
   const popularAnime = ref<TmdbItem[]>([]);
-  const getPopularAnime = async () => {
-    if (popularAnime.value.length) return;
+  const popularAnimeTotal = ref(0);
+  const popularAnimeLoading = ref(false);
+  const popularAnimeError = ref<string | null>(null);
+  const getPopularAnime = async (page = 1) => {
+    popularAnimeLoading.value = true;
+    popularAnimeError.value = null;
     try {
-      const res = await fetchPopular("anime");
-      if (res?.results) popularAnime.value = res.results;
-    } catch (e) {
-      console.error(e);
+      const response = await fetchPopular("anime", page);
+      if (response && response.results) {
+        popularAnime.value = response.results;
+        popularAnimeTotal.value = Math.min(response.total_results, 10000);
+      }
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      popularAnimeError.value = msg;
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門動畫:");
+    } finally {
+      popularAnimeLoading.value = false;
+    }
+  };
+
+  // 熱門電視劇
+  const popularDrama = ref<TmdbItem[]>([]);
+  const popularDramaTotal = ref(0);
+  const popularDramaLoading = ref(false);
+  const popularDramaError = ref<string | null>(null);
+  const getPopularDrama = async (page = 1) => {
+    popularDramaLoading.value = true;
+    popularDramaError.value = null;
+    try {
+      const response = await fetchPopular("tv", page);
+      if (response && response.results) {
+        popularDrama.value = response.results;
+        popularDramaTotal.value = Math.min(response.total_results, 10000);
+      }
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      popularDramaError.value = msg;
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門電視劇:", error);
+    } finally {
+      popularDramaLoading.value = false;
     }
   };
 
@@ -248,6 +282,13 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularTv,
     popularPerson,
     popularAnime,
+    popularAnimeTotal,
+    popularAnimeLoading,
+    popularAnimeError,
+    popularDrama,
+    popularDramaTotal,
+    popularDramaLoading,
+    popularDramaError,
     popularVariety,
     nowPlayingMovies,
     nowPlayingMoviesTotal,
@@ -270,6 +311,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     getPopularTv,
     getPopularPerson,
     getPopularAnime,
+    getPopularDrama,
     getPopularVariety,
     getNowPlayingMovies,
     getUpcomingMovies,
