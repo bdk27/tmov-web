@@ -128,7 +128,30 @@ export const useTmdbStore = defineStore("tmdb", () => {
     }
   };
 
-  // 熱門電影、影集、人物)
+  // 熱門紀錄片
+  const popularDocumentary = ref<TmdbItem[]>([]);
+  const popularDocumentaryTotal = ref(0);
+  const popularDocumentaryLoading = ref(false);
+  const popularDocumentaryError = ref<string | null>(null);
+  const getpopularDocumentary = async (page = 1) => {
+    popularDocumentaryLoading.value = true;
+    popularDocumentaryError.value = null;
+    try {
+      const response = await fetchPopular("documentary", page);
+      if (response && response.results) {
+        popularDocumentary.value = response.results;
+        popularDocumentaryTotal.value = Math.min(response.total_results, 10000);
+      }
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      popularDocumentaryError.value = msg;
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門喜劇:", error);
+    } finally {
+      popularDocumentaryLoading.value = false;
+    }
+  };
+
+  // 熱門電影
   const popularMovies = ref<TmdbItem[]>([]);
   const popularMoviesTotal = ref(0);
   const popularMoviesLoading = ref(false);
@@ -145,7 +168,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     } catch (error: any) {
       const msg = error?.message || "載入失敗";
       popularMoviesError.value = msg;
-      console.error("Pinia store (tmdb.ts): 無法獲取熱門電影:");
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門電影:", error);
     } finally {
       popularMoviesLoading.value = false;
     }
@@ -153,15 +176,24 @@ export const useTmdbStore = defineStore("tmdb", () => {
 
   // 熱門電視劇
   const popularTv = ref<TmdbItem[]>([]);
-  const getPopularTv = async () => {
-    if (popularTv.value.length > 0) return;
+  const popularTvTotal = ref(0);
+  const popularTvLoading = ref(false);
+  const popularTvError = ref<string | null>(null);
+  const getPopularTv = async (page = 1) => {
+    popularTvLoading.value = true;
+    popularTvError.value = null;
     try {
-      const response = await fetchPopular("tv");
+      const response = await fetchPopular("tv", page);
       if (response && response.results) {
         popularTv.value = response.results;
+        popularTvTotal.value = Math.min(response.total_results, 10000);
       }
-    } catch (error) {
-      console.error("Pinia store (tmdb.ts): 無法獲取熱門電視劇:", error);
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      popularTvError.value = msg;
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門電視節目:", error);
+    } finally {
+      popularTvLoading.value = false;
     }
   };
 
@@ -291,6 +323,9 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularMoviesLoading,
     popularMoviesError,
     popularTv,
+    popularTvTotal,
+    popularTvLoading,
+    popularTvError,
     popularPerson,
     popularAnime,
     popularAnimeTotal,
@@ -304,6 +339,10 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularVarietyTotal,
     popularVarietyLoading,
     popularVarietyError,
+    popularDocumentary,
+    popularDocumentaryTotal,
+    popularDocumentaryLoading,
+    popularDocumentaryError,
     nowPlayingMovies,
     nowPlayingMoviesTotal,
     nowPlayingMoviesLoading,
@@ -327,6 +366,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     getPopularAnime,
     getPopularDrama,
     getPopularVariety,
+    getpopularDocumentary,
     getNowPlayingMovies,
     getUpcomingMovies,
     getTopRatedMovies,

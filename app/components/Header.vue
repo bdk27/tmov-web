@@ -32,25 +32,37 @@ const items = computed<NavigationMenuItem[]>(() => [
   },
   {
     label: "電視節目",
-    to: "/tv",
+    to: "/tv/drama",
     children: [
       {
-        label: "熱門",
-        to: "/tv",
+        label: "電視劇",
+        to: "/tv/drama",
       },
       {
         label: "動畫",
         to: "/tv/anime",
       },
       {
-        label: "電視劇",
-        to: "/tv/drama",
-      },
-      {
         label: "綜藝",
         to: "/tv/variety",
       },
+      {
+        label: "紀錄片",
+        to: "/tv/documentary",
+      },
+      {
+        label: "兒童",
+        to: "/tv/children",
+      },
+      {
+        label: "脫口秀",
+        to: "/tv/talk-show",
+      },
     ],
+  },
+  {
+    label: "人物",
+    to: "/person",
   },
   {
     label: "戲院",
