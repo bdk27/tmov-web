@@ -148,6 +148,7 @@ const isTrendingLoading = computed(() =>
       title="熱門電影"
       :items="popularMovies"
       :loading="isMovieLoading"
+      :url="'/movie/'"
     />
 
     <!-- 熱門電視劇 -->
@@ -155,6 +156,7 @@ const isTrendingLoading = computed(() =>
       title="熱門電視劇"
       :items="popularTv"
       :loading="isTvLoading"
+      :url="'/tv/drama'"
     />
 
     <!-- 熱門動畫 -->
@@ -162,6 +164,7 @@ const isTrendingLoading = computed(() =>
       title="熱門動畫"
       :items="popularAnime"
       :loading="isAnimeLoading"
+      :url="'/tv/anime'"
     />
 
     <!-- 熱門綜藝 -->
@@ -169,6 +172,7 @@ const isTrendingLoading = computed(() =>
       title="熱門綜藝"
       :items="popularVariety"
       :loading="isVarietyLoading"
+      :url="'/tv/variety'"
     />
   </div>
 </template>

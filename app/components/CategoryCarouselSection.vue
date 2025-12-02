@@ -5,6 +5,7 @@ defineProps<{
   title: string;
   items: TmdbItem[];
   loading: boolean;
+  url: string;
 }>();
 </script>
 
@@ -22,7 +23,7 @@ defineProps<{
       </div>
 
       <NuxtLink
-        to=""
+        :to="url"
         class="flex items-center justify-center hover:text-primary"
       >
         <p>更多</p>

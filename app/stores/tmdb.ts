@@ -107,13 +107,24 @@ export const useTmdbStore = defineStore("tmdb", () => {
 
   // 熱門綜藝
   const popularVariety = ref<TmdbItem[]>([]);
-  const getPopularVariety = async () => {
-    if (popularVariety.value.length) return;
+  const popularVarietyTotal = ref(0);
+  const popularVarietyLoading = ref(false);
+  const popularVarietyError = ref<string | null>(null);
+  const getPopularVariety = async (page = 1) => {
+    popularVarietyLoading.value = true;
+    popularVarietyError.value = null;
     try {
-      const res = await fetchPopular("variety");
-      if (res?.results) popularVariety.value = res.results;
-    } catch (e) {
-      console.error(e);
+      const response = await fetchPopular("variety", page);
+      if (response && response.results) {
+        popularVariety.value = response.results;
+        popularVarietyTotal.value = Math.min(response.total_results, 10000);
+      }
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      popularVarietyError.value = msg;
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門綜藝:", error);
+    } finally {
+      popularVarietyLoading.value = false;
     }
   };
 
@@ -290,6 +301,9 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularDramaLoading,
     popularDramaError,
     popularVariety,
+    popularVarietyTotal,
+    popularVarietyLoading,
+    popularVarietyError,
     nowPlayingMovies,
     nowPlayingMoviesTotal,
     nowPlayingMoviesLoading,
