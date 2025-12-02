@@ -6,6 +6,7 @@ export type TmdbPopularCategory =
   | "drama"
   | "variety"
   | "documentary"
+  | "children"
   | "person";
 
 // 搜尋選項
@@ -137,6 +138,10 @@ export function useTmdb() {
         break;
       case "documentary":
         endpoint = "/api/tmdb/popular-documentary";
+        mediaType = "tv";
+        break;
+      case "children":
+        endpoint = "/api/tmdb/popular-children";
         mediaType = "tv";
         break;
       case "person":

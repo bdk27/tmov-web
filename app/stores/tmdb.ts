@@ -151,6 +151,29 @@ export const useTmdbStore = defineStore("tmdb", () => {
     }
   };
 
+  // 熱門兒童節目
+  const popularChildren = ref<TmdbItem[]>([]);
+  const popularChildrenTotal = ref(0);
+  const popularChildrenLoading = ref(false);
+  const popularChildrenError = ref<string | null>(null);
+  const getPopularChildren = async (page = 1) => {
+    popularChildrenLoading.value = true;
+    popularChildrenError.value = null;
+    try {
+      const response = await fetchPopular("children", page);
+      if (response && response.results) {
+        popularChildren.value = response.results;
+        popularChildrenTotal.value = Math.min(response.total_results, 10000);
+      }
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      popularChildrenError.value = msg;
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門兒童節目:", error);
+    } finally {
+      popularChildrenLoading.value = false;
+    }
+  };
+
   // 熱門電影
   const popularMovies = ref<TmdbItem[]>([]);
   const popularMoviesTotal = ref(0);
@@ -343,6 +366,10 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularDocumentaryTotal,
     popularDocumentaryLoading,
     popularDocumentaryError,
+    popularChildren,
+    popularChildrenTotal,
+    popularChildrenLoading,
+    popularChildrenError,
     nowPlayingMovies,
     nowPlayingMoviesTotal,
     nowPlayingMoviesLoading,
@@ -367,6 +394,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     getPopularDrama,
     getPopularVariety,
     getpopularDocumentary,
+    getPopularChildren,
     getNowPlayingMovies,
     getUpcomingMovies,
     getTopRatedMovies,
