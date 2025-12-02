@@ -245,13 +245,25 @@ export const useTmdbStore = defineStore("tmdb", () => {
 
   // 熱門人物
   const popularPerson = ref<TmdbItem[]>([]);
-  const getPopularPerson = async () => {
-    if (popularPerson.value.length > 0) return;
+  const popularPersonTotal = ref(0);
+  const popularPersonLoading = ref(false);
+  const popularPersonError = ref<string | null>(null);
+  const getPopularPerson = async (page = 1) => {
+    popularPersonLoading.value = true;
+    popularPersonError.value = null;
     try {
-      const response = await fetchPopular("person");
-      if (response && response.results) popularPerson.value = response.results;
-    } catch (error) {
-      console.error("Pinia: 無法獲取熱門人物", error);
+      const response = await fetchPopular("person", page);
+      if (response && response.results) {
+        console.log("response", response);
+        popularPerson.value = response.results;
+        popularPersonTotal.value = Math.min(response.total_results, 10000);
+      }
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      popularPersonError.value = msg;
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門人物:", error);
+    } finally {
+      popularPersonLoading.value = false;
     }
   };
 
@@ -372,7 +384,6 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularTvTotal,
     popularTvLoading,
     popularTvError,
-    popularPerson,
     popularAnime,
     popularAnimeTotal,
     popularAnimeLoading,
@@ -397,6 +408,10 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularTalkShowTotal,
     popularTalkShowLoading,
     popularTalkShowError,
+    popularPerson,
+    popularPersonTotal,
+    popularPersonLoading,
+    popularPersonError,
     nowPlayingMovies,
     nowPlayingMoviesTotal,
     nowPlayingMoviesLoading,

@@ -257,7 +257,7 @@ export function useTmdb() {
     return item.title || item.name || "查無標題";
   };
   const dateOf = (item: TmdbItem) => {
-    return item.release_date || item.first_air_date || "未知日期";
+    return item.release_date || item.first_air_date || "";
   };
   const getRating = (item: TmdbItem) => {
     if (!item.vote_average) return 0;
