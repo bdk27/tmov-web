@@ -174,6 +174,29 @@ export const useTmdbStore = defineStore("tmdb", () => {
     }
   };
 
+  // 熱門脫口秀
+  const popularTalkShow = ref<TmdbItem[]>([]);
+  const popularTalkShowTotal = ref(0);
+  const popularTalkShowLoading = ref(false);
+  const popularTalkShowError = ref<string | null>(null);
+  const getPopularTalkShow = async (page = 1) => {
+    popularTalkShowLoading.value = true;
+    popularTalkShowError.value = null;
+    try {
+      const response = await fetchPopular("talkShow", page);
+      if (response && response.results) {
+        popularTalkShow.value = response.results;
+        popularTalkShowTotal.value = Math.min(response.total_results, 10000);
+      }
+    } catch (error: any) {
+      const msg = error?.message || "載入失敗";
+      popularTalkShowError.value = msg;
+      console.error("Pinia store (tmdb.ts): 無法獲取熱門脫口秀:", error);
+    } finally {
+      popularTalkShowLoading.value = false;
+    }
+  };
+
   // 熱門電影
   const popularMovies = ref<TmdbItem[]>([]);
   const popularMoviesTotal = ref(0);
@@ -370,6 +393,10 @@ export const useTmdbStore = defineStore("tmdb", () => {
     popularChildrenTotal,
     popularChildrenLoading,
     popularChildrenError,
+    popularTalkShow,
+    popularTalkShowTotal,
+    popularTalkShowLoading,
+    popularTalkShowError,
     nowPlayingMovies,
     nowPlayingMoviesTotal,
     nowPlayingMoviesLoading,
@@ -395,6 +422,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     getPopularVariety,
     getpopularDocumentary,
     getPopularChildren,
+    getPopularTalkShow,
     getNowPlayingMovies,
     getUpcomingMovies,
     getTopRatedMovies,
