@@ -37,7 +37,7 @@ const bottomItems = computed(() => props.items.slice(3, 10));
     </div>
 
     <div v-if="!loading && items.length > 0" class="flex flex-col gap-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <NuxtLink
           v-for="(item, index) in topItems"
           :key="item.id"

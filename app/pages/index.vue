@@ -62,6 +62,21 @@ const isTrendingLoading = computed(() =>
     ? trendingToday.value.length === 0
     : trendingWeek.value.length === 0
 );
+
+const links = ref([
+  {
+    label: "加入 TMOV",
+    to: "/docs/getting-started",
+    icon: "i-lucide-square-play",
+  },
+  // {
+  //   label: "Learn more",
+  //   to: "/docs/getting-started/theme/design-system",
+  //   color: "neutral",
+  //   variant: "subtle",
+  //   trailingIcon: "i-lucide-arrow-right",
+  // },
+]);
 </script>
 
 <template>
@@ -90,6 +105,7 @@ const isTrendingLoading = computed(() =>
         orientation="horizontal"
         :reverse="true"
         class="container mx-auto"
+        :links="links"
       >
         <template #title>
           <h1
@@ -103,12 +119,12 @@ const isTrendingLoading = computed(() =>
             上百萬部電影、電視節目和演員資料等你來探索
           </h3>
 
-          <SearchForm
+          <!-- <SearchForm
             :query="query"
             :type="type"
             :year="year"
             @submit-search="handleSearch"
-          />
+          /> -->
         </template>
         <template #default>
           <div
