@@ -337,39 +337,39 @@ export const useTmdbStore = defineStore("tmdb", () => {
   };
 
   // 搜尋
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-  const results = ref<any[]>([]);
-  const totalResults = ref(0);
-  const page = ref(1);
-  const totalPages = ref(1);
+  const searchLoading = ref(false);
+  const searchError = ref<string | null>(null);
+  const searchResults = ref<any[]>([]);
+  const searchTotalResults = ref(0);
+  const searchPage = ref(1);
+  const searchTotalPages = ref(1);
   const lastQuery = ref("");
   const lastType = ref<"multi" | "movie" | "tv" | "person">("multi");
   const doSearch = async (q: string, opts: TmdbSearchOptions = {}) => {
-    loading.value = true;
-    error.value = null;
+    searchLoading.value = true;
+    searchError.value = null;
     try {
       const res: any = await search(q, opts); // 呼叫 composable
-      results.value = res?.results ?? [];
-      totalResults.value = res?.total_results ?? 0;
-      page.value = res?.page ?? 1;
-      totalPages.value = res?.total_pages ?? 1;
+      searchResults.value = res?.results ?? [];
+      searchTotalResults.value = res?.total_results ?? 0;
+      searchPage.value = res?.page ?? 1;
+      searchTotalPages.value = res?.total_pages ?? 1;
       lastQuery.value = q;
       lastType.value = (opts.type ?? "multi") as any;
     } catch (e: any) {
-      error.value = e?.data?.error || e?.message || "搜尋失敗";
+      searchError.value = e?.data?.error || e?.message || "搜尋失敗";
     } finally {
-      loading.value = false;
+      searchLoading.value = false;
     }
   };
 
   return {
-    loading,
-    error,
-    results,
-    totalResults,
-    page,
-    totalPages,
+    searchLoading,
+    searchError,
+    searchResults,
+    searchTotalResults,
+    searchPage,
+    searchTotalPages,
     lastQuery,
     lastType,
     backdropDesktopUrl,
