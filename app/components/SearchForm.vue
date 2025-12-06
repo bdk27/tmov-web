@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const router = useRouter();
+const route = useRoute();
 const { search, posterUrl, titleOf, dateOf } = useTmdb();
 
 const isSearchOpen = defineModel<boolean>("isSearchOpen");
@@ -66,9 +67,9 @@ function navigateToItem(item: TmdbItem) {
   closeModal();
 
   let path = "";
-  if (item.media_type === "person") path = `/search/person/${item.id}`;
-  else if (item.media_type === "tv") path = `/search/tv/${item.id}`;
-  else path = `/search/movie/${item.id}`;
+  if (item.media_type === "person") path = `/person/${item.id}`;
+  else if (item.media_type === "tv") path = `/tv/${item.id}`;
+  else path = `/movie/${item.id}`;
 
   router.push(path);
 }
@@ -132,7 +133,7 @@ watch(query, (newVal) => {
 <template>
   <div
     v-if="isSearchOpen"
-    class="fixed inset-0 z-9999 flex items-start justify-center pt-[10vh] p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+    class="fixed inset-0 z-999 flex items-start justify-center pt-[10vh] p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity"
     @click="closeModal"
   >
     <div
