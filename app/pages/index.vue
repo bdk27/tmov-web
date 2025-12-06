@@ -66,16 +66,16 @@ const isTrendingLoading = computed(() =>
 const links = ref([
   {
     label: "加入 TMOV",
-    to: "/docs/getting-started",
-    icon: "i-lucide-square-play",
+    to: "/login",
+    icon: "i-lucide-user-plus",
   },
-  // {
-  //   label: "Learn more",
-  //   to: "/docs/getting-started/theme/design-system",
-  //   color: "neutral",
-  //   variant: "subtle",
-  //   trailingIcon: "i-lucide-arrow-right",
-  // },
+  {
+    label: "前往探索",
+    to: "/movie",
+    color: "neutral" as const,
+    variant: "subtle" as const,
+    trailingIcon: "i-lucide-arrow-right",
+  },
 ]);
 </script>
 
@@ -99,32 +99,24 @@ const links = ref([
         class="absolute inset-0 -z-10 transition-all duration-1000"
         :style="{ backgroundImage: 'var(--hero-gradient)' }"
       ></div>
+
       <!-- 標題 + 表單 -->
       <UPageHero
-        headline=""
+        headline="歡迎來到 TMOV !"
         orientation="horizontal"
         :reverse="true"
-        class="container mx-auto"
         :links="links"
       >
         <template #title>
           <h1
             class="text-white text-5xl sm:text-6xl font-extrabold mb-4 leading-tight"
           >
-            <span class="text-primary">下一部必看</span>
-            <br />
-            <span class="text-t-card-heading"> 從 TMOV. 開始 </span>
+            <span class="block">下一部必看</span>
+            <span> 從 <span class="text-primary">TMOV.</span> 開始 </span>
           </h1>
-          <h3 class="text-xl sm:text-2xl font-light mb-14 text-white">
+          <h3 class="text-xl sm:text-2xl font-light mb-14 text-neutral-300">
             上百萬部電影、電視節目和演員資料等你來探索
           </h3>
-
-          <!-- <SearchForm
-            :query="query"
-            :type="type"
-            :year="year"
-            @submit-search="handleSearch"
-          /> -->
         </template>
         <template #default>
           <div
