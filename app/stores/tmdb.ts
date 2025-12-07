@@ -7,6 +7,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
     fetchNowPlaying,
     fetchUpcoming,
     fetchTopRated,
+    fetchDetail,
   } = useTmdb();
 
   // 背景圖 + 預告片
@@ -341,7 +342,6 @@ export const useTmdbStore = defineStore("tmdb", () => {
   const searchError = ref<string | null>(null);
   const searchResults = ref<any[]>([]);
   const searchTotalResults = ref(0);
-  const searchPage = ref(1);
   const searchTotalPages = ref(1);
   const lastQuery = ref("");
   const lastType = ref<"multi" | "movie" | "tv" | "person">("multi");
@@ -352,7 +352,6 @@ export const useTmdbStore = defineStore("tmdb", () => {
       const res: any = await search(q, opts); // 呼叫 composable
       searchResults.value = res?.results ?? [];
       searchTotalResults.value = res?.total_results ?? 0;
-      searchPage.value = res?.page ?? 1;
       searchTotalPages.value = res?.total_pages ?? 1;
       lastQuery.value = q;
       lastType.value = (opts.type ?? "multi") as any;
@@ -363,12 +362,29 @@ export const useTmdbStore = defineStore("tmdb", () => {
     }
   };
 
+  // 詳情
+  const currentItemDetail = ref<TmdbDetail | null>(null);
+  const currentItemDetailLoading = ref(false);
+  const getItemDetail = async (type: string, id: number) => {
+    currentItemDetailLoading.value = true;
+    currentItemDetail.value = null; // 清空舊資料
+    try {
+      const response = await fetchDetail(type, id);
+      if (response) {
+        currentItemDetail.value = response;
+      }
+    } catch (error) {
+      console.error(`Pinia: 無法獲取 ${type} 詳情`, error);
+    } finally {
+      currentItemDetailLoading.value = false;
+    }
+  };
+
   return {
     searchLoading,
     searchError,
     searchResults,
     searchTotalResults,
-    searchPage,
     searchTotalPages,
     lastQuery,
     lastType,
@@ -425,6 +441,8 @@ export const useTmdbStore = defineStore("tmdb", () => {
     topRatedMoviesLoading,
     topRatedMoviesError,
     trailerUrl,
+    currentItemDetail,
+    currentItemDetailLoading,
     doSearch,
     getBackdrop,
     getTrendingToday,
@@ -441,5 +459,6 @@ export const useTmdbStore = defineStore("tmdb", () => {
     getNowPlayingMovies,
     getUpcomingMovies,
     getTopRatedMovies,
+    getItemDetail,
   };
 });

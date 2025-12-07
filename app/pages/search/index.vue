@@ -4,13 +4,8 @@ const route = useRoute();
 const router = useRouter();
 
 // 使用 Store 中對應的狀態
-const {
-  searchResults,
-  searchTotalResults,
-  searchLoading,
-  searchError,
-  searchPage,
-} = storeToRefs(tmdbStore);
+const { searchResults, searchTotalResults, searchLoading, searchError } =
+  storeToRefs(tmdbStore);
 
 // 分頁邏輯
 const currentPage = computed({
@@ -23,14 +18,28 @@ const currentPage = computed({
 
 // 獲取資料
 async function fetchData() {
-  await tmdbStore.doSearch(route.query.q as string, {
+  const queryStr = route.query.q as string;
+  if (!queryStr) return;
+
+  const options: any = {
     page: currentPage.value,
     type: (route.query.type as TmdbSearchOptions["type"]) || "multi",
-  });
+  };
+
+  if (route.query.year) {
+    options.year = Number(route.query.year);
+  }
+
+  await tmdbStore.doSearch(queryStr, options);
 }
 
-// 監聽分頁變化
-watch(currentPage, fetchData, { immediate: true });
+watch(
+  () => route.query,
+  () => {
+    fetchData();
+  },
+  { deep: true, immediate: true }
+);
 </script>
 
 <template>
@@ -41,7 +50,7 @@ watch(currentPage, fetchData, { immediate: true });
       :loading="searchLoading"
       :error="searchError"
       :total-results="searchTotalResults"
-      v-model:current-page="searchPage"
+      v-model:current-page="currentPage"
       @retry="fetchData"
     />
   </div>

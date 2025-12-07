@@ -1,4 +1,5 @@
 export type TmdbSearchType = "multi" | "movie" | "tv" | "person";
+// 熱門選項
 export type TmdbPopularCategory =
   | "movie"
   | "tv"
@@ -23,7 +24,7 @@ export interface TmdbSearchOptions {
 // 電影項目
 export interface TmdbItem {
   id: number;
-  media_type?: "movie" | "tv" | "person";
+  media_type?: TmdbSearchType;
   poster_path?: string | null;
   profile_path?: string | null;
   backdrop_path?: string | null;
@@ -34,6 +35,7 @@ export interface TmdbItem {
   vote_average?: number;
   overview?: string;
   popularity?: number;
+  character?: string;
 }
 // 分頁
 export interface TmdbPaginatedResponse<T> {
@@ -41,6 +43,57 @@ export interface TmdbPaginatedResponse<T> {
   results: T[];
   total_pages: number;
   total_results: number;
+}
+// 詳細資料
+export interface TmdbDetail {
+  id: number;
+  media_type: TmdbSearchType;
+
+  // 標題類
+  title?: string; // Movie
+  name?: string; // TV, Person
+  original_title?: string;
+
+  // 描述類
+  overview?: string; // Movie, TV
+  biography?: string; // Person
+  tagline?: string;
+
+  // 圖片類
+  poster_path?: string | null;
+  backdrop_path?: string | null;
+  profile_path?: string | null; // Person
+
+  // 數據類
+  genres?: { id: number; name: string }[];
+  vote_average?: number;
+  runtime?: number; // Movie
+  episode_run_time?: number[]; // TV
+  number_of_seasons?: number; // TV
+  number_of_episodes?: number; // TV
+
+  // 日期類
+  release_date?: string; // Movie
+  first_air_date?: string; // TV
+  birthday?: string; // Person
+  place_of_birth?: string; // Person
+  deathday?: string | null; // Person
+
+  // 關聯資料 (Credits)
+  credits?: {
+    cast: TmdbItem[];
+    crew: any[];
+  };
+  // 人物的作品集通常叫 combined_credits
+  combined_credits?: {
+    cast: TmdbItem[];
+    crew: any[];
+  };
+
+  // 影片
+  videos?: {
+    results: any[];
+  };
 }
 
 export function useTmdb() {
@@ -226,7 +279,7 @@ export function useTmdb() {
     return response;
   };
 
-  // 獲取電影預告片
+  // 電影預告片
   const fetchMovieTrailer = async (
     movieId: number
   ): Promise<{ trailerUrl: string }> => {
@@ -239,6 +292,27 @@ export function useTmdb() {
     } catch (error) {
       console.error(`取得電影預告片失敗 ID:${movieId}`, error);
       return { trailerUrl: "" };
+    }
+  };
+
+  // 獲取詳情
+  const fetchDetail = async (type: string, id: number): Promise<TmdbDetail> => {
+    const validTypes = ["movie", "tv", "person"];
+
+    if (!validTypes.includes(type)) {
+      throw new Error(`無效的類型: ${type}`);
+    }
+    const apiUrl = `${api}/api/tmdb/${type}/${id}`;
+
+    try {
+      const response = await $fetch<any>(apiUrl);
+      return {
+        ...response,
+        media_type: response.media_type || type,
+      };
+    } catch (error) {
+      console.error(`取得詳情失敗 [${type}/${id}]`, error);
+      throw error;
     }
   };
 
@@ -268,6 +342,15 @@ export function useTmdb() {
     if (rating >= 40) return "text-warning";
     return "text-error";
   };
+  const formatRuntime = (minutes?: number) => {
+    if (!minutes) return "N/A";
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  };
+  const getDetailTitle = (item?: TmdbDetail) => item?.title || item?.name || "";
+  const getDetailImage = (item?: TmdbDetail) =>
+    item?.poster_path || item?.profile_path || null;
 
   return {
     search,
@@ -284,5 +367,9 @@ export function useTmdb() {
     getRatingColor,
     fetchMovieTrailer,
     fetchTopRated,
+    fetchDetail,
+    formatRuntime,
+    getDetailTitle,
+    getDetailImage,
   };
 }
