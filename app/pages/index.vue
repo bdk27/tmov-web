@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 
-const router = useRouter();
 const tmdbStore = useTmdbStore();
-const { handleSearch } = useSearch();
 
 const {
   backdropDesktopUrl,
@@ -31,18 +29,28 @@ onMounted(() => {
   tmdbStore.getPopularVariety();
 });
 
+// 頁首連結
+const links = ref([
+  {
+    label: "加入 TMOV",
+    to: "/login",
+    icon: "i-lucide-user-plus",
+  },
+  {
+    label: "前往探索",
+    to: "/movie",
+    color: "neutral" as const,
+    variant: "subtle" as const,
+    trailingIcon: "i-lucide-arrow-right",
+  },
+]);
+
 // loading 狀態
 const isNowPlayingLoading = computed(() => nowPlayingMovies.value.length === 0);
-// const isUpcomingLoading = computed(() => upcoming.value.length === 0);
 const isMovieLoading = computed(() => popularMovies.value.length === 0);
 const isTvLoading = computed(() => popularTv.value.length === 0);
 const isAnimeLoading = computed(() => popularAnime.value.length === 0);
 const isVarietyLoading = computed(() => popularVariety.value.length === 0);
-
-// 搜尋
-const query = ref("");
-const type = ref<TmdbSearchOptions["type"]>("multi");
-const year = ref<number | null>(null);
 
 const trendingTab = ref(0); // 0: 今日, 1: 本週;
 const trendingTabItems = [
@@ -62,125 +70,122 @@ const isTrendingLoading = computed(() =>
     ? trendingToday.value.length === 0
     : trendingWeek.value.length === 0
 );
-
-const links = ref([
-  {
-    label: "加入 TMOV",
-    to: "/login",
-    icon: "i-lucide-user-plus",
-  },
-  {
-    label: "前往探索",
-    to: "/movie",
-    color: "neutral" as const,
-    variant: "subtle" as const,
-    trailingIcon: "i-lucide-arrow-right",
-  },
-]);
 </script>
 
 <template>
-  <div>
-    <div class="relative overflow-hidden">
-      <!-- 背景圖片 -->
-      <picture v-if="backdropMobileUrl" class="absolute inset-0 -z-20 bg-white">
-        <source
-          v-if="backdropDesktopUrl"
-          :srcset="backdropDesktopUrl"
-          media="(min-width: 768px)"
-        />
-        <img
-          :src="backdropMobileUrl"
-          alt="熱門電影背景"
-          class="w-full h-full object-cover"
-        />
-      </picture>
+  <div class="relative">
+    <div class="absolute inset-0 w-full overflow-hidden z-0">
+      <!-- 背景圖片層 -->
+      <div class="absolute inset-0">
+        <picture v-if="backdropMobileUrl">
+          <source
+            v-if="backdropDesktopUrl"
+            :srcset="backdropDesktopUrl"
+            media="(min-width: 768px)"
+          />
+          <img
+            :src="backdropMobileUrl"
+            alt="熱門電影背景"
+            class="w-full h-full object-cover"
+          />
+        </picture>
+        <!-- 人物或無圖時的備用背景 (深色漸層) -->
+        <div
+          class="w-full h-full bg-linear-to-b from-gray-800 via-gray-900 to-black"
+        ></div>
+      </div>
+
+      <!-- 漸層遮罩 (讓底部完美融合到頁面背景) -->
       <div
-        class="absolute inset-0 -z-10 transition-all duration-1000"
-        :style="{ backgroundImage: 'var(--hero-gradient)' }"
+        class="absolute inset-0 bg-linear-to-t from-white to-transparent dark:from-neutral-900 z-10"
       ></div>
 
-      <!-- 標題 + 表單 -->
-      <UPageHero
-        headline="歡迎來到 TMOV !"
-        orientation="horizontal"
-        :reverse="true"
-        :links="links"
-      >
-        <template #title>
-          <h1
-            class="text-white text-5xl sm:text-6xl font-extrabold mb-4 leading-tight"
-          >
-            <span class="block">下一部必看</span>
-            <span> 從 <span class="text-primary">TMOV.</span> 開始 </span>
-          </h1>
-          <h3 class="text-xl sm:text-2xl font-light mb-14 text-neutral-300">
-            上百萬部電影、電視節目和演員資料等你來探索
-          </h3>
-        </template>
-        <template #default>
-          <div
-            class="w-full aspect-video rounded-lg shadow-2xl bg-t-card-bg relative hidden lg:block"
-          >
-            <iframe
-              v-if="trailerUrl"
-              :src="trailerUrl"
-              title="Popular Movie Trailer"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-              class="absolute inset-0 w-full h-full rounded-lg"
-            ></iframe>
-          </div>
-        </template>
-      </UPageHero>
+      <!-- 頂部暗角 (讓文字更清楚) -->
+      <div
+        class="absolute inset-0 bg-linear-to-b from-black to-transparent z-10"
+      ></div>
     </div>
 
-    <!-- 趨勢 -->
-    <ItemsCarouselSection
-      :tabs="trendingTabItems"
-      v-model="trendingTab"
-      :items="trendingItems"
-      :loading="isTrendingLoading"
-    />
-
-    <!-- 現正熱映 -->
-    <BentoGridSection
-      title="現正熱映"
-      :items="nowPlayingMovies"
-      :loading="isNowPlayingLoading"
-    />
-
-    <!-- 熱門電影 -->
-    <CategoryCarouselSection
-      title="熱門電影"
-      :items="popularMovies"
-      :loading="isMovieLoading"
-      :url="'/movie/'"
-    />
-
-    <!-- 熱門電視劇 -->
-    <CategoryCarouselSection
-      title="熱門電視劇"
-      :items="popularTv"
-      :loading="isTvLoading"
-      :url="'/tv/drama'"
-    />
-
-    <!-- 熱門動畫 -->
-    <CategoryCarouselSection
-      title="熱門動畫"
-      :items="popularAnime"
-      :loading="isAnimeLoading"
-      :url="'/tv/anime'"
-    />
-
-    <!-- 熱門綜藝 -->
-    <CategoryCarouselSection
-      title="熱門綜藝"
-      :items="popularVariety"
-      :loading="isVarietyLoading"
-      :url="'/tv/variety'"
-    />
+    <!-- 標題 + 表單 -->
+    <UPageHero
+      headline="歡迎來到 TMOV !"
+      orientation="horizontal"
+      :reverse="true"
+      :links="links"
+    >
+      <template #title>
+        <h1
+          class="text-white text-5xl sm:text-6xl font-extrabold mb-4 leading-tight"
+        >
+          <span class="block">下一部必看</span>
+          <span> 從 <span class="text-primary">TMOV.</span> 開始 </span>
+        </h1>
+        <h3 class="text-xl sm:text-2xl font-light mb-14 text-neutral-300">
+          上百萬部電影、電視節目和演員資料等你來探索
+        </h3>
+      </template>
+      <template #default>
+        <div
+          class="w-full aspect-video rounded-lg shadow-2xl bg-t-card-bg relative hidden lg:block"
+        >
+          <iframe
+            v-if="trailerUrl"
+            :src="trailerUrl"
+            title="Popular Movie Trailer"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            class="absolute inset-0 w-full h-full rounded-lg"
+          ></iframe>
+        </div>
+      </template>
+    </UPageHero>
   </div>
+
+  <!-- 趨勢 -->
+  <ItemsCarouselSection
+    :tabs="trendingTabItems"
+    v-model="trendingTab"
+    :items="trendingItems"
+    :loading="isTrendingLoading"
+  />
+
+  <!-- 現正熱映 -->
+  <BentoGridSection
+    title="現正熱映"
+    :items="nowPlayingMovies"
+    :loading="isNowPlayingLoading"
+  />
+
+  <!-- 熱門電影 -->
+  <CategoryCarouselSection
+    title="熱門電影"
+    :items="popularMovies"
+    :loading="isMovieLoading"
+    :url="'/movie/'"
+  />
+
+  <!-- 熱門電視劇 -->
+  <CategoryCarouselSection
+    title="熱門電視劇"
+    :items="popularTv"
+    :loading="isTvLoading"
+    :url="'/tv/drama'"
+  />
+
+  <!-- 熱門動畫 -->
+  <CategoryCarouselSection
+    title="熱門動畫"
+    :items="popularAnime"
+    :loading="isAnimeLoading"
+    :url="'/tv/anime'"
+  />
+
+  <!-- 熱門綜藝 -->
+  <CategoryCarouselSection
+    title="熱門綜藝"
+    :items="popularVariety"
+    :loading="isVarietyLoading"
+    :url="'/tv/variety'"
+  />
 </template>
