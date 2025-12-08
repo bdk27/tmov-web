@@ -23,7 +23,7 @@ const date = computed(() => dateOf(props.item));
 <template>
   <NuxtLink :to="itemPath" class="group block h-full">
     <UCard
-      class="h-full"
+      class="h-full bg-transparent"
       :ui="{
         root: 'divide-y-0 ring-0 rounded-t-xl',
         header: 'p-0 sm:p-0',

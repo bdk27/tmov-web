@@ -91,7 +91,7 @@ const isTrendingLoading = computed(() =>
         </picture>
         <!-- 人物或無圖時的備用背景 (深色漸層) -->
         <div
-          class="w-full h-full bg-linear-to-b from-gray-800 via-gray-900 to-black"
+          class="w-full h-full bg-linear-to-b from-neutral-900 to-black"
         ></div>
       </div>
 
@@ -120,7 +120,7 @@ const isTrendingLoading = computed(() =>
           <span class="block">下一部必看</span>
           <span> 從 <span class="text-primary">TMOV.</span> 開始 </span>
         </h1>
-        <h3 class="text-xl sm:text-2xl font-light mb-14 text-neutral-300">
+        <h3 class="text-xl sm:text-2xl mb-14 text-neutral-200 font-light">
           上百萬部電影、電視節目和演員資料等你來探索
         </h3>
       </template>
@@ -135,7 +135,7 @@ const isTrendingLoading = computed(() =>
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
-            class="absolute inset-0 w-full h-full rounded-lg"
+            class="absolute inset-0 w-full h-full rounded-lg ring-3 ring-primary/50"
           ></iframe>
         </div>
       </template>

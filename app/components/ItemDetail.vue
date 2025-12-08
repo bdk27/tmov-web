@@ -93,7 +93,7 @@ const listItems = computed(() => {
     <!-- 2. 主要內容區 -->
     <div class="container mx-auto px-4 relative z-20 pt-[20vh] lg:pt-[25vh]">
       <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 lg:items-start">
-        <!-- 左側：海報與操作 (浮動卡片效果) -->
+        <!-- 左側：海報與操作 -->
         <div
           class="w-full max-w-50 mx-auto lg:mx-0 lg:w-70 shrink-0 animate-slide-up"
         >
@@ -142,7 +142,7 @@ const listItems = computed(() => {
             {{ subtitle }}
           </p>
 
-          <!-- 資訊列 (使用 flex 和 分隔點) -->
+          <!-- 資訊列 -->
           <div
             class="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-8 text-sm font-medium text-gray-700 dark:text-gray-300"
           >
@@ -155,11 +155,9 @@ const listItems = computed(() => {
                 name="i-heroicons-star-solid"
                 class="w-5 h-5 text-yellow-400"
               />
-              <span
-                class="text-lg font-bold"
-                :class="getRatingColor(getRating(item))"
-                >{{ item.vote_average.toFixed(1) }}</span
-              >
+              <span class="text-lg" :class="getRatingColor(getRating(item))">{{
+                item.vote_average.toFixed(1)
+              }}</span>
             </div>
 
             <!-- 日期 -->
@@ -167,7 +165,7 @@ const listItems = computed(() => {
               {{ dateLabel }}
             </span>
 
-            <!-- 規格 -->
+            <!-- 時間 -->
             <span v-if="specs">
               {{ specs }}
             </span>
@@ -181,10 +179,19 @@ const listItems = computed(() => {
             <span
               v-for="genre in item.genres"
               :key="genre.id"
-              class="px-3 py-1 text-xs font-semibold rounded-full border border-gray-300 dark:border-gray-700 hover:border-primary-500 hover:text-primary-500 dark:hover:text-primary-400 transition-colors cursor-default"
+              class="px-3 py-1 text-sm font-semibold rounded-full border border-gray-300 dark:border-gray-700 hover:border-primary-500 hover:text-primary-500 dark:hover:text-primary-400 transition-colors cursor-default"
             >
               {{ genre.name }}
             </span>
+          </div>
+
+          <div class="overflow-hidden">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="w-1.5 h-6 bg-primary rounded-full block"></span>
+              <h3 class="text-xl font-bold">主要演員</h3>
+            </div>
+
+            <Carousel :items="listItems" class="w-full lg:w-200" />
           </div>
         </div>
       </div>
@@ -207,7 +214,6 @@ const listItems = computed(() => {
 </template>
 
 <style scoped>
-/* 簡單的進場動畫 */
 .animate-fade-in {
   animation: fadeIn 1s ease-out forwards;
 }
