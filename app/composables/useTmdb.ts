@@ -49,51 +49,96 @@ export interface TmdbDetail {
   id: number;
   media_type: TmdbSearchType;
 
-  // 標題類
-  title?: string; // Movie
-  name?: string; // TV, Person
+  // 基本資訊
+  title?: string;
+  name?: string;
   original_title?: string;
-
-  // 描述類
-  overview?: string; // Movie, TV
-  biography?: string; // Person
+  original_name?: string;
+  overview: string;
   tagline?: string;
+  status: string; //
 
-  // 圖片類
-  poster_path?: string | null;
-  backdrop_path?: string | null;
-  profile_path?: string | null; // Person
+  // 圖片
+  poster_path: string | null;
+  backdrop_path: string | null;
+  profile_path?: string | null;
 
-  // 數據類
-  genres?: { id: number; name: string }[];
-  vote_average?: number;
-  runtime?: number; // Movie
-  episode_run_time?: number[]; // TV
-  number_of_seasons?: number; // TV
-  number_of_episodes?: number; // TV
+  // 數據
+  genres: { id: number; name: string }[];
+  vote_average: number;
+  vote_count: number;
+  popularity: number;
 
-  // 日期類
-  release_date?: string; // Movie
-  first_air_date?: string; // TV
-  birthday?: string; // Person
-  place_of_birth?: string; // Person
-  deathday?: string | null; // Person
+  // 電影專屬
+  runtime?: number;
+  release_date?: string;
+  budget?: number;
+  revenue?: number;
+
+  // 電視專屬
+  first_air_date?: string;
+  last_air_date?: string;
+  number_of_seasons?: number;
+  number_of_episodes?: number;
+
+  // 人物專屬
+  birthday?: string;
+  deathday?: string | null;
+  place_of_birth?: string;
+  known_for_department?: string;
+  biography?: string;
 
   // 關聯資料 (Credits)
   credits?: {
-    cast: TmdbItem[];
-    crew: any[];
+    cast: TmdbCast[];
+    crew: TmdbCrew[];
   };
-  // 人物的作品集通常叫 combined_credits
   combined_credits?: {
-    cast: TmdbItem[];
-    crew: any[];
+    cast: TmdbCast[];
+    crew: TmdbCrew[];
   };
 
-  // 影片
+  // 媒體 (Videos & Images)
   videos?: {
-    results: any[];
+    results: TmdbVideo[];
   };
+  images?: {
+    backdrops: TmdbImage[];
+    posters: TmdbImage[];
+    logos: TmdbImage[];
+  };
+
+  // 推薦
+  recommendations?: {
+    results: TmdbItem[];
+  };
+
+  // 製作資訊
+  production_companies?: {
+    id: number;
+    name: string;
+    logo_path: string | null;
+    origin_country: string;
+  }[];
+}
+export interface TmdbCast extends TmdbItem {
+  character: string;
+}
+export interface TmdbCrew extends TmdbItem {
+  job: string;
+  department: string;
+}
+export interface TmdbVideo {
+  id: string;
+  key: string;
+  name: string;
+  site: string;
+  type: string; // "Trailer", "Teaser", "Featurette"
+}
+export interface TmdbImage {
+  file_path: string;
+  width: number;
+  height: number;
 }
 
 export function useTmdb() {
@@ -316,6 +361,33 @@ export function useTmdb() {
     }
   };
 
+  const formatCurrency = (amount?: number) => {
+    if (!amount) return "N/A";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  // [新增] 取得導演/主創 (從 crew 篩選)
+  const getDirectors = (item: TmdbDetail) => {
+    const crew = item.credits?.crew || [];
+    // 電影找 Director，電視找 Executive Producer 或 Creator
+    return crew
+      .filter((c) => c.job === "Director" || c.job === "Executive Producer")
+      .slice(0, 1);
+  };
+
+  const getWriters = (item: TmdbDetail) => {
+    const crew = item.credits?.crew || [];
+    return crew.filter((c) => c.department === "Writing").slice(0, 1);
+  };
+
+  // [新增] 取得 YouTube 縮圖
+  const getYoutubeThumb = (key: string) =>
+    `https://img.youtube.com/vi/${key}/mqdefault.jpg`;
+
   // 輔助函式(海報網址、標題、日期、評分)
   const posterUrl = (path: string | null, size = config.tmdbPosterSize) => {
     return path
@@ -371,5 +443,9 @@ export function useTmdb() {
     formatRuntime,
     getDetailTitle,
     getDetailImage,
+    formatCurrency,
+    getDirectors,
+    getWriters,
+    getYoutubeThumb,
   };
 }

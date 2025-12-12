@@ -15,6 +15,8 @@ if (!validTypes.includes(type)) {
 // 3. 讀取 Store
 const { currentItemDetail, currentItemDetailLoading } = storeToRefs(tmdbStore);
 
+console.log("Current Item Detail:", currentItemDetail);
+
 // 4. SSR 預取資料
 // 使用 key 確保切換頁面時會重新執行
 await useAsyncData(`${type}-${id}`, () => tmdbStore.getItemDetail(type, id));
@@ -26,7 +28,7 @@ useHead({
       ? `${
           currentItemDetail.value.title || currentItemDetail.value.name
         } - TMOV`
-      : "Loading..."
+      : "載入中..."
   ),
   meta: [
     {

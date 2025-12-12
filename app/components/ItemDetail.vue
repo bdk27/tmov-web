@@ -13,6 +13,10 @@ const {
   getDetailTitle,
   getDetailImage,
   titleOf,
+  formatCurrency,
+  getDirectors,
+  getWriters,
+  getYoutubeThumb,
 } = useTmdb();
 
 // 判斷類型
@@ -56,6 +60,14 @@ const listItems = computed(() => {
     return props.item.credits?.cast?.slice(0, 15) || [];
   }
 });
+
+// 收藏狀態
+const isFavorited = ref(false);
+
+// 切換收藏
+const toggleFavorite = () => {
+  isFavorited.value = !isFavorited.value;
+};
 </script>
 
 <template>
@@ -82,7 +94,7 @@ const listItems = computed(() => {
 
       <!-- 漸層遮罩 (讓底部完美融合到頁面背景) -->
       <div
-        class="absolute inset-0 bg-linear-to-t from-white via-white/60 to-transparent dark:from-gray-950 dark:via-gray-950/60 dark:to-gray-950/0 z-10"
+        class="absolute inset-0 bg-linear-to-t from-white via-white/60 to-gray/60 dark:from-gray-950 dark:via-gray-950/60 dark:to-gray-950/0 z-10"
       ></div>
       <!-- 頂部暗角 (讓文字更清楚) -->
       <div
@@ -91,7 +103,7 @@ const listItems = computed(() => {
     </div>
 
     <!-- 2. 主要內容區 -->
-    <div class="container mx-auto px-4 relative z-20 pt-[20vh] lg:pt-[25vh]">
+    <div class="container mx-auto px-4 relative z-20 pt-[15vh]">
       <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 lg:items-start">
         <!-- 左側：海報與操作 -->
         <div
@@ -129,7 +141,7 @@ const listItems = computed(() => {
         >
           <!-- 標題 -->
           <h1
-            class="text-2xl md:text-5xl lg:text-4xl font-bold mb-2 tracking-wide dark:text-white"
+            class="text-2xl md:text-5xl lg:text-4xl font-bold mb-2 tracking-wide text-white"
           >
             {{ title }}
           </h1>
@@ -144,7 +156,7 @@ const listItems = computed(() => {
 
           <!-- 資訊列 -->
           <div
-            class="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-8 text-sm font-medium text-gray-700 dark:text-gray-300"
+            class="flex items-center justify-center lg:justify-start gap-4 mb-8 text-sm font-medium text-gray-700 dark:text-gray-300"
           >
             <!-- 評分徽章 -->
             <div
@@ -161,14 +173,44 @@ const listItems = computed(() => {
             </div>
 
             <!-- 日期 -->
-            <span v-if="dateLabel">
-              {{ dateLabel }}
-            </span>
+            <div v-if="dateLabel">
+              <p>
+                {{ dateLabel }}
+              </p>
+            </div>
 
             <!-- 時間 -->
-            <span v-if="specs">
-              {{ specs }}
-            </span>
+            <div v-if="specs">
+              <p>{{ specs }}</p>
+            </div>
+
+            <!-- 加入收藏 -->
+            <div class="hidden md:block">
+              <UButton
+                size="sm"
+                variant="outline"
+                color="primary"
+                class="px-3 py-1.5 rounded-full transition-colors group"
+                @click="toggleFavorite"
+              >
+                <UIcon
+                  v-if="!isFavorited"
+                  size="15"
+                  name="i-heroicons-heart-solid"
+                  class="group-hover:bg-red-500 group-active:bg-red-500"
+                />
+                <span>{{ isFavorited ? "已收藏" : "加入收藏" }}</span>
+              </UButton>
+            </div>
+            <div class="block md:hidden">
+              <UIcon
+                size="20"
+                name="i-heroicons-heart-solid"
+                class="hover:bg-red-500 active:bg-red-500"
+                :class="isFavorited ? 'bg-red-500' : ''"
+                @click="toggleFavorite"
+              />
+            </div>
           </div>
 
           <!-- 類型標籤 (Pills 風格) -->
@@ -185,31 +227,73 @@ const listItems = computed(() => {
             </span>
           </div>
 
+          <div
+            v-if="!isPerson"
+            class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8"
+          >
+            <!-- 導演 -->
+            <div>
+              <p class="text-xs">導演</p>
+              <div v-for="director in getDirectors(item)" :key="director.id">
+                <p>
+                  {{ director.name }}
+                </p>
+              </div>
+            </div>
+            <!-- 作者 -->
+            <div>
+              <p class="text-xs">作者</p>
+              <div v-for="writer in getWriters(item)" :key="writer.id">
+                <p>
+                  {{ writer.name }}
+                </p>
+              </div>
+            </div>
+            <!-- 製作公司 -->
+            <div v-if="item.production_companies?.length">
+              <p class="text-xs">製作公司</p>
+              <div
+                v-for="comp in item.production_companies.slice(0, 1)"
+                :key="comp.id"
+              >
+                <p>
+                  {{ comp.name }}
+                </p>
+              </div>
+            </div>
+            <!-- 預算 -->
+            <div class="flex flex-col">
+              <p class="text-xs">預算</p>
+              <p>{{ formatCurrency(item.budget) }}</p>
+            </div>
+            <!-- 票房 -->
+            <div class="flex flex-col">
+              <p class="text-xs">票房</p>
+              <p>{{ formatCurrency(item.revenue) }}</p>
+            </div>
+          </div>
+
+          <!-- 概要 -->
+          <div class="mb-10">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="w-1.5 h-6 bg-primary rounded-full block"></span>
+              <h3 class="text-xl font-bold">概要</h3>
+            </div>
+            <p>{{ item.overview || item.biography }}</p>
+          </div>
+
+          <!-- 演員表 -->
           <div class="overflow-hidden">
             <div class="flex items-center gap-2 mb-4">
               <span class="w-1.5 h-6 bg-primary rounded-full block"></span>
               <h3 class="text-xl font-bold">主要演員</h3>
             </div>
 
-            <Carousel :items="listItems" class="w-full lg:w-200" />
+            <Carousel :items="listItems" class="w-full lg:max-w-200" />
           </div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- 全頁 Loading -->
-  <div
-    v-else
-    class="min-h-screen flex flex-col items-center justify-center gap-4 bg-white dark:bg-gray-950"
-  >
-    <UIcon
-      name="i-heroicons-arrow-path"
-      class="animate-spin text-5xl text-primary-500"
-    />
-    <p class="text-gray-500 animate-pulse font-medium tracking-widest">
-      LOADING
-    </p>
   </div>
 </template>
 
