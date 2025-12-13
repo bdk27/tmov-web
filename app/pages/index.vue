@@ -135,7 +135,7 @@ const isTrendingLoading = computed(() =>
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
-            class="absolute inset-0 w-full h-full rounded-lg ring-3 ring-primary/50"
+            class="absolute inset-0 w-full h-full rounded-lg ring-2 ring-primary/50"
           ></iframe>
         </div>
       </template>
