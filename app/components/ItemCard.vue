@@ -3,9 +3,18 @@ const props = defineProps<{ item: TmdbItem }>();
 const { posterUrl, titleOf, dateOf, getRating, getRatingColor } = useTmdb();
 
 const itemPath = computed(() => {
-  if (props.item.media_type === "person") return `/person/${props.item.id}`;
-  if (props.item.media_type === "tv") return `/tv/${props.item.id}`;
-  return `/movie/${props.item.id}`;
+  const item = props.item as any;
+
+  if (item.media_type === "person") return `/person/${item.id}`;
+  if (item.media_type === "tv") return `/tv/${item.id}`;
+  if (item.media_type === "movie") return `/movie/${item.id}`;
+
+  if (item.known_for_department || item.gender !== undefined)
+    return `/person/${item.id}`;
+
+  if (item.first_air_date) return `/tv/${item.id}`;
+
+  return `/movie/${item.id}`;
 });
 
 // 圖片

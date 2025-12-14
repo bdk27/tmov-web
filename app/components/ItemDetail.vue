@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { link } from "fs";
+
 const props = defineProps<{
   item: TmdbDetail;
   loading: boolean;
@@ -46,16 +48,13 @@ const specs = computed(() => {
   return formatRuntime(props.item.runtime);
 });
 
-// 列表標題 (演員表 或 演出作品)
-const listTitle = computed(() => (isPerson.value ? "演出作品" : "主要演員"));
-
 // 列表資料 (Cast 或 Combined Credits)
 const castListItems = computed(() => {
   if (isPerson.value) {
-    // 人物：顯示他演過的作品 (取前 15 部)
+    // 人物：顯示他演過的作品
     return props.item.combined_credits?.cast || [];
   } else {
-    // 影視：顯示演員 (取前 15 位)
+    // 影視：顯示演員
     return props.item.credits?.cast || [];
   }
 });
@@ -159,6 +158,21 @@ const extraInfo = computed(() => {
       value: isPerson.value ? null : formatCurrency(raw.revenue),
       colorClass: "",
     },
+    {
+      label: "相關連結",
+      value: isPerson.value
+        ? null
+        : raw.homepage
+        ? "官方網站"
+        : raw.imdb_id
+        ? "IMDB 頁面"
+        : null,
+      link: isPerson.value
+        ? null
+        : raw.homepage ||
+          (raw.imdb_id ? `https://www.imdb.com/title/${raw.imdb_id}` : null),
+      colorClass: "underline text-info  cursor-pointer",
+    },
     ...(isTv.value
       ? [{ label: "類型", value: "電視影集", colorClass: "" }]
       : []),
@@ -242,7 +256,7 @@ const toggleFavorite = () => {
 
         <!-- 右側：詳細資訊 -->
         <div
-          class="md:flex-1 text-center lg:text-left animate-slide-up animation-delay-200"
+          class="md:flex-1 min-w-0 text-center lg:text-left animate-slide-up animation-delay-200"
         >
           <!-- 標題 -->
           <h1
@@ -340,12 +354,12 @@ const toggleFavorite = () => {
 
           <!-- 概要 -->
           <div class="mb-10">
-            <h3
-              class="text-xl font-bold mb-4 flex items-center gap-2 text-gray-900 dark:text-white"
-            >
-              <span class="w-1.5 h-6 bg-primary rounded-full block"></span>
-              {{ isPerson ? "人物傳記" : "劇情簡介" }}
-            </h3>
+            <SubTitle
+              :title="isPerson ? '人物傳記' : '劇情簡介'"
+              size="xl"
+              class="mb-6"
+            />
+
             <p class="leading-relaxed text-lg whitespace-pre-line">
               {{ item.overview || item.biography || "暫無簡介。" }}
             </p>
@@ -358,233 +372,129 @@ const toggleFavorite = () => {
             <div class="w-full lg:w-2/3 min-w-0 space-y-12">
               <!-- 演員表 (Carousel) -->
               <div v-if="castListItems.length">
-                <div class="flex items-center gap-2 mb-6">
-                  <span class="w-1.5 h-6 bg-primary rounded-full block"></span>
-                  <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                    {{ isPerson ? "演出作品" : "主要演員" }}
-                  </h3>
-                </div>
+                <SubTitle title="主要演員" size="xl" class="mb-6" />
 
-                <div class="overflow-hidden">
-                  <Carousel
-                    :items="castListItems"
-                    class="w-full lg:w-[600px]"
-                  />
+                <div class="min-w-0 overflow-x-auto custom-scrollbar">
+                  <div class="flex gap-4 pb-6">
+                    <div
+                      v-for="cast in castListItems"
+                      :key="cast.id"
+                      class="w-28 shrink-0"
+                    >
+                      <ItemCard :item="cast" class="h-full" />
+                    </div>
+                  </div>
                 </div>
-
-                <!-- <div class="overflow-hidden">
-                  <UCarousel
-                    :items="castListItems"
-                    loop
-                    autoHeight
-                    :ui="{ item: 'basis-auto', container: 'gap-4' }"
-                    class="w-full lg:w-[600px] mx-auto"
-                  >
-                    <template #default="{ item: subItem }">
-                      <NuxtLink
-                        :to="
-                          isPerson
-                            ? subItem.media_type === 'tv'
-                              ? `/tv/${subItem.id}`
-                              : `/movie/${subItem.id}`
-                            : `/person/${subItem.id}`
-                        "
-                        class="w-24 shrink-0 group/card block"
-                      >
-                        <div
-                          class="overflow-hidden mb-2 shadow-sm bg-gray-200 dark:bg-gray-800 relative transition-all duration-200 group-hover/card:shadow-md group-hover/card:-translate-y-1 ring-1 ring-black/5 dark:ring-white/10"
-                          :class="
-                            isPerson
-                              ? 'aspect-2/3 rounded-lg'
-                              : 'w-24 h-24 rounded-full mx-auto'
-                          "
-                        >
-                          <img
-                            :src="
-                              posterUrl(
-                                isPerson
-                                  ? subItem.poster_path || null
-                                  : subItem.profile_path || null,
-                                isPerson ? 'w342' : 'w185'
-                              )
-                            "
-                            class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
-                            loading="lazy"
-                          />
-                        </div>
-                        <div class="text-center px-0.5">
-                          <p
-                            class="text-xs font-bold truncate text-gray-900 dark:text-white group-hover/card:text-primary-500 transition-colors"
-                          >
-                            {{ titleOf(subItem) }}
-                          </p>
-                          <p
-                            class="text-[10px] text-gray-500 dark:text-gray-400 truncate"
-                          >
-                            {{
-                              isPerson
-                                ? subItem.character || "未知角色"
-                                : subItem.character || subItem.name
-                            }}
-                          </p>
-                        </div>
-                      </NuxtLink>
-                    </template>
-                  </UCarousel>
-                </div> -->
               </div>
 
               <!-- 劇組表 (Carousel) -->
               <div v-if="!isPerson && crewListItems.length">
-                <div class="flex items-center gap-2 mb-6">
-                  <span class="w-1.5 h-6 bg-primary rounded-full block"></span>
-                  <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                    製作團隊
-                  </h3>
-                </div>
-                <div class="w-full overflow-hidden">
-                  <UCarousel
-                    :items="crewListItems"
-                    arrows
-                    loop
-                    autoHeight
-                    :ui="{ item: 'basis-auto', container: 'gap-4' }"
-                    class="w-full max-w-xl"
-                  >
-                    <template #default="{ item: subItem }">
-                      <NuxtLink
-                        :to="
-                          isPerson
-                            ? subItem.media_type === 'tv'
-                              ? `/tv/${subItem.id}`
-                              : `/movie/${subItem.id}`
-                            : `/person/${subItem.id}`
-                        "
-                        class="w-24 shrink-0 group/card block"
-                      >
-                        <div
-                          class="overflow-hidden mb-2 shadow-sm bg-gray-200 dark:bg-gray-800 relative transition-all duration-200 group-hover/card:shadow-md group-hover/card:-translate-y-1 ring-1 ring-black/5 dark:ring-white/10"
-                          :class="
-                            isPerson
-                              ? 'aspect-2/3 rounded-lg'
-                              : 'w-24 h-24 rounded-full mx-auto'
-                          "
-                        >
-                          <img
-                            :src="
-                              posterUrl(
-                                isPerson
-                                  ? subItem.poster_path || null
-                                  : subItem.profile_path || null,
-                                isPerson ? 'w342' : 'w185'
-                              )
-                            "
-                            class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
-                            loading="lazy"
-                          />
-                        </div>
-                        <div class="text-center px-0.5">
-                          <p
-                            class="text-xs font-bold truncate text-gray-900 dark:text-white group-hover/card:text-primary-500 transition-colors"
-                          >
-                            {{ titleOf(subItem) }}
-                          </p>
-                          <p
-                            class="text-[10px] text-gray-500 dark:text-gray-400 truncate"
-                          >
-                            {{
-                              isPerson
-                                ? subItem.character || "未知角色"
-                                : subItem.character || subItem.name
-                            }}
-                          </p>
-                        </div>
-                      </NuxtLink>
-                    </template>
-                  </UCarousel>
+                <SubTitle title="劇組團隊" size="xl" class="mb-6" />
+
+                <div class="min-w-0 overflow-x-auto custom-scrollbar">
+                  <div class="flex gap-4 pb-6">
+                    <div
+                      v-for="crew in crewListItems"
+                      :key="crew.id"
+                      class="w-28 shrink-0"
+                    >
+                      <ItemCard :item="crew" class="h-full" />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- 媒體與推薦 (Full width) -->
+              <!-- 媒體與推薦 -->
               <div
                 v-if="videos.length || backdrops.length"
                 class="mt-16 text-left"
               >
-                <UTabs
-                  :items="[
-                    { label: `預告片 (${videos.length})`, slot: 'videos' },
-                    { label: `劇照 (${backdrops.length})`, slot: 'images' },
-                  ]"
-                  class="w-[500px]"
-                >
-                  <template #videos>
-                    <div
-                      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4"
-                    >
+                <div class="min-w-0 overflow-hidden custom-scrollbar">
+                  <UTabs
+                    :items="[
+                      { label: `預告片 (${videos.length})`, slot: 'videos' },
+                      { label: `劇照 (${backdrops.length})`, slot: 'images' },
+                    ]"
+                    class="w-full"
+                  >
+                    <template #videos>
                       <div
-                        v-for="video in videos.slice(0, 6)"
-                        :key="video.id"
-                        class="aspect-video relative rounded-lg overflow-hidden group cursor-pointer bg-black"
-                        @click="openVideo(video)"
+                        class="flex w-full gap-5 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scroll-smooth"
                       >
-                        <img
-                          :src="getYoutubeThumb(video.key)"
-                          class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                        />
                         <div
-                          class="absolute inset-0 flex items-center justify-center"
+                          v-for="video in videos"
+                          :key="video.id"
+                          class="group relative shrink-0 snap-start w-72 md:w-80 flex-none cursor-pointer rounded-xl shadow-md transition-all"
+                          @click="openVideo(video)"
                         >
-                          <UIcon
-                            name="i-heroicons-play-circle-solid"
-                            class="w-12 h-12 text-white drop-shadow-lg group-hover:scale-110 transition-transform"
+                          <div
+                            class="aspect-video w-full overflow-hidden rounded-t-xl relative"
+                          >
+                            <img
+                              :src="getYoutubeThumb(video.key)"
+                              class="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
+                              loading="lazy"
+                            />
+                            <div
+                              class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition-colors"
+                            >
+                              <UIcon
+                                name="i-heroicons-play-circle-solid"
+                                class="h-14 w-14 text-white/90 drop-shadow-xl transition-all group-hover:scale-110 group-hover:text-primary-400"
+                              />
+                            </div>
+                          </div>
+
+                          <div class="p-3">
+                            <p class="truncate text-sm">
+                              {{ video.name }}
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">YouTube</p>
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+
+                    <template #images>
+                      <div
+                        class="flex w-full gap-4 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scroll-smooth"
+                      >
+                        <div
+                          v-for="img in backdrops"
+                          :key="img.file_path"
+                          class="group relative shrink-0 snap-start h-40 md:h-48 cursor-zoom-in overflow-hidden rounded-lg shadow-md ring-1 ring-white/10 transition-all hover:scale-105 hover:shadow-xl"
+                        >
+                          <img
+                            :src="backdropUrl(img.file_path, 'w780')"
+                            class="h-full w-auto object-cover rounded-lg"
+                            loading="lazy"
                           />
                         </div>
-                        <div
-                          class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent"
-                        >
-                          <p class="text-white text-xs font-bold truncate">
-                            {{ video.name }}
-                          </p>
-                        </div>
                       </div>
-                    </div>
-                  </template>
-                  <template #images>
-                    <div class="flex gap-4 overflow-x-auto mt-4 pb-4">
-                      <div
-                        v-for="img in backdrops.slice(0, 10)"
-                        :key="img.file_path"
-                        class="h-40 shrink-0 rounded-lg overflow-hidden shadow-md"
-                      >
-                        <img
-                          :src="backdropUrl(img.file_path, 'w780')"
-                          class="h-full w-auto object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                    </div>
-                  </template>
-                </UTabs>
+                    </template>
+                  </UTabs>
+                </div>
               </div>
 
               <div v-if="recommendations.length" class="mt-16 text-left">
-                <h3 class="text-xl font-bold mb-6">您可能也喜歡</h3>
-                <div
-                  class="flex gap-4 overflow-x-auto pb-6 scrollbar-hide w-[500px]"
-                >
-                  <div
-                    v-for="rec in recommendations"
-                    :key="rec.id"
-                    class="w-36 shrink-0"
-                  >
-                    <ItemCard :item="rec" class="h-full" />
+                <SubTitle title="您可能也喜歡" size="xl" class="mb-6" />
+
+                <div class="min-w-0 overflow-x-auto custom-scrollbar">
+                  <div class="flex gap-4 pb-6">
+                    <div
+                      v-for="rec in recommendations"
+                      :key="rec.id"
+                      class="w-36 shrink-0"
+                    >
+                      <ItemCard :item="rec" class="h-full" />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             <!-- 右側 -->
             <div
-              class="w-full lg:w-1/3 space-y-8 lg:border-l lg:border-gray-200 lg:dark:border-gray-800 lg:pl-12"
+              class="w-full lg:w-1/3 space-y-8 lg:border-l lg:border-gray-200 lg:dark:border-gray-800 lg:pl-12 min-w-0"
             >
               <!-- 詳細資訊 Grid -->
               <div class="flex flex-col gap-6">
@@ -593,13 +503,17 @@ const toggleFavorite = () => {
                   :key="idx"
                   class="flex flex-col"
                 >
-                  <span
+                  <p
                     class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 font-bold"
-                    >{{ info.label }}</span
                   >
-                  <span class="" :class="info.colorClass">
-                    {{ info.value }}
-                  </span>
+                    {{ info.label }}
+                  </p>
+                  <p :class="info.colorClass">
+                    <a :href="info.link" target="_blank" v-if="info.link">{{
+                      info.value
+                    }}</a>
+                    <span v-else>{{ info.value }}</span>
+                  </p>
                 </div>
               </div>
 
@@ -642,6 +556,11 @@ const toggleFavorite = () => {
 </template>
 
 <style scoped>
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 100, 100, 0.5) transparent;
+}
+
 .animate-fade-in {
   animation: fadeIn 1s ease-out forwards;
 }

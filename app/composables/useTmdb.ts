@@ -374,14 +374,12 @@ export function useTmdb() {
   const getDirectors = (item: TmdbDetail) => {
     const crew = item.credits?.crew || [];
     // 電影找 Director，電視找 Executive Producer 或 Creator
-    return crew.filter(
-      (c) => c.job === "Director" || c.job === "Executive Producer"
-    );
+    return crew.filter((c) => c.job === "Director");
   };
 
   const getWriters = (item: TmdbDetail) => {
     const crew = item.credits?.crew || [];
-    return crew.filter((c) => c.department === "Writing");
+    return crew.filter((c) => c.job === "Original Story");
   };
 
   // [新增] 取得 YouTube 縮圖

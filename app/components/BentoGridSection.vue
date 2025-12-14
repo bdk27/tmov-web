@@ -20,12 +20,7 @@ const bottomItems = computed(() => props.items.slice(3, 10));
   >
     <!-- 大標題 -->
     <div class="flex items-center justify-between mb-8">
-      <div class="flex items-center justify-center gap-2">
-        <span class="w-1.5 h-6 bg-primary-500 rounded-full block"></span>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-          {{ title }}
-        </h2>
-      </div>
+      <SubTitle :title="title" size="2xl" />
 
       <NuxtLink
         to="/movie/now-playing"
