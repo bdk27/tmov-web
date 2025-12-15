@@ -113,6 +113,14 @@ export interface TmdbDetail {
     results: TmdbItem[];
   };
 
+  // 系列
+  belongs_to_collection?: {
+    id: number;
+    name: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+  };
+
   // 製作資訊
   production_companies?: {
     id: number;

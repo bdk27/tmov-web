@@ -48,21 +48,34 @@ const specs = computed(() => {
   return formatRuntime(props.item.runtime);
 });
 
-// 列表資料 (Cast 或 Combined Credits)
+// 列表資料
 const castListItems = computed(() => {
+  let list = [];
   if (isPerson.value) {
-    // 人物：顯示他演過的作品
-    return props.item.combined_credits?.cast || [];
+    list = props.item.combined_credits?.cast || [];
   } else {
-    // 影視：顯示演員
-    return props.item.credits?.cast || [];
+    list = props.item.credits?.cast || [];
   }
+
+  return getUniqueItems(list);
 });
 
 // 劇組列表資料
 const crewListItems = computed(() => {
-  return props.item.credits?.crew || [];
+  if (isPerson.value) return [];
+
+  const list = props.item.credits?.crew || [];
+  return getUniqueItems(list);
 });
+
+function getUniqueItems(list: any[]) {
+  const seen = new Set();
+  return list.filter((item) => {
+    const duplicate = seen.has(item.id);
+    seen.add(item.id);
+    return !duplicate;
+  });
+}
 
 const videos = computed(
   () => props.item.videos?.results.filter((v) => v.site === "YouTube") || []
@@ -116,7 +129,6 @@ const statusColorClass = computed(() => {
       return "bg-gray-900 dark:bg-white";
   }
 });
-
 const extraInfo = computed(() => {
   const raw = props.item as any;
   return [
@@ -182,6 +194,18 @@ const extraInfo = computed(() => {
   ].filter((i) => i.value);
 });
 
+// 移除結尾的 "系列" 或 " Collection"
+const cleanCollectionName = computed(() => {
+  const name = props.item.belongs_to_collection?.name;
+  if (!name) return "";
+
+  return name
+    .replace(/[\(\（][^)\）]*[\)\）]/g, "")
+    .replace(/\bCollection\b/gi, "")
+    .replace(/系列$/g, "")
+    .trim();
+});
+
 // 切換收藏
 const isFavorited = ref(false);
 const toggleFavorite = () => {
@@ -211,13 +235,9 @@ const toggleFavorite = () => {
         ></div>
       </div>
 
-      <!-- 漸層遮罩 (讓底部完美融合到頁面背景) -->
+      <!-- 漸層遮罩 -->
       <div
-        class="absolute inset-0 bg-linear-to-t from-white via-white/60 to-gray/60 dark:from-gray-950 dark:via-gray-950/60 dark:to-gray-950/0 z-10"
-      ></div>
-      <!-- 頂部暗角 (讓文字更清楚) -->
-      <div
-        class="absolute inset-0 bg-linear-to-b from-black/30 via-transparent to-transparent z-10"
+        class="absolute inset-0 bg-linear-to-t from-white to-white/50 dark:from-gray-950 dark:to-gray-950/50 z-10"
       ></div>
     </div>
 
@@ -260,7 +280,7 @@ const toggleFavorite = () => {
         >
           <!-- 標題 -->
           <h1
-            class="text-2xl md:text-5xl lg:text-4xl font-bold mb-2 tracking-wide text-white"
+            class="text-2xl md:text-5xl lg:text-4xl font-bold mb-2 tracking-wide"
           >
             {{ title }}
             <span
@@ -404,11 +424,8 @@ const toggleFavorite = () => {
                 </div>
               </div>
 
-              <!-- 媒體與推薦 -->
-              <div
-                v-if="videos.length || backdrops.length"
-                class="mt-16 text-left"
-              >
+              <!-- 預告片/劇照 -->
+              <div v-if="videos.length || backdrops.length" class="text-left">
                 <div class="min-w-0 overflow-hidden custom-scrollbar">
                   <UTabs
                     :items="[
@@ -476,7 +493,53 @@ const toggleFavorite = () => {
                 </div>
               </div>
 
-              <div v-if="recommendations.length" class="mt-16 text-left">
+              <!-- 相關系列 -->
+              <div
+                v-if="item.belongs_to_collection"
+                class="mt-16 text-left relative rounded-xl overflow-hidden shadow-2xl group cursor-pointer border border-gray-200 dark:border-gray-800"
+              >
+                <!-- 背景圖 -->
+                <div class="absolute inset-0">
+                  <img
+                    :src="
+                      backdropUrl(
+                        item.belongs_to_collection.backdrop_path,
+                        'original'
+                      )
+                    "
+                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div
+                    class="absolute inset-0 bg-linear-to-r from-black/90 via-black/50 to-transparent"
+                  ></div>
+                </div>
+
+                <!-- 內容 -->
+                <div
+                  class="relative z-10 p-8 md:p-12 flex flex-col items-start justify-center h-full min-h-[250px]"
+                >
+                  <span
+                    class="text-primary-400 font-bold tracking-widest text-sm mb-2 uppercase"
+                    >相關系列</span
+                  >
+                  <h3
+                    class="text-3xl md:text-4xl font-bold text-white tracking-wide mb-4"
+                  >
+                    {{ item.belongs_to_collection.name }}
+                  </h3>
+                  <UButton
+                    :to="`/search?q=${cleanCollectionName}`"
+                    size="lg"
+                    color="neutral"
+                    variant="solid"
+                    label="查看系列作品"
+                    icon="i-heroicons-arrow-right"
+                  />
+                </div>
+              </div>
+
+              <!-- 你可能也喜歡 -->
+              <div v-if="recommendations.length">
                 <SubTitle title="您可能也喜歡" size="xl" class="mb-6" />
 
                 <div class="min-w-0 overflow-x-auto custom-scrollbar">
@@ -492,6 +555,7 @@ const toggleFavorite = () => {
                 </div>
               </div>
             </div>
+
             <!-- 右側 -->
             <div
               class="w-full lg:w-1/3 space-y-8 lg:border-l lg:border-gray-200 lg:dark:border-gray-800 lg:pl-12 min-w-0"
