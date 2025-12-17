@@ -16,7 +16,7 @@ const bottomItems = computed(() => props.items.slice(3, 10));
 
 <template>
   <div
-    class="container mx-auto max-w-6xl py-16 border-b border-gray-200 dark:border-gray-800 last:border-0"
+    class="container mx-auto max-w-6xl px-4 py-16 border-b border-gray-200 dark:border-gray-800 last:border-0"
   >
     <!-- 大標題 -->
     <div class="flex items-center justify-between mb-8">

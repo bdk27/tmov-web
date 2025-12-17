@@ -1,4 +1,5 @@
 export type TmdbSearchType = "multi" | "movie" | "tv" | "person";
+export type TmdbMediaType = "movie" | "tv" | "person";
 // 熱門選項
 export type TmdbPopularCategory =
   | "movie"
@@ -23,19 +24,41 @@ export interface TmdbSearchOptions {
 }
 // 電影項目
 export interface TmdbItem {
-  id: number;
-  media_type?: TmdbSearchType;
+  id?: number;
+  media_type?: TmdbMediaType;
+  popularity?: number;
   poster_path?: string | null;
-  profile_path?: string | null;
   backdrop_path?: string | null;
+  profile_path?: string | null;
   title?: string;
   name?: string;
   release_date?: string;
   first_air_date?: string;
   vote_average?: number;
   overview?: string;
-  popularity?: number;
-  character?: string;
+
+  "watch/providers"?: {
+    results: {
+      [countryCode: string]: TmdbWatchProviderResult;
+    };
+  };
+
+  custom_watch_providers?: TmdbWatchProviderResult;
+}
+export interface TmdbWatchProvider {
+  logo_path: string;
+  provider_id: number;
+  provider_name: string;
+  display_priority?: number;
+  full_logo_url?: string;
+}
+
+// 平台結果集合
+export interface TmdbWatchProviderResult {
+  link?: string;
+  flatrate?: TmdbWatchProvider[];
+  rent?: TmdbWatchProvider[];
+  buy?: TmdbWatchProvider[];
 }
 // 分頁
 export interface TmdbPaginatedResponse<T> {
@@ -47,16 +70,17 @@ export interface TmdbPaginatedResponse<T> {
 // 詳細資料
 export interface TmdbDetail {
   id: number;
-  media_type: TmdbSearchType;
+  media_type: TmdbMediaType;
 
   // 基本資訊
   title?: string;
   name?: string;
+  gender?: string;
   original_title?: string;
   original_name?: string;
   overview: string;
   tagline?: string;
-  status: string; //
+  status: string;
 
   // 圖片
   poster_path: string | null;
@@ -88,7 +112,7 @@ export interface TmdbDetail {
   known_for_department?: string;
   biography?: string;
 
-  // 關聯資料 (Credits)
+  // 關聯資料
   credits?: {
     cast: TmdbCast[];
     crew: TmdbCrew[];
@@ -98,7 +122,7 @@ export interface TmdbDetail {
     crew: TmdbCrew[];
   };
 
-  // 媒體 (Videos & Images)
+  // 媒體
   videos?: {
     results: TmdbVideo[];
   };
@@ -113,14 +137,6 @@ export interface TmdbDetail {
     results: TmdbItem[];
   };
 
-  // 系列
-  belongs_to_collection?: {
-    id: number;
-    name: string;
-    poster_path: string | null;
-    backdrop_path: string | null;
-  };
-
   // 製作資訊
   production_companies?: {
     id: number;
@@ -128,6 +144,45 @@ export interface TmdbDetail {
     logo_path: string | null;
     origin_country: string;
   }[];
+
+  // 相關系列
+  belongs_to_collection?: {
+    id: number;
+    name: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+  };
+
+  // [新增] 觀看平台 (詳細頁也需要)
+  "watch/providers"?: {
+    results: {
+      [countryCode: string]: {
+        link: string;
+        flatrate?: TmdbWatchProvider[];
+        buy?: TmdbWatchProvider[];
+        rent?: TmdbWatchProvider[];
+      };
+    };
+  };
+  custom_watch_providers?: TmdbWatchProvider[];
+
+  // 分級
+  release_dates?: { results: any[] };
+  custom_rating?: string;
+
+  // 社群連結
+  external_ids?: {
+    imdb_id?: string;
+    facebook_id?: string;
+    instagram_id?: string;
+    twitter_id?: string;
+  };
+
+  // 關鍵字
+  keywords?: {
+    keywords?: { id: number; name: string }[];
+    results?: { id: number; name: string }[];
+  };
 }
 export interface TmdbCast extends TmdbItem {
   character: string;
@@ -147,6 +202,12 @@ export interface TmdbImage {
   file_path: string;
   width: number;
   height: number;
+}
+export interface TmdbWatchProvider {
+  logo_path: string;
+  provider_id: number;
+  provider_name: string;
+  display_priority?: number;
 }
 
 export function useTmdb() {
@@ -378,22 +439,6 @@ export function useTmdb() {
     }).format(amount);
   };
 
-  // [新增] 取得導演/主創 (從 crew 篩選)
-  const getDirectors = (item: TmdbDetail) => {
-    const crew = item.credits?.crew || [];
-    // 電影找 Director，電視找 Executive Producer 或 Creator
-    return crew.filter((c) => c.job === "Director");
-  };
-
-  const getWriters = (item: TmdbDetail) => {
-    const crew = item.credits?.crew || [];
-    return crew.filter((c) => c.job === "Original Story");
-  };
-
-  // [新增] 取得 YouTube 縮圖
-  const getYoutubeThumb = (key: string) =>
-    `https://img.youtube.com/vi/${key}/mqdefault.jpg`;
-
   // 輔助函式(海報網址、標題、日期、評分)
   const posterUrl = (path: string | null, size = config.tmdbPosterSize) => {
     return path
@@ -411,7 +456,7 @@ export function useTmdb() {
   const dateOf = (item: TmdbItem) => {
     return item.release_date || item.first_air_date || "";
   };
-  const getRating = (item: TmdbItem) => {
+  const getRating = (item: { vote_average?: number }) => {
     if (!item.vote_average) return 0;
     return Math.round(item.vote_average * 10);
   };
@@ -429,6 +474,59 @@ export function useTmdb() {
   const getDetailTitle = (item?: TmdbDetail) => item?.title || item?.name || "";
   const getDetailImage = (item?: TmdbDetail) =>
     item?.poster_path || item?.profile_path || null;
+
+  // 取得導演/主創 (從 crew 篩選)
+  const getDirectors = (item: TmdbDetail) => {
+    const crew = item.credits?.crew || [];
+    // 電影找 Director，電視找 Executive Producer 或 Creator
+    return crew.filter((c) => c.job === "Director");
+  };
+
+  const getWriters = (item: TmdbDetail) => {
+    const crew = item.credits?.crew || [];
+    return crew.filter((c) => c.job === "Original Story");
+  };
+
+  // 取得觀看平台
+  const getWatchProviders = (
+    item: TmdbDetail | TmdbItem
+  ): TmdbWatchProvider[] => {
+    if (Array.isArray(item.custom_watch_providers)) {
+      return item.custom_watch_providers;
+    }
+
+    let data: TmdbWatchProviderResult | undefined;
+
+    // 優先使用 custom_watch_providers
+    if (item.custom_watch_providers) {
+      data = item.custom_watch_providers;
+    }
+    // 備用：讀取 watch/providers.results.TW
+    else if (item["watch/providers"]?.results?.["TW"]) {
+      data = item["watch/providers"].results["TW"];
+    }
+
+    if (!data) return [];
+
+    // 合併所有管道
+    const allProviders: TmdbWatchProvider[] = [];
+    if (data.flatrate) allProviders.push(...data.flatrate);
+    if (data.rent) allProviders.push(...data.rent);
+    if (data.buy) allProviders.push(...data.buy);
+
+    // 去重
+    const unique = new Map<number, TmdbWatchProvider>();
+    allProviders.forEach((p) => unique.set(p.provider_id, p));
+
+    // 排序
+    return Array.from(unique.values()).sort(
+      (a, b) => (a.display_priority || 999) - (b.display_priority || 999)
+    );
+  };
+
+  // [新增] 取得 YouTube 縮圖
+  const getYoutubeThumb = (key: string) =>
+    `https://img.youtube.com/vi/${key}/mqdefault.jpg`;
 
   return {
     search,
@@ -452,6 +550,7 @@ export function useTmdb() {
     formatCurrency,
     getDirectors,
     getWriters,
+    getWatchProviders,
     getYoutubeThumb,
   };
 }

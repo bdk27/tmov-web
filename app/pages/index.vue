@@ -110,7 +110,6 @@ const isTrendingLoading = computed(() =>
     <UPageHero
       headline="歡迎來到 TMOV !"
       orientation="horizontal"
-      :reverse="true"
       :links="links"
     >
       <template #title>

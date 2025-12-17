@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { link } from "fs";
-
 const props = defineProps<{
   item: TmdbDetail;
   loading: boolean;
@@ -19,6 +17,7 @@ const {
   getDirectors,
   getWriters,
   getYoutubeThumb,
+  getWatchProviders,
 } = useTmdb();
 
 // 判斷類型
@@ -57,7 +56,7 @@ const castListItems = computed(() => {
     list = props.item.credits?.cast || [];
   }
 
-  return getUniqueItems(list);
+  return getUniqueItems(list).slice(0, 30);
 });
 
 // 劇組列表資料
@@ -65,9 +64,9 @@ const crewListItems = computed(() => {
   if (isPerson.value) return [];
 
   const list = props.item.credits?.crew || [];
-  return getUniqueItems(list);
+  return getUniqueItems(list).slice(0, 20);
 });
-
+// 移除重複項目
 function getUniqueItems(list: any[]) {
   const seen = new Set();
   return list.filter((item) => {
@@ -185,12 +184,6 @@ const extraInfo = computed(() => {
           (raw.imdb_id ? `https://www.imdb.com/title/${raw.imdb_id}` : null),
       colorClass: "underline text-info  cursor-pointer",
     },
-    ...(isTv.value
-      ? [{ label: "類型", value: "電視影集", colorClass: "" }]
-      : []),
-    ...(isPerson.value
-      ? [{ label: "部門", value: raw.known_for_department, colorClass: "" }]
-      : []),
   ].filter((i) => i.value);
 });
 
@@ -211,6 +204,34 @@ const isFavorited = ref(false);
 const toggleFavorite = () => {
   isFavorited.value = !isFavorited.value;
 };
+
+const externalIds = computed(() => props.item.external_ids || {});
+const imdbLink = computed(() =>
+  externalIds.value.imdb_id
+    ? `https://www.imdb.com/title/${externalIds.value.imdb_id}`
+    : null
+);
+const instagramLink = computed(() =>
+  externalIds.value.instagram_id
+    ? `https://instagram.com/${externalIds.value.instagram_id}`
+    : null
+);
+const facebookLink = computed(() =>
+  externalIds.value.facebook_id
+    ? `https://facebook.com/${externalIds.value.facebook_id}`
+    : null
+);
+
+// 觀看平台
+const providers = computed(() => getWatchProviders(props.item));
+
+// 關鍵字
+const keywords = computed(() => {
+  // 電影用 .keywords, 影集用 .results
+  const list =
+    props.item.keywords?.keywords || props.item.keywords?.results || [];
+  return list.slice(0, 10);
+});
 </script>
 
 <template>
@@ -294,12 +315,22 @@ const toggleFavorite = () => {
           </h1>
 
           <!-- 副標題 / 標語 -->
-          <p
-            v-if="subtitle"
-            class="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-6 italic font-serif opacity-90"
+          <div
+            class="flex items-center justify-center lg:justify-start mb-6 gap-4"
           >
-            {{ subtitle }}
-          </p>
+            <p
+              v-if="item.custom_rating && !isPerson"
+              class="border border-gray-500 text-gray-500 text-sm p-1 rounded-sm"
+            >
+              {{ item.custom_rating }}
+            </p>
+            <p
+              v-if="subtitle"
+              class="text-lg md:text-xl text-gray-600 dark:text-gray-300 italic font-serif opacity-90"
+            >
+              {{ subtitle }}
+            </p>
+          </div>
 
           <!-- 類型標籤 (Pills 風格) -->
           <div
@@ -331,12 +362,24 @@ const toggleFavorite = () => {
               <span class="text-lg" :class="getRatingColor(getRating(item))">{{
                 item.vote_average.toFixed(1)
               }}</span>
+              <span v-if="item.vote_count" class="text-xs">
+                ({{ item.vote_count }} 人評分)</span
+              >
+            </div>
+            <div v-if="isPerson">
+              <p class="text-lg">
+                {{ item.gender === "1" ? "女" : "男" }}
+              </p>
             </div>
             <!-- 日期 -->
             <div v-if="dateLabel">
-              <p>
+              <span>
                 {{ dateLabel }}
-              </p>
+              </span>
+              <span v-if="isPerson && item.deathday">
+                <span class="text-gray-500"> ~ </span>
+                <span>{{ item.deathday }}</span>
+              </span>
             </div>
             <!-- 時間 -->
             <div v-if="specs">
@@ -392,7 +435,11 @@ const toggleFavorite = () => {
             <div class="w-full lg:w-2/3 min-w-0 space-y-12">
               <!-- 演員表 (Carousel) -->
               <div v-if="castListItems.length">
-                <SubTitle title="主要演員" size="xl" class="mb-6" />
+                <SubTitle
+                  :title="isPerson ? '出演作品' : '主要演員'"
+                  size="xl"
+                  class="mb-6"
+                />
 
                 <div class="min-w-0 overflow-x-auto custom-scrollbar">
                   <div class="flex gap-4 pb-6">
@@ -408,8 +455,12 @@ const toggleFavorite = () => {
               </div>
 
               <!-- 劇組表 (Carousel) -->
-              <div v-if="!isPerson && crewListItems.length">
-                <SubTitle title="劇組團隊" size="xl" class="mb-6" />
+              <div v-if="crewListItems.length">
+                <SubTitle
+                  :title="isPerson ? '相關製作' : '劇組團隊'"
+                  size="xl"
+                  class="mb-6"
+                />
 
                 <div class="min-w-0 overflow-x-auto custom-scrollbar">
                   <div class="flex gap-4 pb-6">
@@ -496,7 +547,7 @@ const toggleFavorite = () => {
               <!-- 相關系列 -->
               <div
                 v-if="item.belongs_to_collection"
-                class="mt-16 text-left relative rounded-xl overflow-hidden shadow-2xl group cursor-pointer border border-gray-200 dark:border-gray-800"
+                class="text-left relative rounded-xl overflow-hidden shadow-2xl group cursor-pointer border border-gray-200 dark:border-gray-800"
               >
                 <!-- 背景圖 -->
                 <div class="absolute inset-0">
@@ -560,6 +611,13 @@ const toggleFavorite = () => {
             <div
               class="w-full lg:w-1/3 space-y-8 lg:border-l lg:border-gray-200 lg:dark:border-gray-800 lg:pl-12 min-w-0"
             >
+              <!-- 連結 -->
+              <div>
+                <ul>
+                  <li>{{ imdbLink }}</li>
+                </ul>
+              </div>
+
               <!-- 詳細資訊 Grid -->
               <div class="flex flex-col gap-6">
                 <div
@@ -580,6 +638,28 @@ const toggleFavorite = () => {
                   </p>
                 </div>
               </div>
+
+              <!-- 觀看平台 -->
+              <nav v-if="providers.length" class="mt-4">
+                <p
+                  class="text-sm text-gray-500 dark:text-gray-400 tracking-wider mb-3 block font-bold"
+                >
+                  現正串流
+                </p>
+                <ul>
+                  <li
+                    v-for="prov in providers"
+                    :key="prov.provider_name"
+                    :text="prov.provider_name"
+                  >
+                    <img
+                      :src="posterUrl(prov.logo_path, 'w92')"
+                      class="w-10 h-10 rounded-md"
+                      :alt="prov.provider_name"
+                    />
+                  </li>
+                </ul>
+              </nav>
 
               <!-- 製作公司 -->
               <div v-if="item.production_companies?.length">
