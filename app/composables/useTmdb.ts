@@ -124,7 +124,13 @@ export interface TmdbDetail {
 
   // 媒體
   videos?: {
-    results: TmdbVideo[];
+    results: {
+      id: string;
+      key: string;
+      name: string;
+      site: string;
+      type: string;
+    };
   };
   images?: {
     backdrops: TmdbImage[];
@@ -136,6 +142,17 @@ export interface TmdbDetail {
   recommendations?: {
     results: TmdbItem[];
   };
+
+  seasons?: {
+    air_date: string;
+    episode_count: number;
+    id: number;
+    name: string;
+    overview: string;
+    poster_path: string;
+    season_number: number;
+    vote_average: number;
+  }[];
 
   // 製作資訊
   production_companies?: {
@@ -153,7 +170,7 @@ export interface TmdbDetail {
     backdrop_path: string | null;
   };
 
-  // [新增] 觀看平台 (詳細頁也需要)
+  // 觀看平台
   "watch/providers"?: {
     results: {
       [countryCode: string]: {
@@ -191,23 +208,11 @@ export interface TmdbCrew extends TmdbItem {
   job: string;
   department: string;
 }
-export interface TmdbVideo {
-  id: string;
-  key: string;
-  name: string;
-  site: string;
-  type: string; // "Trailer", "Teaser", "Featurette"
-}
+
 export interface TmdbImage {
   file_path: string;
   width: number;
   height: number;
-}
-export interface TmdbWatchProvider {
-  logo_path: string;
-  provider_id: number;
-  provider_name: string;
-  display_priority?: number;
 }
 
 export function useTmdb() {

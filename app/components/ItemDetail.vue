@@ -46,7 +46,7 @@ const specs = computed(() => {
   return formatRuntime(props.item.runtime);
 });
 
-// 列表資料
+// 演員列表資料
 const castListItems = computed(() => {
   let list = [];
   if (isPerson.value) {
@@ -75,14 +75,29 @@ function getUniqueItems(list: any[]) {
   });
 }
 
-const videos = computed(
-  () => props.item.videos?.results.filter((v) => v.site === "YouTube") || []
-);
-const backdrops = computed(() => props.item.images?.backdrops || []);
+// 推薦列表
 const recommendations = computed(
   () => props.item.recommendations?.results || []
 );
 
+// 季數列表
+const seasonList = computed(() => {
+  if (!isTv.value || !props.item.seasons) return [];
+
+  return props.item.seasons.filter((s) => s.episode_count > 0 && s.air_date);
+});
+
+// 格式化年份 (只取年份)
+const getYear = (dateStr?: string) => {
+  return dateStr ? dateStr.split("-")[0] : "";
+};
+
+// 取得預告片與劇照
+const videos = computed(() =>
+  Array.isArray(props.item.videos?.results)
+    ? props.item.videos.results.filter((v) => v.site === "YouTube")
+    : []
+);
 const activeVideo = ref<any>(null);
 const isVideoModalOpen = ref(false);
 function openVideo(video: any) {
@@ -90,6 +105,8 @@ function openVideo(video: any) {
   isVideoModalOpen.value = true;
 }
 
+// 取得劇照
+const backdrops = computed(() => props.item.images?.backdrops || []);
 const activeImage = ref<any>(null);
 const isImageModalOpen = ref(false);
 function openImage(img: any) {
@@ -209,6 +226,7 @@ const toggleFavorite = () => {
   isFavorited.value = !isFavorited.value;
 };
 
+// 社群連結
 const externalIds = computed(() => props.item.external_ids || {});
 const imdbLink = computed(() =>
   externalIds.value.imdb_id
@@ -471,6 +489,62 @@ const providers = computed(() => getWatchProviders(props.item));
                       class="w-28 shrink-0"
                     >
                       <ItemCard :item="crew" class="h-full" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 季數總覽 -->
+              <div v-if="seasonList.length">
+                <SubTitle title="季數總覽" size="xl" class="mb-6" />
+
+                <div class="min-w-0 overflow-x-auto custom-scrollbar">
+                  <div class="flex gap-4 pb-6">
+                    <div
+                      v-for="season in seasonList"
+                      :key="season.id"
+                      class="w-36 shrink-0 group cursor-default"
+                    >
+                      <div
+                        class="aspect-2/3 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800 shadow-md mb-3 relative"
+                      >
+                        <img
+                          v-if="season.poster_path"
+                          :src="posterUrl(season.poster_path)"
+                          :alt="season.name"
+                          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                        <div
+                          v-else
+                          class="w-full h-full flex items-center justify-center text-gray-400"
+                        >
+                          <UIcon name="i-heroicons-photo" class="w-10 h-10" />
+                        </div>
+                      </div>
+
+                      <h4
+                        class="font-bold text-gray-900 dark:text-white truncate"
+                      >
+                        {{ season.name }}
+                      </h4>
+                      <div
+                        class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1"
+                      >
+                        <span
+                          class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700"
+                        >
+                          {{ getYear(season.air_date) }}
+                        </span>
+                        <span>{{ season.episode_count }} 集</span>
+                      </div>
+
+                      <!-- <p
+                        v-if="season.overview"
+                        class="text-xs text-gray-500 mt-2 line-clamp-2"
+                      >
+                        {{ season.overview }}
+                      </p> -->
                     </div>
                   </div>
                 </div>

@@ -15,7 +15,7 @@ const closeAll = () => {
   isImageOpen.value = false;
 };
 
-// 3. 鎖定背景滾動 & 監聽 ESC 鍵
+// 鎖定背景滾動 & 監聽 ESC 鍵
 watchEffect(() => {
   if (import.meta.client) {
     if (isVideoOpen.value || isImageOpen.value) {
@@ -46,20 +46,21 @@ function onKeydown(e: KeyboardEvent) {
           @click="closeAll"
         ></div>
 
-        <div
-          class="relative w-full max-w-5xl aspect-video bg-black rounded-xl shadow-2xl overflow-hidden z-10 animate-scale-up"
-        >
+        <div class="relative w-full max-w-5xl animate-scale-up">
           <button
             @click="closeAll"
-            class="absolute top-4 right-4 z-20 p-2 bg-black/50 hover:bg-white/20 text-white rounded-full transition-colors cursor-pointer"
+            class="absolute -top-12 right-0 z-50 p-2 text-gray-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
           >
+            <span class="text-sm font-bold tracking-widest hidden sm:inline"
+              >關閉</span
+            >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               stroke-width="2"
               stroke="currentColor"
-              class="w-6 h-6"
+              class="w-8 h-8"
             >
               <path
                 stroke-linecap="round"
@@ -69,14 +70,18 @@ function onKeydown(e: KeyboardEvent) {
             </svg>
           </button>
 
-          <iframe
-            v-if="video"
-            :src="`https://www.youtube.com/embed/${video.key}?autoplay=1&rel=0`"
-            class="w-full h-full"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-          ></iframe>
+          <div
+            class="aspect-video w-full bg-black rounded-xl shadow-2xl overflow-hidden relative z-10"
+          >
+            <iframe
+              v-if="video"
+              :src="`https://www.youtube.com/embed/${video.key}?autoplay=1&rel=0`"
+              class="w-full h-full"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
         </div>
       </div>
     </Transition>
@@ -90,7 +95,6 @@ function onKeydown(e: KeyboardEvent) {
           class="absolute inset-0 bg-black/95 backdrop-blur-sm"
           @click="closeAll"
         ></div>
-
         <div
           class="relative z-10 w-auto h-auto flex items-center justify-center animate-scale-up"
         >
@@ -139,7 +143,7 @@ function onKeydown(e: KeyboardEvent) {
   opacity: 0;
 }
 
-/* 內容縮放動畫 (Tailwind 自定義動畫類別) */
+/* 內容縮放動畫 */
 .animate-scale-up {
   animation: scaleUp 0.3s ease-out forwards;
 }

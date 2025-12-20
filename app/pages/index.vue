@@ -168,21 +168,7 @@ const isTrendingLoading = computed(() =>
           上百萬部電影、電視節目和演員資料等你來探索
         </h3>
       </template>
-      <!-- <template #default>
-        <div
-          class="w-full aspect-video rounded-lg shadow-2xl bg-t-card-bg relative"
-        >
-          <iframe
-            v-if="trailerUrl"
-            :src="trailerUrl"
-            title="Popular Movie Trailer"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-            class="absolute inset-0 w-full h-full rounded-lg ring-2 ring-primary/50"
-          ></iframe>
-        </div>
-      </template> -->
+
       <template #default>
         <div
           v-if="trailerThumb"
