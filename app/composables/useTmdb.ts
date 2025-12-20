@@ -431,7 +431,7 @@ export function useTmdb() {
   };
 
   const formatCurrency = (amount?: number) => {
-    if (!amount) return "N/A";
+    if (!amount) return "";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -478,10 +478,11 @@ export function useTmdb() {
   // 取得導演/主創 (從 crew 篩選)
   const getDirectors = (item: TmdbDetail) => {
     const crew = item.credits?.crew || [];
-    // 電影找 Director，電視找 Executive Producer 或 Creator
-    return crew.filter(
-      (c) => c.job === "Director" || c.job === "Executive Producer"
-    );
+
+    const directors = crew.filter((c) => c.job === "Director");
+    if (directors.length > 0) return directors;
+
+    return crew.filter((c) => c.job === "Executive Producer");
   };
 
   const getWriters = (item: TmdbDetail) => {
@@ -526,7 +527,7 @@ export function useTmdb() {
     );
   };
 
-  // [新增] 取得 YouTube 縮圖
+  // 取得 YouTube 縮圖
   const getYoutubeThumb = (key: string) =>
     `https://img.youtube.com/vi/${key}/mqdefault.jpg`;
 

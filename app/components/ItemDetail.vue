@@ -83,11 +83,18 @@ const recommendations = computed(
   () => props.item.recommendations?.results || []
 );
 
-const activeVideo = ref(null);
+const activeVideo = ref<any>(null);
 const isVideoModalOpen = ref(false);
 function openVideo(video: any) {
   activeVideo.value = video;
   isVideoModalOpen.value = true;
+}
+
+const activeImage = ref<any>(null);
+const isImageModalOpen = ref(false);
+function openImage(img: any) {
+  activeImage.value = img;
+  isImageModalOpen.value = true;
 }
 
 // 狀態翻譯對照表
@@ -525,6 +532,7 @@ const providers = computed(() => getWatchProviders(props.item));
                           v-for="img in backdrops"
                           :key="img.file_path"
                           class="group relative shrink-0 snap-start h-40 md:h-48 cursor-zoom-in overflow-hidden rounded-lg shadow-md ring-1 ring-white/10 transition-all hover:scale-105 hover:shadow-xl"
+                          @click="openImage(img)"
                         >
                           <img
                             :src="backdropUrl(img.file_path, 'w780')"
@@ -694,20 +702,22 @@ const providers = computed(() => getWatchProviders(props.item));
 
               <!-- 詳細資訊 Grid -->
               <div class="flex flex-col gap-6">
-                <div
+                <ul
                   v-for="(info, idx) in extraInfo"
                   :key="idx"
                   class="flex flex-col"
                 >
-                  <p
-                    class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 font-bold"
-                  >
-                    {{ info.label }}
-                  </p>
-                  <p :class="info.colorClass">
-                    {{ info.value }}
-                  </p>
-                </div>
+                  <li v-if="info.value">
+                    <p
+                      class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 font-bold"
+                    >
+                      {{ info.label }}
+                    </p>
+                    <p :class="info.colorClass">
+                      {{ info.value }}
+                    </p>
+                  </li>
+                </ul>
               </div>
 
               <!-- 觀看平台 -->
@@ -768,6 +778,13 @@ const providers = computed(() => getWatchProviders(props.item));
       </div>
     </div>
   </div>
+
+  <MediaModals
+    v-model:showVideo="isVideoModalOpen"
+    :video="activeVideo"
+    v-model:showImage="isImageModalOpen"
+    :image="activeImage"
+  />
 </template>
 
 <style scoped>

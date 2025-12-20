@@ -29,21 +29,63 @@ onMounted(() => {
   tmdbStore.getPopularVariety();
 });
 
+const isVideoOpen = ref(false);
+const isImageOpen = ref(false);
+
+// 1. 解析 YouTube ID (為了取得縮圖 和 給 Modal 使用)
+const youtubeId = computed(() => {
+  if (!trailerUrl.value) return null;
+  try {
+    // 處理 https://www.youtube.com/embed/VIDEO_ID?xxxx
+    const urlParts = trailerUrl.value.split("/embed/");
+    if (urlParts.length > 1 && urlParts[1]) {
+      return urlParts[1].split("?")[0];
+    }
+  } catch (e) {
+    console.error("解析預告片 ID 失敗", e);
+  }
+  return null;
+});
+
+// 2. 預告片縮圖網址 (使用 maxresdefault 畫質較好)
+const trailerThumb = computed(() =>
+  youtubeId.value
+    ? `https://img.youtube.com/vi/${youtubeId.value}/maxresdefault.jpg`
+    : ""
+);
+
+// 3. 傳給 Modal 的物件格式
+const activeVideo = computed(() => {
+  return youtubeId.value
+    ? { key: youtubeId.value, name: "本週熱門預告" }
+    : null;
+});
+
+// 開啟彈窗
+const openTrailer = () => {
+  if (activeVideo.value) {
+    isVideoOpen.value = true;
+  }
+};
+
 // 頁首連結
-const links = ref([
-  {
-    label: "加入 TMOV",
-    to: "/login",
-    icon: "i-lucide-user-plus",
-  },
-  {
-    label: "前往探索",
-    to: "/movie",
-    color: "neutral" as const,
-    variant: "subtle" as const,
-    trailingIcon: "i-lucide-arrow-right",
-  },
-]);
+const links = computed(() => {
+  const items = [
+    {
+      label: "加入 TMOV",
+      to: "/login",
+      icon: "i-lucide-user-plus",
+    },
+    {
+      label: "前往探索",
+      to: "/movie",
+      color: "neutral" as const,
+      variant: "subtle" as const,
+      trailingIcon: "i-lucide-arrow-right",
+    },
+  ];
+  return items;
+});
 
 // loading 狀態
 const isNowPlayingLoading = computed(() => nowPlayingMovies.value.length === 0);
@@ -126,7 +168,7 @@ const isTrendingLoading = computed(() =>
           上百萬部電影、電視節目和演員資料等你來探索
         </h3>
       </template>
-      <template #default>
+      <!-- <template #default>
         <div
           class="w-full aspect-video rounded-lg shadow-2xl bg-t-card-bg relative"
         >
@@ -140,8 +182,48 @@ const isTrendingLoading = computed(() =>
             class="absolute inset-0 w-full h-full rounded-lg ring-2 ring-primary/50"
           ></iframe>
         </div>
+      </template> -->
+      <template #default>
+        <div
+          v-if="trailerThumb"
+          class="w-full aspect-video rounded-xl shadow-2xl bg-gray-900 relative group cursor-pointer overflow-hidden ring-1 ring-white/10"
+          @click="openTrailer"
+        >
+          <img
+            :src="trailerThumb"
+            class="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105 group-hover:opacity-100"
+            alt="Trailer Thumbnail"
+          />
+
+          <div
+            class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition-colors"
+          >
+            <div class="relative">
+              <div
+                class="absolute inset-0 bg-primary-500 blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500 rounded-full"
+              ></div>
+              <UIcon
+                name="i-heroicons-play-circle-solid"
+                class="relative h-20 w-20 text-white drop-shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:text-primary-400"
+              />
+            </div>
+          </div>
+
+          <div
+            class="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded text-white text-xs font-bold tracking-wider uppercase"
+          >
+            本週熱門預告
+          </div>
+        </div>
       </template>
     </UPageHero>
+
+    <MediaModals
+      v-model:showVideo="isVideoOpen"
+      :video="activeVideo"
+      v-model:showImage="isImageOpen"
+      :image="null"
+    />
   </div>
 
   <!-- 趨勢 -->
