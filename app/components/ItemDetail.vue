@@ -12,7 +12,6 @@ const {
   formatRuntime,
   getDetailTitle,
   getDetailImage,
-  titleOf,
   formatCurrency,
   getDirectors,
   getWriters,
@@ -99,8 +98,8 @@ const statusMap: Record<string, string> = {
   "Post Production": "後製中",
   Released: "已上映",
   Canceled: "已取消",
-  "Returning Series": "連載中", // 影集續訂中
-  Ended: "已完結", // 影集完結
+  "Returning Series": "連載中",
+  Ended: "已完結",
   Pilot: "試播集",
 };
 // 狀態顯示文字
@@ -128,6 +127,19 @@ const statusColorClass = computed(() => {
       return "bg-gray-900 dark:bg-white";
   }
 });
+
+// 翻譯原始語言代碼
+const languageNames = new Intl.DisplayNames(["zh-TW"], { type: "language" });
+const getLangName = (code: string) => {
+  if (!code) return "未知";
+  try {
+    return languageNames.of(code);
+  } catch (e) {
+    return code.toUpperCase();
+  }
+};
+
+// 額外資訊列表
 const extraInfo = computed(() => {
   const raw = props.item as any;
   return [
@@ -138,7 +150,7 @@ const extraInfo = computed(() => {
     },
     {
       label: "原始語言",
-      value: raw.original_language?.toUpperCase(),
+      value: getLangName(raw.original_language),
       colorClass: "",
     },
     {
@@ -168,21 +180,6 @@ const extraInfo = computed(() => {
       label: "票房",
       value: isPerson.value ? null : formatCurrency(raw.revenue),
       colorClass: "",
-    },
-    {
-      label: "相關連結",
-      value: isPerson.value
-        ? null
-        : raw.homepage
-        ? "官方網站"
-        : raw.imdb_id
-        ? "IMDB 頁面"
-        : null,
-      link: isPerson.value
-        ? null
-        : raw.homepage ||
-          (raw.imdb_id ? `https://www.imdb.com/title/${raw.imdb_id}` : null),
-      colorClass: "underline text-info  cursor-pointer",
     },
   ].filter((i) => i.value);
 });
@@ -221,17 +218,14 @@ const facebookLink = computed(() =>
     ? `https://facebook.com/${externalIds.value.facebook_id}`
     : null
 );
+const twitterLink = computed(() =>
+  externalIds.value.twitter_id
+    ? `https://twitter.com/${externalIds.value.twitter_id}`
+    : null
+);
 
 // 觀看平台
 const providers = computed(() => getWatchProviders(props.item));
-
-// 關鍵字
-const keywords = computed(() => {
-  // 電影用 .keywords, 影集用 .results
-  const list =
-    props.item.keywords?.keywords || props.item.keywords?.results || [];
-  return list.slice(0, 10);
-});
 </script>
 
 <template>
@@ -362,9 +356,9 @@ const keywords = computed(() => {
               <span class="text-lg" :class="getRatingColor(getRating(item))">{{
                 item.vote_average.toFixed(1)
               }}</span>
-              <span v-if="item.vote_count" class="text-xs">
+              <!-- <span v-if="item.vote_count" class="text-xs">
                 ({{ item.vote_count }} 人評分)</span
-              >
+              > -->
             </div>
             <div v-if="isPerson">
               <p class="text-lg">
@@ -613,8 +607,88 @@ const keywords = computed(() => {
             >
               <!-- 連結 -->
               <div>
-                <ul>
-                  <li>{{ imdbLink }}</li>
+                <ul
+                  class="flex items-center justify-center md:justify-start gap-4"
+                >
+                  <li v-if="facebookLink">
+                    <UTooltip text="Facebook">
+                      <a
+                        :href="facebookLink"
+                        target="_blank"
+                        class="block transition-colors duration-300 text-gray-500 hover:text-[#1877F2] dark:text-gray-400 dark:hover:text-white"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 512 512"
+                          class="w-6 h-6 fill-current cursor-pointer"
+                        >
+                          <path
+                            d="M512 256C512 114.6 397.4 0 256 0S0 114.6 0 256C0 376 82.7 476.8 194.2 504.5l0-170.3-52.8 0 0-78.2 52.8 0 0-33.7c0-87.1 39.4-127.5 125-127.5 16.2 0 44.2 3.2 55.7 6.4l0 70.8c-6-.6-16.5-1-29.6-1-42 0-58.2 15.9-58.2 57.2l0 27.8 83.6 0-14.4 78.2-69.3 0 0 175.9C413.8 494.8 512 386.9 512 256z"
+                          />
+                        </svg>
+                      </a>
+                    </UTooltip>
+                  </li>
+
+                  <li v-if="instagramLink">
+                    <UTooltip text="Instagram">
+                      <a
+                        :href="instagramLink"
+                        target="_blank"
+                        class="block transition-colors duration-300 text-gray-500 hover:text-[#E4405F] dark:text-gray-400 dark:hover:text-white"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 448 512"
+                          class="w-6 h-6 fill-current cursor-pointer"
+                        >
+                          <path
+                            d="M224.3 141a115 115 0 1 0 -.6 230 115 115 0 1 0 .6-230zm-.6 40.4a74.6 74.6 0 1 1 .6 149.2 74.6 74.6 0 1 1 -.6-149.2zm93.4-45.1a26.8 26.8 0 1 1 53.6 0 26.8 26.8 0 1 1 -53.6 0zm129.7 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM399 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"
+                          />
+                        </svg>
+                      </a>
+                    </UTooltip>
+                  </li>
+
+                  <li v-if="twitterLink">
+                    <UTooltip text="X (前身為 Twitter)">
+                      <a
+                        :href="twitterLink"
+                        target="_blank"
+                        class="block transition-colors duration-300 text-gray-500 hover:text-primary-500 dark:text-gray-400 dark:hover:text-white"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 448 512"
+                          class="w-6 h-6 fill-current cursor-pointer"
+                        >
+                          <path
+                            d="M357.2 48L427.8 48 273.6 224.2 455 464 313 464 201.7 318.6 74.5 464 3.8 464 168.7 275.5-5.2 48 140.4 48 240.9 180.9 357.2 48zM332.4 421.8l39.1 0-252.4-333.8-42 0 255.3 333.8z"
+                          />
+                        </svg>
+                      </a>
+                    </UTooltip>
+                  </li>
+
+                  <li v-if="imdbLink">
+                    <UTooltip text="相關網站">
+                      <a
+                        :href="imdbLink"
+                        target="_blank"
+                        class="block transition-colors duration-300 text-gray-500 hover:text-primary-500 dark:text-gray-400 dark:hover:text-white"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 576 512"
+                          class="w-6 h-6 fill-current cursor-pointer"
+                        >
+                          <path
+                            d="M419.5 96c-16.6 0-32.7 4.5-46.8 12.7-15.8-16-34.2-29.4-54.5-39.5 28.2-24 64.1-37.2 101.3-37.2 86.4 0 156.5 70 156.5 156.5 0 41.5-16.5 81.3-45.8 110.6l-71.1 71.1c-29.3 29.3-69.1 45.8-110.6 45.8-86.4 0-156.5-70-156.5-156.5 0-1.5 0-3 .1-4.5 .5-17.7 15.2-31.6 32.9-31.1s31.6 15.2 31.1 32.9c0 .9 0 1.8 0 2.6 0 51.1 41.4 92.5 92.5 92.5 24.5 0 48-9.7 65.4-27.1l71.1-71.1c17.3-17.3 27.1-40.9 27.1-65.4 0-51.1-41.4-92.5-92.5-92.5zM275.2 173.3c-1.9-.8-3.8-1.9-5.5-3.1-12.6-6.5-27-10.2-42.1-10.2-24.5 0-48 9.7-65.4 27.1L91.1 258.2c-17.3 17.3-27.1 40.9-27.1 65.4 0 51.1 41.4 92.5 92.5 92.5 16.5 0 32.6-4.4 46.7-12.6 15.8 16 34.2 29.4 54.6 39.5-28.2 23.9-64 37.2-101.3 37.2-86.4 0-156.5-70-156.5-156.5 0-41.5 16.5-81.3 45.8-110.6l71.1-71.1c29.3-29.3 69.1-45.8 110.6-45.8 86.6 0 156.5 70.6 156.5 156.9 0 1.3 0 2.6 0 3.9-.4 17.7-15.1 31.6-32.8 31.2s-31.6-15.1-31.2-32.8c0-.8 0-1.5 0-2.3 0-33.7-18-63.3-44.8-79.6z"
+                          />
+                        </svg>
+                      </a>
+                    </UTooltip>
+                  </li>
                 </ul>
               </div>
 
@@ -631,10 +705,7 @@ const keywords = computed(() => {
                     {{ info.label }}
                   </p>
                   <p :class="info.colorClass">
-                    <a :href="info.link" target="_blank" v-if="info.link">{{
-                      info.value
-                    }}</a>
-                    <span v-else>{{ info.value }}</span>
+                    {{ info.value }}
                   </p>
                 </div>
               </div>

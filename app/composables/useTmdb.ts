@@ -479,12 +479,14 @@ export function useTmdb() {
   const getDirectors = (item: TmdbDetail) => {
     const crew = item.credits?.crew || [];
     // 電影找 Director，電視找 Executive Producer 或 Creator
-    return crew.filter((c) => c.job === "Director");
+    return crew.filter(
+      (c) => c.job === "Director" || c.job === "Executive Producer"
+    );
   };
 
   const getWriters = (item: TmdbDetail) => {
     const crew = item.credits?.crew || [];
-    return crew.filter((c) => c.job === "Original Story");
+    return crew.filter((c) => c.job === "Original Story" || c.job === "Writer");
   };
 
   // 取得觀看平台

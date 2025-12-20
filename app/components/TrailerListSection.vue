@@ -30,7 +30,7 @@ async function selectItem(item: TmdbItem) {
   isTrailerLoading.value = true;
 
   try {
-    const res = await fetchMovieTrailer(item.id);
+    const res = await fetchMovieTrailer(item.id!);
     if (res && res.trailerUrl) {
       activeTrailerKey.value = res.trailerUrl;
     }

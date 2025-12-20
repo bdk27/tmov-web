@@ -111,6 +111,9 @@ const isTrendingLoading = computed(() =>
       headline="歡迎來到 TMOV !"
       orientation="horizontal"
       :links="links"
+      :ui="{
+        container: 'px-4',
+      }"
     >
       <template #title>
         <h1
@@ -125,7 +128,7 @@ const isTrendingLoading = computed(() =>
       </template>
       <template #default>
         <div
-          class="w-full aspect-video rounded-lg shadow-2xl bg-t-card-bg relative hidden lg:block"
+          class="w-full aspect-video rounded-lg shadow-2xl bg-t-card-bg relative"
         >
           <iframe
             v-if="trailerUrl"
