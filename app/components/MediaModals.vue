@@ -3,8 +3,8 @@ const isVideoOpen = defineModel<boolean>("showVideo");
 const isImageOpen = defineModel<boolean>("showImage");
 
 const props = defineProps<{
-  video: any;
-  image: any;
+  video?: any;
+  image?: any;
 }>();
 
 const { backdropUrl } = useTmdb();

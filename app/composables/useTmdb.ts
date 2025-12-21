@@ -75,12 +75,14 @@ export interface TmdbDetail {
   // 基本資訊
   title?: string;
   name?: string;
-  gender?: string;
+  gender?: number;
   original_title?: string;
   original_name?: string;
   overview: string;
   tagline?: string;
-  status: string;
+  status?: string;
+  imdb_id?: string;
+  also_known_as?: string[];
 
   // 圖片
   poster_path: string | null;
@@ -136,6 +138,7 @@ export interface TmdbDetail {
     backdrops: TmdbImage[];
     posters: TmdbImage[];
     logos: TmdbImage[];
+    profiles?: TmdbImage[];
   };
 
   // 推薦
