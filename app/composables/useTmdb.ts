@@ -132,13 +132,29 @@ export interface TmdbDetail {
       name: string;
       site: string;
       type: string;
-    };
+    }[];
   };
+
   images?: {
-    backdrops: TmdbImage[];
-    posters: TmdbImage[];
-    logos: TmdbImage[];
+    backdrops?: TmdbImage[];
+    posters?: TmdbImage[];
+    logos?: TmdbImage[];
     profiles?: TmdbImage[];
+  };
+
+  // 翻譯
+  translations?: {
+    translations: {
+      iso_639_1: string;
+      iso_3166_1: string;
+      name: string;
+      english_name: string;
+      data: {
+        title?: string;
+        overview?: string;
+        biography?: string;
+      };
+    }[];
   };
 
   // 推薦
@@ -196,6 +212,8 @@ export interface TmdbDetail {
     facebook_id?: string;
     instagram_id?: string;
     twitter_id?: string;
+    tiktok_id?: string;
+    youtube_id?: string;
   };
 
   // 關鍵字
@@ -539,6 +557,27 @@ export function useTmdb() {
   const getYoutubeThumb = (key: string) =>
     `https://img.youtube.com/vi/${key}/mqdefault.jpg`;
 
+  // 取得社群連結
+  const getSocialLinks = (item: TmdbDetail) => {
+    const ids = item.external_ids || {};
+    const isPerson = item.media_type === "person";
+    const imdbBase = isPerson ? "name" : "title";
+
+    const imdbId = ids.imdb_id || item.imdb_id;
+
+    return {
+      imdb: imdbId ? `https://www.imdb.com/${imdbBase}/${imdbId}` : null,
+      facebook: ids.facebook_id
+        ? `https://facebook.com/${ids.facebook_id}`
+        : null,
+      instagram: ids.instagram_id
+        ? `https://instagram.com/${ids.instagram_id}`
+        : null,
+      twitter: ids.twitter_id ? `https://twitter.com/${ids.twitter_id}` : null,
+      tiktok: ids.tiktok_id ? `https://www.tiktok.com/@${ids.tiktok_id}` : null,
+    };
+  };
+
   return {
     search,
     fetchBackdrop,
@@ -563,5 +602,6 @@ export function useTmdb() {
     getWriters,
     getWatchProviders,
     getYoutubeThumb,
+    getSocialLinks,
   };
 }

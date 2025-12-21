@@ -17,6 +17,7 @@ const {
   getWriters,
   getYoutubeThumb,
   getWatchProviders,
+  getSocialLinks,
 } = useTmdb();
 
 // 判斷類型
@@ -51,15 +52,6 @@ const crewListItems = computed(() => {
   const list = props.item.credits?.crew || [];
   return getUniqueItems(list).slice(0, 20);
 });
-// 移除重複項目
-function getUniqueItems(list: any[]) {
-  const seen = new Set();
-  return list.filter((item) => {
-    const duplicate = seen.has(item.id);
-    seen.add(item.id);
-    return !duplicate;
-  });
-}
 
 // 推薦列表
 const recommendations = computed(
@@ -89,6 +81,13 @@ function openVideo(video: any) {
   activeVideo.value = video;
   isVideoModalOpen.value = true;
 }
+const openMainTrailer = () => {
+  if (videos.value.length > 0) {
+    const trailer =
+      videos.value.find((v: any) => v.type === "Trailer") || videos.value[0];
+    openVideo(trailer);
+  }
+};
 
 // 取得劇照
 const backdrops = computed(() => props.item.images?.backdrops || []);
@@ -200,27 +199,7 @@ const toggleFavorite = () => {
 };
 
 // 社群連結
-const externalIds = computed(() => props.item.external_ids || {});
-const imdbLink = computed(() =>
-  externalIds.value.imdb_id
-    ? `https://www.imdb.com/title/${externalIds.value.imdb_id}`
-    : null
-);
-const instagramLink = computed(() =>
-  externalIds.value.instagram_id
-    ? `https://instagram.com/${externalIds.value.instagram_id}`
-    : null
-);
-const facebookLink = computed(() =>
-  externalIds.value.facebook_id
-    ? `https://facebook.com/${externalIds.value.facebook_id}`
-    : null
-);
-const twitterLink = computed(() =>
-  externalIds.value.twitter_id
-    ? `https://twitter.com/${externalIds.value.twitter_id}`
-    : null
-);
+const social = computed(() => getSocialLinks(props.item));
 
 // 觀看平台
 const providers = computed(() => getWatchProviders(props.item));
@@ -273,14 +252,15 @@ const providers = computed(() => getWatchProviders(props.item));
           </div>
 
           <!-- 播放按鈕 (僅影視) -->
-          <div class="mt-6">
+          <div v-if="videos.length" class="mt-6">
             <UButton
               block
               size="xl"
               color="primary"
               variant="solid"
-              class="font-bold shadow-lg shadow-primary-500/30"
+              class="font-bold shadow-lg shadow-primary-500/3 cursor-pointer"
               icon="i-heroicons-play-circle"
+              @click="openMainTrailer"
             >
               播放預告片
             </UButton>
@@ -368,7 +348,7 @@ const providers = computed(() => getWatchProviders(props.item));
                 <UButton
                   size="sm"
                   color="primary"
-                  class="px-3 py-1.5 rounded-full transition-colors group"
+                  class="px-3 py-1.5 rounded-full transition-colors group cursor-pointer"
                   @click="toggleFavorite"
                 >
                   <UIcon
@@ -631,12 +611,12 @@ const providers = computed(() => getWatchProviders(props.item));
                 <ul
                   class="flex items-center justify-center md:justify-start gap-4"
                 >
-                  <li v-if="facebookLink">
+                  <li v-if="social.facebook">
                     <UTooltip text="Facebook">
                       <a
-                        :href="facebookLink"
+                        :href="social.facebook"
                         target="_blank"
-                        class="block transition-colors duration-300 text-gray-500 hover:text-[#1877F2] dark:text-gray-400 dark:hover:text-white"
+                        class="block transition-colors duration-300 text-gray-500 dark:text-gray-400 dark:hover:text-white"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -651,12 +631,12 @@ const providers = computed(() => getWatchProviders(props.item));
                     </UTooltip>
                   </li>
 
-                  <li v-if="instagramLink">
+                  <li v-if="social.instagram">
                     <UTooltip text="Instagram">
                       <a
-                        :href="instagramLink"
+                        :href="social.instagram"
                         target="_blank"
-                        class="block transition-colors duration-300 text-gray-500 hover:text-[#E4405F] dark:text-gray-400 dark:hover:text-white"
+                        class="block transition-colors duration-300 text-gray-500 dark:text-gray-400 dark:hover:text-white"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -671,12 +651,12 @@ const providers = computed(() => getWatchProviders(props.item));
                     </UTooltip>
                   </li>
 
-                  <li v-if="twitterLink">
+                  <li v-if="social.twitter">
                     <UTooltip text="X (前身為 Twitter)">
                       <a
-                        :href="twitterLink"
+                        :href="social.twitter"
                         target="_blank"
-                        class="block transition-colors duration-300 text-gray-500 hover:text-primary-500 dark:text-gray-400 dark:hover:text-white"
+                        class="block transition-colors duration-300 text-gray-500 dark:text-gray-400 dark:hover:text-white"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -691,12 +671,12 @@ const providers = computed(() => getWatchProviders(props.item));
                     </UTooltip>
                   </li>
 
-                  <li v-if="imdbLink">
+                  <li v-if="social.imdb">
                     <UTooltip text="相關網站">
                       <a
-                        :href="imdbLink"
+                        :href="social.imdb"
                         target="_blank"
-                        class="block transition-colors duration-300 text-gray-500 hover:text-primary-500 dark:text-gray-400 dark:hover:text-white"
+                        class="block transition-colors duration-300 text-gray-500 dark:text-gray-400 dark:hover:text-white"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"

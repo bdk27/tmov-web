@@ -4,7 +4,7 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
-const { posterUrl, getDetailTitle, getDetailImage } = useTmdb();
+const { posterUrl, getDetailTitle, getDetailImage, getSocialLinks } = useTmdb();
 
 // 標題 (人名)
 const title = computed(() => getDetailTitle(props.item));
@@ -59,42 +59,14 @@ function openImage(img: any) {
   isImageModalOpen.value = true;
 }
 
-// 移除重複 Helper (可考慮提取到 utils)
-function getUniqueItems(list: any[]) {
-  const seen = new Set();
-  return list.filter((item) => {
-    const duplicate = seen.has(item.id);
-    seen.add(item.id);
-    return !duplicate;
-  });
-}
-
 // 收藏功能 (若人物也需要收藏)
 const isFavorited = ref(false);
 const toggleFavorite = () => {
   isFavorited.value = !isFavorited.value;
 };
 
-// 外部連結
-const externalIds = computed(() => props.item.external_ids || {});
-const imdbLink = computed(() =>
-  props.item.imdb_id ? `https://www.imdb.com/name/${props.item.imdb_id}` : null
-);
-const instagramLink = computed(() =>
-  externalIds.value.instagram_id
-    ? `https://instagram.com/${externalIds.value.instagram_id}`
-    : null
-);
-const facebookLink = computed(() =>
-  externalIds.value.facebook_id
-    ? `https://facebook.com/${externalIds.value.facebook_id}`
-    : null
-);
-const twitterLink = computed(() =>
-  externalIds.value.twitter_id
-    ? `https://twitter.com/${externalIds.value.twitter_id}`
-    : null
-);
+// 社群連結
+const social = computed(() => getSocialLinks(props.item));
 </script>
 
 <template>
@@ -208,7 +180,7 @@ const twitterLink = computed(() =>
               <UButton
                 size="sm"
                 color="primary"
-                class="px-3 py-1.5 rounded-full transition-colors group"
+                class="px-3 py-1.5 rounded-full transition-colors group cursor-pointer"
                 @click="toggleFavorite"
               >
                 <UIcon
@@ -220,12 +192,92 @@ const twitterLink = computed(() =>
                 {{ isFavorited ? "已關注" : "關注" }}
               </UButton>
             </li>
-            <li v-if="imdbLink">
+            <li v-if="social.facebook">
+              <UTooltip text="Facebook">
+                <a
+                  :href="social.facebook"
+                  target="_blank"
+                  class="block transition-colors duration-300 text-gray-500 dark:text-gray-400 dark:hover:text-white"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 512 512"
+                    class="w-6 h-6 fill-current cursor-pointer"
+                  >
+                    <path
+                      d="M512 256C512 114.6 397.4 0 256 0S0 114.6 0 256C0 376 82.7 476.8 194.2 504.5l0-170.3-52.8 0 0-78.2 52.8 0 0-33.7c0-87.1 39.4-127.5 125-127.5 16.2 0 44.2 3.2 55.7 6.4l0 70.8c-6-.6-16.5-1-29.6-1-42 0-58.2 15.9-58.2 57.2l0 27.8 83.6 0-14.4 78.2-69.3 0 0 175.9C413.8 494.8 512 386.9 512 256z"
+                    />
+                  </svg>
+                </a>
+              </UTooltip>
+            </li>
+
+            <li v-if="social.instagram">
+              <UTooltip text="Instagram">
+                <a
+                  :href="social.instagram"
+                  target="_blank"
+                  class="block transition-colors duration-300 text-gray-500 dark:text-gray-400 dark:hover:text-white"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 448 512"
+                    class="w-6 h-6 fill-current cursor-pointer"
+                  >
+                    <path
+                      d="M224.3 141a115 115 0 1 0 -.6 230 115 115 0 1 0 .6-230zm-.6 40.4a74.6 74.6 0 1 1 .6 149.2 74.6 74.6 0 1 1 -.6-149.2zm93.4-45.1a26.8 26.8 0 1 1 53.6 0 26.8 26.8 0 1 1 -53.6 0zm129.7 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM399 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"
+                    />
+                  </svg>
+                </a>
+              </UTooltip>
+            </li>
+
+            <li v-if="social.twitter">
+              <UTooltip text="X (前身為 Twitter)">
+                <a
+                  :href="social.twitter"
+                  target="_blank"
+                  class="block transition-colors duration-300 text-gray-500 dark:text-gray-400 dark:hover:text-white"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 448 512"
+                    class="w-6 h-6 fill-current cursor-pointer"
+                  >
+                    <path
+                      d="M357.2 48L427.8 48 273.6 224.2 455 464 313 464 201.7 318.6 74.5 464 3.8 464 168.7 275.5-5.2 48 140.4 48 240.9 180.9 357.2 48zM332.4 421.8l39.1 0-252.4-333.8-42 0 255.3 333.8z"
+                    />
+                  </svg>
+                </a>
+              </UTooltip>
+            </li>
+
+            <li v-if="social.tiktok">
+              <UTooltip text="tiktok">
+                <a
+                  :href="social.tiktok"
+                  target="_blank"
+                  class="block transition-colors duration-300 text-gray-500 dark:text-gray-400 dark:hover:text-white"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 448 512"
+                    class="w-6 h-6 fill-current cursor-pointer"
+                  >
+                    <path
+                      d="M448.5 209.9c-44 .1-87-13.6-122.8-39.2l0 178.7c0 33.1-10.1 65.4-29 92.6s-45.6 48-76.6 59.6-64.8 13.5-96.9 5.3-60.9-25.9-82.7-50.8-35.3-56-39-88.9 2.9-66.1 18.6-95.2 40-52.7 69.6-67.7 62.9-20.5 95.7-16l0 89.9c-15-4.7-31.1-4.6-46 .4s-27.9 14.6-37 27.3-14 28.1-13.9 43.9 5.2 31 14.5 43.7 22.4 22.1 37.4 26.9 31.1 4.8 46-.1 28-14.4 37.2-27.1 14.2-28.1 14.2-43.8l0-349.4 88 0c-.1 7.4 .6 14.9 1.9 22.2 3.1 16.3 9.4 31.9 18.7 45.7s21.3 25.6 35.2 34.6c19.9 13.1 43.2 20.1 67 20.1l0 87.4z"
+                    />
+                  </svg>
+                </a>
+              </UTooltip>
+            </li>
+
+            <li v-if="social.imdb">
               <UTooltip text="相關網站">
                 <a
-                  :href="imdbLink"
+                  :href="social.imdb"
                   target="_blank"
-                  class="block transition-colors duration-300 text-gray-500 hover:text-primary-500 dark:text-gray-400 dark:hover:text-white"
+                  class="block transition-colors duration-300 text-gray-500 dark:text-gray-400 dark:hover:text-white"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -239,45 +291,15 @@ const twitterLink = computed(() =>
                 </a>
               </UTooltip>
             </li>
-            <li>
-              <UButton
-                v-if="instagramLink"
-                :to="instagramLink"
-                target="_blank"
-                color="neutral"
-                variant="ghost"
-                icon="i-simple-icons-instagram"
-              />
-            </li>
-            <li>
-              <UButton
-                v-if="facebookLink"
-                :to="facebookLink"
-                target="_blank"
-                color="neutral"
-                variant="ghost"
-                icon="i-simple-icons-facebook"
-              />
-            </li>
-            <li>
-              <UButton
-                v-if="twitterLink"
-                :to="twitterLink"
-                target="_blank"
-                color="neutral"
-                variant="ghost"
-                icon="i-simple-icons-x"
-              />
-            </li>
           </ul>
 
-          <!-- 人物傳記 -->
+          <!-- 個人簡介 -->
           <div class="mb-12 text-left">
-            <SubTitle title="人物傳記" size="xl" class="mb-4" />
+            <SubTitle title="個人簡介" size="xl" class="mb-4" />
             <p
               class="leading-relaxed whitespace-pre-line text-gray-700 dark:text-gray-300"
             >
-              {{ item.biography || "暫無傳記資料。" }}
+              {{ item.biography || "暫無個人簡介。" }}
             </p>
           </div>
 
