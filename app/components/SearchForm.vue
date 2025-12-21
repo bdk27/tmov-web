@@ -1,6 +1,5 @@
 <script setup lang="ts">
 const router = useRouter();
-const route = useRoute();
 const { search, posterUrl, titleOf, dateOf } = useTmdb();
 
 const isSearchOpen = defineModel<boolean>("isSearchOpen");
@@ -10,7 +9,6 @@ const type = ref<TmdbSearchOptions["type"]>("multi");
 const year = ref<number | null>(null);
 const isLoading = ref(false);
 const suggestions = ref<TmdbItem[]>([]);
-let searchTimer: NodeJS.Timeout | null = null;
 
 const typeOptions = [
   { label: "全部", value: "multi" },
@@ -107,26 +105,29 @@ function getMediaTypeBadge(type?: string) {
   }
 }
 
-// 監聽輸入變化，自動搜尋建議
-watch(query, (newVal) => {
+const handleInput = debounce(async (newVal: string) => {
   if (!newVal || newVal.trim().length === 0) {
     suggestions.value = [];
     return;
   }
 
-  if (searchTimer) clearTimeout(searchTimer);
-
   isLoading.value = true;
-  searchTimer = setTimeout(async () => {
-    try {
-      const res = await search(newVal, { page: 1, type: "multi" });
-      suggestions.value = (res.results || []).slice(0, 6); // 取前 6 筆
-    } catch (e) {
-      suggestions.value = [];
-    } finally {
-      isLoading.value = false;
-    }
-  }, 300);
+  try {
+    const res = await search(newVal, { page: 1, type: "multi" });
+    suggestions.value = (res.results || []).slice(0, 6);
+  } catch (e) {
+    suggestions.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+}, 300);
+
+watch(query, (newVal) => {
+  if (!newVal) {
+    suggestions.value = [];
+    return;
+  }
+  handleInput(newVal);
 });
 </script>
 

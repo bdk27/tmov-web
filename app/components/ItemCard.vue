@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{ item: TmdbItem }>();
-const { posterUrl, titleOf, dateOf, getRating, getRatingColor } = useTmdb();
+const { posterUrl, titleOf, dateOf, getRating } = useTmdb();
 
 const itemPath = computed(() => {
   const item = props.item as any;

@@ -456,15 +456,6 @@ export function useTmdb() {
     }
   };
 
-  const formatCurrency = (amount?: number) => {
-    if (!amount) return "";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   // 輔助函式(海報網址、標題、日期、評分)
   const posterUrl = (path: string | null, size = config.tmdbPosterSize) => {
     return path
@@ -486,17 +477,7 @@ export function useTmdb() {
     if (!item.vote_average) return 0;
     return Math.round(item.vote_average * 10);
   };
-  const getRatingColor = (rating: number) => {
-    if (rating >= 70) return "text-primary";
-    if (rating >= 40) return "text-warning";
-    return "text-error";
-  };
-  const formatRuntime = (minutes?: number) => {
-    if (!minutes) return "N/A";
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
-  };
+
   const getDetailTitle = (item?: TmdbDetail) => item?.title || item?.name || "";
   const getDetailImage = (item?: TmdbDetail) =>
     item?.poster_path || item?.profile_path || null;
@@ -590,14 +571,11 @@ export function useTmdb() {
     titleOf,
     dateOf,
     getRating,
-    getRatingColor,
     fetchMovieTrailer,
     fetchTopRated,
     fetchDetail,
-    formatRuntime,
     getDetailTitle,
     getDetailImage,
-    formatCurrency,
     getDirectors,
     getWriters,
     getWatchProviders,
