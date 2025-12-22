@@ -32,29 +32,25 @@ onMounted(() => {
 const isVideoOpen = ref(false);
 const isImageOpen = ref(false);
 
-// 1. 解析 YouTube ID (為了取得縮圖 和 給 Modal 使用)
+// 解析 YouTube ID
 const youtubeId = computed(() => {
   if (!trailerUrl.value) return null;
-  try {
-    // 處理 https://www.youtube.com/embed/VIDEO_ID?xxxx
-    const urlParts = trailerUrl.value.split("/embed/");
-    if (urlParts.length > 1 && urlParts[1]) {
-      return urlParts[1].split("?")[0];
-    }
-  } catch (e) {
-    console.error("解析預告片 ID 失敗", e);
-  }
-  return null;
+
+  const regExp =
+    /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+  const match = trailerUrl.value.match(regExp);
+
+  return match && match[7] && match[7].length === 11 ? match[7] : null;
 });
 
-// 2. 預告片縮圖網址 (使用 maxresdefault 畫質較好)
+// 預告片縮圖網址 (使用 maxresdefault 畫質較好)
 const trailerThumb = computed(() =>
   youtubeId.value
     ? `https://img.youtube.com/vi/${youtubeId.value}/maxresdefault.jpg`
     : ""
 );
 
-// 3. 傳給 Modal 的物件格式
+// 傳給 Modal 的物件格式
 const activeVideo = computed(() => {
   return youtubeId.value
     ? { key: youtubeId.value, name: "本週熱門預告" }
@@ -129,6 +125,7 @@ const isTrendingLoading = computed(() =>
             :src="backdropMobileUrl"
             alt="熱門電影背景"
             class="w-full h-full object-cover"
+            fetchpriority="high"
           />
         </picture>
         <!-- 人物或無圖時的備用背景 (深色漸層) -->

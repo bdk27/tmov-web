@@ -5,7 +5,7 @@ const props = defineProps<{
   error: NuxtError;
 }>();
 
-const statusCode = computed(() => props.error.statusCode || 500);
+const statusCode = computed(() => props.error?.statusCode ?? 500);
 // errorUtils
 const friendlyMessage = computed(() => getErrorMessage(props.error));
 

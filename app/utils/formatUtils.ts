@@ -2,7 +2,7 @@
  * 格式化金額 (e.g. 1000000 => $1,000,000)
  */
 export const formatCurrency = (amount?: number) => {
-  if (!amount && amount !== 0) return "";
+  if (!amount) return "";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",

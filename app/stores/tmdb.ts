@@ -16,7 +16,7 @@ export const useTmdbStore = defineStore("tmdb", () => {
   const trailerUrl = ref<string | null>(null);
   const getBackdrop = async (category: TmdbPopularCategory = "movie") => {
     if (backdropDesktopUrl.value) {
-      return;
+      return true;
     }
 
     try {
@@ -27,6 +27,8 @@ export const useTmdbStore = defineStore("tmdb", () => {
         backdropDesktopUrl.value = res.backdropDesktopUrl;
         backdropMobileUrl.value = res.backdropMobileUrl;
         trailerUrl.value = res.trailerUrl;
+
+        return res;
       }
     } catch (error) {
       console.error("Pinia store (tmdb.ts): 無法獲取背景圖片:", error);

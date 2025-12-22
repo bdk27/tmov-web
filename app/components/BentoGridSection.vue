@@ -5,7 +5,7 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
-const { posterUrl, titleOf, dateOf, getRating, getRatingColor } = useTmdb();
+const { posterUrl, titleOf, dateOf, getRating } = useTmdb();
 
 // 1 ~ 3名
 const topItems = computed(() => props.items.slice(0, 3));

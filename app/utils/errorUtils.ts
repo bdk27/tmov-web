@@ -4,9 +4,12 @@ const errorMessages: Record<string | number, string> = {
   // HTTP 狀態碼
   400: "請求無效，請檢查您的輸入",
   401: "您尚未登入或憑證已過期，請重新登入",
+  403: "您沒有權限訪問此頁面",
   404: "很抱歉，找不到此頁面",
   500: "伺服器發生內部錯誤，請稍後再試",
+  502: "暫時無法連線到伺服器",
   503: "服務目前無法使用，請稍後再試",
+  504: "連線逾時，請檢查您的網路或稍後再試",
 
   // 後端自訂錯誤碼
   VALIDATION_FAILED: "您輸入的資料不完整或格式有誤",
@@ -18,22 +21,25 @@ const errorMessages: Record<string | number, string> = {
 };
 
 export function getErrorMessage(error: any): string {
-  if (error instanceof H3Error || (error && error.statusCode)) {
-    const statusCode = error.statusCode;
+  if (!error) return errorMessages["DEFAULT"]!;
 
-    const customErrorCode = error.data?.errorCode;
-    if (customErrorCode && errorMessages[customErrorCode]) {
-      return errorMessages[customErrorCode];
-    }
-
-    if (errorMessages[statusCode]) {
-      return errorMessages[statusCode];
-    }
+  if (error.statusCode && errorMessages[error.statusCode]) {
+    return errorMessages[error.statusCode]!;
   }
 
-  if (error?.message?.includes("Failed to fetch")) {
+  const customErrorCode = error.data?.errorCode;
+  if (customErrorCode && errorMessages[customErrorCode]) {
+    return errorMessages[customErrorCode];
+  }
+
+  if (
+    typeof error.message === "string" &&
+    error.message.includes("Failed to fetch")
+  ) {
     return errorMessages["FETCH_ERROR"]!;
   }
+
+  if (typeof error === "string") return error;
 
   return errorMessages["DEFAULT"]!;
 }

@@ -713,11 +713,13 @@ const providers = computed(() => getWatchProviders(props.item));
               <!-- 觀看平台 -->
               <nav v-if="providers.length" class="mt-4">
                 <p
-                  class="text-sm text-gray-500 dark:text-gray-400 tracking-wider mb-3 block font-bold"
+                  class="text-sm text-gray-500 dark:text-gray-400 tracking-wider mb-3 font-bold"
                 >
                   現正串流
                 </p>
-                <ul>
+                <ul
+                  class="flex items-center justify-center lg:justify-start gap-3"
+                >
                   <li
                     v-for="prov in providers"
                     :key="prov.provider_name"
