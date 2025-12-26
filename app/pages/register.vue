@@ -10,7 +10,6 @@ const authForm = useTemplateRef("authForm");
 
 const errorMessage = ref("");
 
-// 帳號/密碼
 const fields: AuthFormField[] = [
   {
     name: "email",
@@ -22,20 +21,14 @@ const fields: AuthFormField[] = [
   },
   {
     name: "password",
-    label: "密碼",
     type: "password",
+    label: "密碼",
     placeholder: "輸入你的密碼",
     size: "lg",
     required: true,
   },
-  {
-    name: "rememberMe",
-    label: "記住我",
-    type: "checkbox",
-  },
 ];
 
-// Google 登入
 const providers = [
   {
     label: "Google",
@@ -46,36 +39,29 @@ const providers = [
   },
 ];
 
-// 驗證
-type Schema = z.output<typeof schema>;
 const schema = z.object({
   email: z.email("無效的 email"),
   password: z.string("密碼為必填").min(8, "密碼長度至少為 8 個字元"),
-  rememberMe: z.boolean().optional(),
 });
 
-// 提交表單
-async function onSubmit(payload: FormSubmitEvent<Schema>) {
-  errorMessage.value = "";
+type Schema = z.output<typeof schema>;
 
-  const res = await authStore.login({
+async function onSubmit(payload: FormSubmitEvent<Schema>) {
+  const res = await authStore.register({
     email: payload.data.email,
     password: payload.data.password,
-    rememberMe: payload.data.rememberMe,
   });
 
   if (res.success) {
     toast.add({
-      title: "登入成功",
-      description: "歡迎回來！",
+      title: "註冊成功",
+      description: "帳號建立成功，請繼續登入！",
       color: "success",
     });
 
-    await nextTick();
-
-    await router.replace("/member");
+    router.push("/login");
   } else {
-    errorMessage.value = res.message || "登入失敗，請檢查您的帳號或密碼";
+    errorMessage.value = res.message || "註冊失敗，請檢查您的帳號或密碼";
   }
 
   if (authForm.value) {
@@ -91,39 +77,21 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
       <UAuthForm
         ref="authForm"
         :schema="schema"
-        title="登入"
-        icon="i-lucide-user"
+        title="註冊"
+        icon="i-lucide-user-plus"
         :fields="fields"
         :providers="providers"
         separator="或"
         :submit="{
-          label: '登入',
+          label: '註冊',
         }"
         @submit="onSubmit"
       >
         <template #description>
-          還沒有帳號嗎？
-          <ULink to="/register" class="text-primary font-medium">註冊</ULink>
-        </template>
-        <template #password-hint>
-          <ULink to="#" class="text-primary font-medium" tabindex="-1"
-            >忘記密碼?</ULink
-          >
-        </template>
-        <template #validation>
-          <UAlert
-            v-if="errorMessage"
-            color="error"
-            icon="i-lucide-info"
-            :title="errorMessage"
-          />
+          已經有帳號了嗎？
+          <ULink to="/login" class="text-primary font-medium">登入</ULink>
         </template>
       </UAuthForm>
     </UPageCard>
-
-    <div class="mt-4 p-4 bg-gray-200 rounded text-xs w-full max-w-md break-all">
-      DEBUG: IsAuth: {{ authStore.isAuthenticated }} <br />
-      User: {{ authStore.user }}
-    </div>
   </div>
 </template>

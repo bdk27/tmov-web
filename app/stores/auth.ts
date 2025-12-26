@@ -5,6 +5,7 @@ export interface User {
   email: string;
   role?: string;
   pictureUrl?: string;
+  createdAt?: string;
 }
 
 // 登入回應介面
@@ -25,10 +26,10 @@ export const useAuthStore = defineStore("auth", () => {
 
   const user = ref<User | null>(null);
   const loading = ref(false);
-
-  // 使用 useCookie 自動管理瀏覽器的 Cookie
-  // maxAge: 60 * 60 * 24 * 7 (7天過期)
-  const token = useCookie<string | null>("auth_token", { maxAge: 604800 });
+  const token = useCookie<string | null>("auth_token", {
+    maxAge: 60 * 60 * 24 * 7, // 7 天
+    watch: true,
+  });
 
   // 判斷是否已登入
   const isAuthenticated = computed(() => !!token.value);
@@ -67,7 +68,7 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   // 註冊
-  const register = async (userData: any) => {
+  const register = async (userData: { email: string; password: string }) => {
     loading.value = true;
     try {
       const res = await $fetch<AuthResponse>(`${api}/api/auth/register`, {
@@ -104,8 +105,9 @@ export const useAuthStore = defineStore("auth", () => {
   // 重新整理後恢復 user 狀態
   const fetchUser = async () => {
     if (!token.value) return;
+
     try {
-      const res = await $fetch<User>("/api/auth/me", {
+      const res = await $fetch<User>(`${api}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token.value}` },
       });
       user.value = res;

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 
+const authStore = useAuthStore();
+
 const items = computed<NavigationMenuItem[]>(() => [
   {
     label: "首頁",
@@ -99,13 +101,25 @@ const isSearchOpen = ref(false);
 
       <UColorModeButton />
 
-      <UTooltip text="會員登入">
+      <UTooltip text="會員登入" v-if="!authStore.isAuthenticated">
         <UButton
           icon="i-heroicons-user-circle"
           to="/login"
           variant="ghost"
           color="neutral"
           aria-label="會員登入"
+        />
+      </UTooltip>
+
+      <UTooltip text="會員專區" v-else>
+        <UButton
+          :avatar="{
+            src: authStore.user?.pictureUrl,
+          }"
+          to="/member"
+          variant="ghost"
+          color="neutral"
+          aria-label="會員專區"
         />
       </UTooltip>
     </template>
