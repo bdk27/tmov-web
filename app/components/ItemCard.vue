@@ -2,6 +2,112 @@
 const props = defineProps<{ item: TmdbItem }>();
 const { posterUrl, titleOf, dateOf, getRating } = useTmdb();
 
+const authStore = useAuthStore();
+const router = useRouter();
+
+onMounted(() => {
+  checkFavoriteStatus();
+});
+
+watch(
+  () => authStore.isAuthenticated,
+  (isAuth) => {
+    if (isAuth) {
+      checkFavoriteStatus();
+    } else {
+      isFavorite.value = false;
+    }
+  }
+);
+
+// 加入收藏
+const isFavorite = ref(false);
+const isLoading = ref(false);
+const showLoginModal = ref(false);
+
+function getAuthHeaders() {
+  const token = authStore.token;
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+// 檢查是否加入收藏
+async function checkFavoriteStatus() {
+  if (!authStore.user?.id) {
+    isFavorite.value = false;
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams([
+      ["tmdbId", String(props.item.id)],
+      ["mediaType", props.item.media_type || ""],
+    ]);
+
+    const response = await fetch(`/api/favorites/check?${params.toString()}`, {
+      headers: getAuthHeaders(),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      isFavorite.value = data.isFavorite;
+    }
+  } catch (error) {
+    console.error("檢查收藏狀態失敗:", error);
+  }
+}
+
+// 點擊收藏/取消收藏
+async function handleFavorite() {
+  if (!authStore.isAuthenticated || !authStore.user) {
+    showLoginModal.value = true;
+    return;
+  }
+
+  if (isLoading.value) return;
+
+  console.log("點擊收藏/取消收藏", isFavorite.value);
+  const previousState = isFavorite.value;
+  const newState = !previousState;
+
+  try {
+    const requestBody = JSON.stringify({
+      tmdbId: props.item.id,
+      mediaType: props.item.media_type,
+    });
+
+    let response;
+
+    if (newState) {
+      response = await fetch(`/api/favorites`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: requestBody,
+      });
+    } else {
+      response = await fetch(`/api/favorites`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+        body: requestBody,
+      });
+    }
+
+    isFavorite.value = newState;
+  } catch (error) {
+    isFavorite.value = previousState;
+    // toast.add({ title: "操作失敗", color: "error" });
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function goToLogin() {
+  showLoginModal.value = false;
+  router.push("/login");
+}
+
 const itemPath = computed(() => {
   const item = props.item as any;
 
@@ -40,22 +146,31 @@ const date = computed(() => dateOf(props.item));
       }"
     >
       <template #header>
-        <div class="relative">
+        <div class="relative overflow-hidden aspect-2/3">
           <!-- 圖片 -->
           <img
             :src="imgSrc"
             :alt="title"
-            class="w-full aspect-2/3 object-cover hover:scale-[1.05] transition-transform duration-300"
+            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            loading="lazy"
           />
           <!-- 加入收藏 -->
           <div
-            class="absolute top-0 left-0 p-1 cursor-pointer"
-            @click.prevent.stop="() => console.log('加入收藏')"
-            title="加入收藏"
+            class="absolute top-2 left-2 p-1.5 cursor-pointer rounded-full transition-all duration-200 backdrop-blur-sm z-10 flex items-center justify-center"
+            :class="[
+              isFavorite
+                ? 'bg-red-500/10 text-red-500'
+                : 'bg-black/40 text-white hover:bg-black/60 hover:text-red-400',
+            ]"
+            @click.prevent.stop="handleFavorite"
+            :title="isFavorite ? '取消收藏' : '加入收藏'"
           >
             <UIcon
-              name="i-heroicons-plus-circle-20-solid"
-              class="w-6 h-6 bg-white/50 hover:bg-primary"
+              :name="
+                isFavorite ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'
+              "
+              class="w-6 h-6 transition-transform active:scale-90"
+              :class="{ 'animate-pulse': isLoading }"
             />
           </div>
         </div>
@@ -86,4 +201,32 @@ const date = computed(() => dateOf(props.item));
       </template>
     </UCard>
   </NuxtLink>
+
+  <UModal v-model="showLoginModal" v-if="showLoginModal">
+    <div class="p-6 text-center">
+      <div
+        class="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-500 mx-auto flex items-center justify-center mb-4"
+      >
+        <UIcon name="i-heroicons-user-circle" class="w-8 h-8" />
+      </div>
+
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+        請先登入會員
+      </h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-6">
+        登入後即可收藏「{{ title }}」，建立您的專屬片單！
+      </p>
+
+      <div class="flex gap-3 justify-center">
+        <UButton
+          color="neutral"
+          variant="ghost"
+          @click="showLoginModal = false"
+        >
+          稍後再說
+        </UButton>
+        <UButton color="primary" @click="goToLogin"> 前往登入 </UButton>
+      </div>
+    </div>
+  </UModal>
 </template>

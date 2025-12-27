@@ -21,9 +21,6 @@ export interface ApiError {
 }
 
 export const useAuthStore = defineStore("auth", () => {
-  const config = useRuntimeConfig().public;
-  const api = config.apiBase;
-
   const user = ref<User | null>(null);
   const loading = ref(false);
   const token = useCookie<string | null>("auth_token", {
@@ -42,7 +39,7 @@ export const useAuthStore = defineStore("auth", () => {
   }) => {
     loading.value = true;
     try {
-      const res = await $fetch<AuthResponse>(`${api}/api/auth/login`, {
+      const res = await $fetch<AuthResponse>(`/api/auth/login`, {
         method: "POST",
         body: credentials,
       });
@@ -71,7 +68,7 @@ export const useAuthStore = defineStore("auth", () => {
   const register = async (userData: { email: string; password: string }) => {
     loading.value = true;
     try {
-      const res = await $fetch<AuthResponse>(`${api}/api/auth/register`, {
+      const res = await $fetch<AuthResponse>(`/api/auth/register`, {
         method: "POST",
         body: userData,
       });
@@ -107,7 +104,7 @@ export const useAuthStore = defineStore("auth", () => {
     if (!token.value) return;
 
     try {
-      const res = await $fetch<User>(`${api}/api/auth/me`, {
+      const res = await $fetch<User>(`/api/auth/me`, {
         headers: { Authorization: `Bearer ${token.value}` },
       });
       user.value = res;

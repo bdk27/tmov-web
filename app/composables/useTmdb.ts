@@ -238,7 +238,6 @@ export interface TmdbImage {
 
 export function useTmdb() {
   const config = useRuntimeConfig().public;
-  const api = config.apiBase;
 
   const search = async (q: string, opts: TmdbSearchOptions = {}) => {
     const params = new URLSearchParams({
@@ -256,7 +255,7 @@ export function useTmdb() {
       params.set("first_air_date_year", String(opts.firstAirDateYear));
 
     return $fetch<TmdbPaginatedResponse<TmdbItem>>(
-      `${api}/api/tmdb/search?${params.toString()}`,
+      `/api/tmdb/search?${params.toString()}`,
       {
         credentials: "include",
       }
@@ -271,7 +270,7 @@ export function useTmdb() {
     backdropMobileUrl: string;
     trailerUrl: string;
   }> => {
-    const apiUrl = `${api}/api/tmdb/popular-backdrop?category=${category}`;
+    const apiUrl = `/api/tmdb/popular-backdrop?category=${category}`;
 
     try {
       const res = await $fetch<{
@@ -290,7 +289,7 @@ export function useTmdb() {
   const fetchTrending = async (
     timeWindow: "day" | "week"
   ): Promise<TmdbPaginatedResponse<TmdbItem>> => {
-    const apiUrl = `${api}/api/tmdb/trending?time_window=${timeWindow}`;
+    const apiUrl = `/api/tmdb/trending?time_window=${timeWindow}`;
 
     try {
       const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl);
@@ -348,7 +347,7 @@ export function useTmdb() {
         break;
     }
 
-    const apiUrl = `${api}${endpoint}`;
+    const apiUrl = `${endpoint}`;
 
     try {
       const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl, {
@@ -372,7 +371,7 @@ export function useTmdb() {
   const fetchNowPlaying = async (
     page = 1
   ): Promise<TmdbPaginatedResponse<TmdbItem>> => {
-    const apiUrl = `${api}/api/tmdb/now-playing`;
+    const apiUrl = `/api/tmdb/now-playing`;
     const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl, {
       params: { page },
     });
@@ -389,7 +388,7 @@ export function useTmdb() {
   const fetchUpcoming = async (
     page: number = 1
   ): Promise<TmdbPaginatedResponse<TmdbItem>> => {
-    const apiUrl = `${api}/api/tmdb/upcoming`;
+    const apiUrl = `/api/tmdb/upcoming`;
     const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl, {
       params: { page },
     });
@@ -406,7 +405,7 @@ export function useTmdb() {
   const fetchTopRated = async (
     page: number = 1
   ): Promise<TmdbPaginatedResponse<TmdbItem>> => {
-    const apiUrl = `${api}/api/tmdb/top-rated`;
+    const apiUrl = `/api/tmdb/top-rated`;
     const response = await $fetch<TmdbPaginatedResponse<TmdbItem>>(apiUrl, {
       params: { page },
     });
@@ -426,7 +425,7 @@ export function useTmdb() {
     if (!validTypes.includes(type)) {
       throw new Error(`無效的類型: ${type}`);
     }
-    const apiUrl = `${api}/api/tmdb/${type}/${id}`;
+    const apiUrl = `/api/tmdb/${type}/${id}`;
 
     try {
       const response = await $fetch<any>(apiUrl);

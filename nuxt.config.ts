@@ -6,12 +6,19 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   runtimeConfig: {
     public: {
-      apiBase: process.env.API_BASE || "http://localhost:8080",
+      apiBase: "",
       tmdbImageBase: "https://image.tmdb.org/t/p",
       tmdbPosterSize: "w342",
       tmdbBackdropSize: "w780",
       defaultLanguage: "zh-TW",
       defaultRegion: "TW",
+    },
+  },
+  routeRules: {
+    "/api/**": {
+      proxy: process.env.API_BASE
+        ? `${process.env.API_BASE}/api/**`
+        : "http://localhost:8080/api/**",
     },
   },
   css: ["./app/assets/css/main.css"],
