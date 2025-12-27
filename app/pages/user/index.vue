@@ -32,34 +32,24 @@ const createdTime = computed(() => {
 
 <template>
   <div
-    class="min-h-[calc(100vh-64px)] bg-white dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8"
+    class="min-h-[calc(100vh-64px)] dark:bg-gray-950/50 bg-white py-12 px-4 sm:px-6 lg:px-8"
   >
-    <!-- 背景 -->
-    <div class="absolute inset-0 h-[40vh] w-full overflow-hidden">
-      <div
-        class="w-full h-full bg-linear-to-br from-gray-700 via-gray-800 to-black"
-      ></div>
-      <div
-        class="absolute inset-0 bg-linear-to-t from-white to-white/50 dark:from-gray-950 dark:to-gray-950/50 z-10"
-      ></div>
-    </div>
-
     <!-- 內容 -->
-    <div class="relative z-20 px-4 sm:px-6 lg:px-8">
+    <div class="px-4 sm:px-6 lg:px-8">
       <div class="max-w-3xl mx-auto space-y-8">
         <!-- 1. 歡迎標題 -->
-        <div class="text-center">
+        <!-- <div class="text-center">
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
             會員專區
           </h1>
-          <p class="mt-4 text-lg text-gray-500 dark:text-gray-400">
+          <p class="mt-3 text-lg text-gray-500 dark:text-gray-400">
             管理您的個人資料與帳號設定
           </p>
-        </div>
+        </div> -->
 
         <!-- 2. 會員資料卡片 -->
         <UCard
-          class="overflow-hidden shadow-xl ring-1 ring-gray-200 dark:ring-gray-800"
+          class="overflow-hidden shadow-md ring-1 ring-gray-200 dark:ring-gray-800"
         >
           <template #header>
             <div class="flex items-center justify-between">
@@ -68,8 +58,12 @@ const createdTime = computed(() => {
               >
                 基本資料
               </h3>
-              <USkeleton v-if="isLoading" class="h-6 w-20 rounded-full" />
-              <UBadge v-else color="primary" variant="subtle">正式會員</UBadge>
+              <UButton
+                color="neutral"
+                variant="ghost"
+                icon="i-heroicons-cog-6-tooth"
+                >編輯資料</UButton
+              >
             </div>
           </template>
 
@@ -148,21 +142,39 @@ const createdTime = computed(() => {
 
               <!-- 角色權限 -->
               <div class="pt-2 h-6">
-                <!-- 固定高度防止跳動 -->
                 <USkeleton
                   v-if="isLoading"
                   class="h-5 w-24 rounded-full mx-auto sm:mx-0"
                 />
                 <div v-else-if="authStore.user?.role">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+                  <!-- <span
+                    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
                   >
                     <UIcon
                       name="i-heroicons-shield-check"
                       class="w-4 h-4 mr-1"
                     />
-                    {{ authStore.user.role }}
-                  </span>
+                    {{
+                      authStore.user.role === "ROLE_ADMIN"
+                        ? "管理員"
+                        : "一般會員"
+                    }}
+                  </span> -->
+                  <UBadge
+                    v-if="authStore.user"
+                    color="primary"
+                    variant="subtle"
+                  >
+                    <UIcon
+                      name="i-heroicons-shield-check"
+                      class="w-4 h-4 mr-1"
+                    />
+                    {{
+                      authStore.user.role === "ROLE_ADMIN"
+                        ? "管理員"
+                        : "一般會員"
+                    }}</UBadge
+                  >
                 </div>
               </div>
             </div>
@@ -173,33 +185,27 @@ const createdTime = computed(() => {
               <p class="text-xs text-gray-400">加入時間：{{ createdTime }}</p>
               <div class="flex gap-3">
                 <UButton
-                  color="neutral"
-                  variant="ghost"
-                  icon="i-heroicons-cog-6-tooth"
-                  ><span class="hidden md:block">編輯</span></UButton
-                >
-                <UButton
                   color="error"
                   variant="soft"
                   icon="i-heroicons-arrow-right-on-rectangle"
                   @click="handleLogout"
                 >
-                  <span class="hidden md:block">登出</span>
+                  登出
                 </UButton>
               </div>
             </div>
           </template>
         </UCard>
 
-        <!-- 3. 功能區塊 (預留) -->
+        <!-- 功能區塊 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <UCard
-            @click="$router.push('/member/favorites')"
-            class="hover:border-primary-500/50 transition-colors cursor-pointer group"
+            @click="$router.push('/user/favorites')"
+            class="hover:border-primary-500/50 transition-colors cursor-pointer group shadow-md"
           >
             <div class="flex items-center gap-4">
               <div
-                class="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-500"
+                class="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center"
               >
                 <UIcon name="i-heroicons-heart" class="w-6 h-6" />
               </div>
@@ -215,12 +221,12 @@ const createdTime = computed(() => {
           </UCard>
 
           <UCard
-            @click="$router.push('/member/history')"
-            class="hover:border-primary-500/50 transition-colors cursor-pointer group"
+            @click="$router.push('/user/history')"
+            class="hover:border-primary-500/50 transition-colors cursor-pointer group shadow-md"
           >
             <div class="flex items-center gap-4">
               <div
-                class="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-500"
+                class="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-500 flex items-center justify-center"
               >
                 <UIcon name="i-heroicons-clock" class="w-6 h-6" />
               </div>

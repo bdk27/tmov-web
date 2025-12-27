@@ -73,7 +73,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 
     await nextTick();
 
-    await router.replace("/member");
+    await router.replace("/user");
   } else {
     errorMessage.value = res.message || "登入失敗，請檢查您的帳號或密碼";
   }
@@ -86,8 +86,10 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center gap-4 p-4">
-    <UPageCard class="w-full max-w-md">
+  <div
+    class="min-h-[calc(100vh-64px)] dark:bg-gray-950/50 bg-white flex flex-col items-center justify-center gap-4 p-4"
+  >
+    <UPageCard class="w-full max-w-md shadow-md">
       <UAuthForm
         ref="authForm"
         :schema="schema"
@@ -120,10 +122,5 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
         </template>
       </UAuthForm>
     </UPageCard>
-
-    <div class="mt-4 p-4 bg-gray-200 rounded text-xs w-full max-w-md break-all">
-      DEBUG: IsAuth: {{ authStore.isAuthenticated }} <br />
-      User: {{ authStore.user }}
-    </div>
   </div>
 </template>

@@ -419,22 +419,6 @@ export function useTmdb() {
     return response;
   };
 
-  // 電影預告片
-  const fetchMovieTrailer = async (
-    movieId: number
-  ): Promise<{ trailerUrl: string }> => {
-    const apiUrl = `${api}/api/tmdb/movie/${movieId}/trailer`;
-    try {
-      const response = await $fetch<{ trailerUrl: string }>(apiUrl);
-      console.log("response", response);
-
-      return response;
-    } catch (error) {
-      console.error(`取得電影預告片失敗 ID:${movieId}`, error);
-      return { trailerUrl: "" };
-    }
-  };
-
   // 獲取詳情
   const fetchDetail = async (type: string, id: number): Promise<TmdbDetail> => {
     const validTypes = ["movie", "tv", "person"];
@@ -571,7 +555,6 @@ export function useTmdb() {
     titleOf,
     dateOf,
     getRating,
-    fetchMovieTrailer,
     fetchTopRated,
     fetchDetail,
     getDetailTitle,

@@ -116,7 +116,7 @@ const isSearchOpen = ref(false);
           :avatar="{
             src: authStore.user?.pictureUrl,
           }"
-          to="/member"
+          to="/user"
           variant="ghost"
           color="neutral"
           aria-label="會員專區"
