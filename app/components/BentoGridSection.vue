@@ -6,6 +6,7 @@ const props = defineProps<{
 }>();
 
 const { posterUrl, titleOf, dateOf, getRating } = useTmdb();
+const { isFavorite, isLoading, handleFavorite } = useFavorite(props.items);
 
 // 1 ~ 3名
 const topItems = computed(() => props.items.slice(0, 3));
@@ -47,15 +48,27 @@ const bottomItems = computed(() => props.items.slice(3, 10));
               class="absolute inset-0 w-full h-full object-cover"
             />
             <!-- 收藏按鈕 -->
-            <div class="absolute top-0 left-0 p-1 z-10">
+            <div
+              class="absolute top-2 left-2 p-1.5 cursor-pointer rounded-full transition-all duration-200 backdrop-blur-sm z-10 flex items-center justify-center"
+              :class="[
+                isFavorite
+                  ? 'bg-red-500/10 text-red-500'
+                  : 'bg-black/40 text-white hover:bg-black/60 hover:text-red-400',
+              ]"
+              @click.prevent.stop="handleFavorite"
+              :title="isFavorite ? '取消收藏' : '加入收藏'"
+            >
               <UIcon
-                name="i-heroicons-plus-circle-20-solid"
-                class="w-6 h-6 bg-white/50 hover:bg-white"
+                :name="
+                  isFavorite ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'
+                "
+                class="w-6 h-6 transition-transform active:scale-90"
+                :class="{ 'animate-pulse': isLoading }"
               />
             </div>
           </div>
 
-          <!-- 3. 詳細資訊 -->
+          <!-- 詳細資訊 -->
           <div class="w-1/2 p-4 flex flex-col justify-between relative">
             <div>
               <!-- 排名標籤 -->

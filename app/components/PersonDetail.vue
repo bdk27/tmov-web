@@ -5,6 +5,7 @@ const props = defineProps<{
 }>();
 
 const { posterUrl, getDetailTitle, getDetailImage, getSocialLinks } = useTmdb();
+const { isFavorite, handleFavorite } = useFavorite(props.item);
 
 // 標題 (人名)
 const title = computed(() => getDetailTitle(props.item));
@@ -36,9 +37,7 @@ const placeOfBirth = computed(() => props.item.place_of_birth || "");
 
 // 參與作品
 const castListItems = computed(() => {
-  // 對於 Person，資料通常在 combined_credits.cast
   const list = props.item.combined_credits?.cast || [];
-  // 依照熱門程度或時間排序，這裡使用簡單去重
   return getUniqueItems(list).slice(0, 30);
 });
 
@@ -58,12 +57,6 @@ function openImage(img: any) {
   activeImage.value = img;
   isImageModalOpen.value = true;
 }
-
-// 收藏功能 (若人物也需要收藏)
-const isFavorited = ref(false);
-const toggleFavorite = () => {
-  isFavorited.value = !isFavorited.value;
-};
 
 // 社群連結
 const social = computed(() => getSocialLinks(props.item));
@@ -181,15 +174,15 @@ const social = computed(() => getSocialLinks(props.item));
                 size="sm"
                 color="primary"
                 class="px-3 py-1.5 rounded-full transition-colors group cursor-pointer"
-                @click="toggleFavorite"
+                @click="handleFavorite"
               >
                 <UIcon
-                  v-if="!isFavorited"
+                  v-if="!isFavorite"
                   size="15"
                   name="i-heroicons-heart-solid"
                   class="group-hover:bg-red-500 group-active:bg-red-500"
                 />
-                {{ isFavorited ? "已關注" : "關注" }}
+                {{ isFavorite ? "已關注" : "關注" }}
               </UButton>
             </li>
             <li v-if="social.facebook">

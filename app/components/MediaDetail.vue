@@ -16,6 +16,7 @@ const {
   getWatchProviders,
   getSocialLinks,
 } = useTmdb();
+const { isFavorite, handleFavorite } = useFavorite(props.item);
 
 // 判斷類型
 const isTv = computed(() => props.item.media_type === "tv");
@@ -346,15 +347,15 @@ const providers = computed(() => getWatchProviders(props.item));
                   size="sm"
                   color="primary"
                   class="px-3 py-1.5 rounded-full transition-colors group cursor-pointer"
-                  @click="toggleFavorite"
+                  @click="handleFavorite"
                 >
                   <UIcon
-                    v-if="!isFavorited"
+                    v-if="!isFavorite"
                     size="15"
                     name="i-heroicons-heart-solid"
                     class="group-hover:bg-red-500 group-active:bg-red-500"
                   />
-                  <span>{{ isFavorited ? "已收藏" : "加入收藏" }}</span>
+                  <span>{{ isFavorite ? "已收藏" : "加入收藏" }}</span>
                 </UButton>
               </div>
               <div class="block md:hidden">
@@ -362,8 +363,8 @@ const providers = computed(() => getWatchProviders(props.item));
                   size="20"
                   name="i-heroicons-heart-solid"
                   class="hover:bg-red-500 active:bg-red-500"
-                  :class="isFavorited ? 'bg-red-500' : ''"
-                  @click="toggleFavorite"
+                  :class="isFavorite ? 'bg-red-500' : ''"
+                  @click="handleFavorite"
                 />
               </div>
             </div>
