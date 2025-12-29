@@ -1,16 +1,155 @@
 <script setup lang="ts">
-definePageMeta({
-  middleware: [
-    function (to, from) {
-      const authStore = useAuthStore();
-      if (!authStore.isAuthenticated) {
-        return navigateTo("/login");
-      }
-    },
-  ],
+const authStore = useAuthStore();
+const router = useRouter();
+const toast = useToast();
+const config = useRuntimeConfig().public;
+const api = config.apiBase;
+
+// 定義後端回傳的資料介面
+interface HistoryItem {
+  tmdbId?: number;
+  id?: number;
+  title?: string;
+  name?: string;
+  posterPath?: string;
+  poster_path?: string;
+  mediaType?: string;
+  media_type?: string;
+  voteAverage?: number;
+  vote_average?: number;
+  releaseDate?: string;
+  release_date?: string;
+  viewedAt?: string; // 觀看時間
+}
+
+const rawItems = ref<HistoryItem[]>([]);
+const loading = ref(true);
+const error = ref<string | null>(null);
+
+const currentPage = ref(1);
+
+onMounted(() => {
+  fetchHistory();
 });
+
+function getAuthHeaders() {
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${authStore.token}`,
+  };
+}
+
+// 資料處理核心
+const historyItems = computed<TmdbItem[]>(() => {
+  return rawItems.value.map((item) => {
+    const finalId = item.id || 0;
+    const rawType = item.media_type || "movie";
+    const type = rawType.toLowerCase();
+
+    // 圖片
+    let poster = item.posterPath || item.poster_path || null;
+    if (poster && !poster.startsWith("/") && !poster.startsWith("http")) {
+      poster = `/${poster}`;
+    }
+
+    // 標題與其他
+    const finalTitle = item.title || item.name || "未命名";
+    const finalVote = item.voteAverage ?? item.vote_average ?? 0;
+    const finalDate = item.releaseDate || item.release_date || "";
+
+    return {
+      id: finalId,
+      title: finalTitle,
+      name: finalTitle, // TV 用
+      poster_path: poster,
+      profile_path: poster, // Person 用
+      media_type: type as any,
+      vote_average: finalVote,
+      release_date: finalDate,
+      first_air_date: finalDate,
+      popularity: 0,
+      overview: "",
+      backdrop_path: null,
+    };
+  });
+});
+
+// 取得觀看紀錄
+async function fetchHistory() {
+  if (!authStore.isAuthenticated) {
+    router.push("/login");
+    return;
+  }
+  loading.value = true;
+  error.value = null;
+  try {
+    const response = await fetch(`${api}/api/history`, {
+      headers: getAuthHeaders(),
+    });
+    if (response.ok) {
+      rawItems.value = await response.json();
+    } else {
+      error.value = "無法取得歷史紀錄";
+    }
+  } catch (err) {
+    error.value = "連線發生錯誤";
+  } finally {
+    loading.value = false;
+  }
+}
+
+// 刪除所有觀看紀錄
+async function clearAllHistory() {
+  if (!confirm("確定要清除所有觀看紀錄嗎？此動作無法復原。")) return;
+
+  try {
+    const response = await fetch(`${api}/api/history`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+
+    if (response.ok) {
+      rawItems.value = [];
+      toast.add({ title: "已清除觀看紀錄", color: "primary" });
+    } else {
+      toast.add({
+        title: "清除失敗",
+        description: "請稍後再試",
+        color: "error",
+      });
+    }
+  } catch (e) {
+    toast.add({ title: "連線錯誤", color: "error" });
+  }
+}
 </script>
 
 <template>
-  <div>會員觀看歷史頁面</div>
+  <div class="container mx-auto max-w-6xl px-4 py-8">
+    <div>
+      <PagedMediaGrid
+        title="觀看紀錄"
+        :items="historyItems"
+        :loading="loading"
+        :error="error"
+        :total-results="historyItems.length"
+        v-model:current-page="currentPage"
+        @retry="fetchHistory"
+      />
+    </div>
+
+    <div class="flex justify-center mt-6 bg-error/10 p-4 rounded-lg">
+      <div v-if="rawItems.length > 0">
+        <UButton
+          icon="i-heroicons-trash"
+          color="error"
+          variant="soft"
+          size="md"
+          @click="clearAllHistory"
+        >
+          清除所有紀錄
+        </UButton>
+      </div>
+    </div>
+  </div>
 </template>

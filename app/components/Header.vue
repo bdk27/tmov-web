@@ -118,7 +118,7 @@ const isSearchOpen = ref(false);
           }"
           to="/user"
           variant="ghost"
-          color="neutral"
+          color="info"
           aria-label="會員專區"
         />
       </UTooltip>

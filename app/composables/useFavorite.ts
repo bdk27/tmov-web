@@ -9,7 +9,6 @@ export function useFavorite(item: any) {
   const isFavorite = ref(false);
   const isLoading = ref(false);
 
-  // 自動初始化
   onMounted(() => {
     checkFavoriteStatus();
   });
@@ -123,6 +122,12 @@ export function useFavorite(item: any) {
       });
 
       if (!response.ok) throw new Error("更新收藏狀態失敗");
+
+      toast.add({
+        title: newState ? "已加入收藏" : "已從收藏移除",
+        icon: newState ? "i-heroicons-heart-solid" : "i-heroicons-heart",
+        color: "success",
+      });
     } catch (error) {
       isFavorite.value = previousState;
     } finally {

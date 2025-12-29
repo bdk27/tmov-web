@@ -33,6 +33,12 @@ export default defineNuxtConfig({
         ? `${process.env.API_BASE}/api/favorites/**`
         : "http://localhost:8080/api/favorites/**",
     },
+    // 歷史紀錄相關
+    "/api/history/**": {
+      proxy: process.env.API_BASE
+        ? `${process.env.API_BASE}/api/history/**`
+        : "http://localhost:8080/api/history/**",
+    },
   },
   css: ["./app/assets/css/main.css"],
   vite: {

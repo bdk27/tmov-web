@@ -120,8 +120,7 @@ const filteredItems = computed<TmdbItem[]>(() => {
   return normalized;
 });
 
-// 2. 客戶端分頁邏輯
-// PageMediaGrid 需要我們傳入「當前頁面」的 20 筆資料
+// 客戶端分頁邏輯
 const paginatedItems = computed(() => {
   const itemsPerPage = 20;
   const start = (currentPage.value - 1) * itemsPerPage;
