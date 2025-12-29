@@ -15,10 +15,23 @@ export default defineNuxtConfig({
     },
   },
   routeRules: {
-    "/api/**": {
+    // 認證相關
+    "/api/auth/**": {
       proxy: process.env.API_BASE
-        ? `${process.env.API_BASE}/api/**`
-        : "http://localhost:8080/api/**",
+        ? `${process.env.API_BASE}/api/auth/**`
+        : "http://localhost:8080/api/auth/**",
+    },
+    // TMDB 資料相關
+    "/api/tmdb/**": {
+      proxy: process.env.API_BASE
+        ? `${process.env.API_BASE}/api/tmdb/**`
+        : "http://localhost:8080/api/tmdb/**",
+    },
+    // 收藏相關
+    "/api/favorites/**": {
+      proxy: process.env.API_BASE
+        ? `${process.env.API_BASE}/api/favorites/**`
+        : "http://localhost:8080/api/favorites/**",
     },
   },
   css: ["./app/assets/css/main.css"],
