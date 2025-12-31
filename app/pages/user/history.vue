@@ -103,7 +103,7 @@ async function clearAllHistory() {
   if (!confirm("確定要清除所有觀看紀錄嗎？此動作無法復原。")) return;
 
   try {
-    const response = await fetch(`${api}/api/history`, {
+    const response = await fetch(`${api}/api/history/all`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
@@ -126,6 +126,17 @@ async function clearAllHistory() {
 
 <template>
   <div class="container mx-auto max-w-6xl px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <UButton
+        color="neutral"
+        variant="ghost"
+        icon="i-heroicons-arrow-left"
+        @click="$router.back()"
+      >
+        返回
+      </UButton>
+    </div>
+
     <div>
       <PagedMediaGrid
         title="觀看紀錄"
@@ -138,8 +149,8 @@ async function clearAllHistory() {
       />
     </div>
 
-    <div class="flex justify-center mt-6 bg-error/10 p-4 rounded-lg">
-      <div v-if="rawItems.length > 0">
+    <div class="flex justify-center mt-6" v-if="rawItems.length > 0">
+      <div>
         <UButton
           icon="i-heroicons-trash"
           color="error"

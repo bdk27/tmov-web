@@ -112,7 +112,9 @@ const isTrendingLoading = computed(() =>
 
 <template>
   <div class="relative">
-    <div class="absolute inset-0 w-full overflow-hidden z-0">
+    <div
+      class="min-h-[calc(100vh-64px)] absolute inset-0 w-full overflow-hidden z-0"
+    >
       <!-- 背景圖片層 -->
       <div class="absolute inset-0">
         <picture v-if="backdropMobileUrl">

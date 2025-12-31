@@ -39,6 +39,12 @@ export default defineNuxtConfig({
         ? `${process.env.API_BASE}/api/history/**`
         : "http://localhost:8080/api/history/**",
     },
+    // 上傳相關
+    "/api/upload": {
+      proxy: process.env.API_BASE
+        ? `${process.env.API_BASE}/api/upload`
+        : "http://localhost:8080/api/upload",
+    },
   },
   css: ["./app/assets/css/main.css"],
   vite: {

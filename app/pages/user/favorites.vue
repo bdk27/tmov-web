@@ -131,9 +131,15 @@ const paginatedItems = computed(() => {
 
 <template>
   <div class="container mx-auto max-w-6xl px-4 py-8">
-    <div
-      class="flex flex-col md:flex-row md:items-center justify-center mb-10 gap-4"
-    >
+    <div class="flex items-center justify-center mb-5 gap-4">
+      <UButton
+        color="neutral"
+        variant="ghost"
+        icon="i-heroicons-arrow-left"
+        @click="$router.back()"
+      >
+        返回
+      </UButton>
       <!-- 分類切換 Tab -->
       <div
         class="flex p-1 space-x-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"

@@ -6,6 +6,10 @@ export interface User {
   role?: string;
   pictureUrl?: string;
   createdAt?: string;
+  gender?: string;
+  birthDate?: string;
+  phone?: string;
+  address?: string;
 }
 
 // 登入回應介面

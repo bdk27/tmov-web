@@ -2,7 +2,7 @@
 import type { TmdbItem } from "~/composables/useTmdb";
 
 const props = defineProps<{
-  title: string; // 標題
+  title?: string; // 標題
   items: TmdbItem[]; // API 回傳的原始資料
   loading: boolean; // 是否載入中
   error: string | null; // 錯誤訊息
@@ -60,11 +60,12 @@ const emit = defineEmits<{
     <!-- 標題列 + 排序 -->
     <div
       v-if="!loading && !error"
-      class="w-full mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4"
+      class="w-full mb-6 flex items-end justify-between gap-4"
     >
       <!-- 標題 / 資訊 -->
       <div class="text-neutral-400">
         <div
+          v-if="title"
           class="text-xl font-bold text-neutral-900 dark:text-white mb-1 flex items-center gap-2"
         >
           <span class="w-1.5 h-6 bg-primary rounded-full block"></span>
