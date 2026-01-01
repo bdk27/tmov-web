@@ -301,15 +301,21 @@ async function handleChangePassword(payload: FormSubmitEvent<PasswordSchema>) {
             >
               <!-- 大頭貼上傳區 -->
               <div class="flex flex-col items-center">
+                <input
+                  ref="fileInputRef"
+                  type="file"
+                  class="hidden"
+                  accept="image/*"
+                  @change="onFileSelect"
+                />
                 <div
                   class="relative group cursor-pointer"
                   @click="triggerFileInput"
                 >
                   <img
-                    v-if="state.pictureUrl"
                     :src="state.pictureUrl"
                     alt="User"
-                    class="h-24 w-24 object-cover rounded-full"
+                    class="h-24 w-24 object-cover rounded-full bg-neutral-200 dark:bg-neutral-700"
                   />
 
                   <!-- 懸停時顯示相機圖示 -->
@@ -323,20 +329,9 @@ async function handleChangePassword(payload: FormSubmitEvent<PasswordSchema>) {
                   </div>
                 </div>
 
-                <div class="text-center">
-                  <!-- <UButton
-                      size="xs"
-                      color="neutral"
-                      variant="soft"
-                      @click="triggerFileInput"
-                      :loading="loading"
-                    >
-                      更換大頭貼
-                    </UButton> -->
-                  <p class="text-sm text-gray-400 mt-2">
-                    支援 JPG, PNG, WebP, SVG (最大為 2MB)
-                  </p>
-                </div>
+                <p class="text-sm text-gray-400 mt-2">
+                  支援 JPG, PNG, WebP, SVG (最大為 2MB)
+                </p>
               </div>
 
               <div class="w-full">
@@ -387,12 +382,12 @@ async function handleChangePassword(payload: FormSubmitEvent<PasswordSchema>) {
               </div>
 
               <div class="w-full">
-                <UFormField label="住址" name="address">
+                <UFormField label="居住城市" name="address">
                   <UInput
                     v-model="state.address"
                     size="lg"
                     type="text"
-                    placeholder="住址"
+                    placeholder="例如: 台北市"
                     class="w-full"
                   />
                 </UFormField>

@@ -25,9 +25,7 @@ function handleLogout() {
 </script>
 
 <template>
-  <div
-    class="min-h-[calc(100vh-64px)] dark:bg-gray-950/50 bg-white py-12 md:px-4 px-6 lg:px-8"
-  >
+  <div class="min-h-full py-12 md:px-4 px-6 lg:px-8">
     <!-- 內容 -->
     <div class="px-4 sm:px-6 lg:px-8">
       <div class="max-w-3xl mx-auto space-y-8">
@@ -35,7 +33,7 @@ function handleLogout() {
           class="overflow-hidden shadow-md ring-1 ring-gray-200 dark:ring-gray-800"
         >
           <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between px-4 py-3">
               <h3
                 class="text-lg font-bold leading-6 text-gray-900 dark:text-white"
               >
@@ -52,205 +50,191 @@ function handleLogout() {
           </template>
 
           <div
-            class="flex flex-col md:flex-row items-center justify-center py-4"
+            class="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start justify-center px-6 py-4"
           >
-            <!-- 頭像 -->
-            <div class="w-1/2 flex flex-col items-center gap-1">
-              <!-- 載入中 -->
-              <USkeleton
-                v-if="isLoading"
-                class="h-24 w-24 rounded-full"
-                :ui="{ rounded: 'rounded-full' }"
-              />
-
-              <!-- 資料已載入 -->
-              <div
-                v-else
-                class="h-24 w-24 rounded-full bg-primary-100 dark:bg-primary-900/30 shadow-inner overflow-hidden"
-              >
-                <img
-                  v-if="authStore.user?.pictureUrl"
-                  :src="authStore.user.pictureUrl"
-                  alt="User"
-                  class="h-full w-full object-cover"
+            <!-- 1. 左側：頭像與身分標籤 (固定寬度，居中對齊) -->
+            <div
+              class="w-full md:w-48 flex flex-col items-center gap-4 shrink-0"
+            >
+              <div class="relative">
+                <!-- 載入中 -->
+                <USkeleton
+                  v-if="isLoading"
+                  class="h-32 w-32 rounded-full"
+                  :ui="{ rounded: 'rounded-full' }"
                 />
-              </div>
 
-              <!-- 使用者名稱 -->
-              <div>
-                <USkeleton v-if="isLoading" class="h-4 w-full" />
-                <p v-else class="text-xl text-gray-900 dark:text-white">
-                  {{ authStore.user?.displayName || "-" }}
-                </p>
-              </div>
+                <!-- 頭像顯示 -->
+                <UAvatar
+                  v-else
+                  :src="authStore.user?.pictureUrl || undefined"
+                  :alt="authStore.user?.displayName || 'User'"
+                  class="ring-4 ring-white dark:ring-gray-800 shadow-xl h-28 w-28 text-4xl rounded-full"
+                />
 
-              <div class="flex items-center justify-center gap-3">
-                <!-- 性別 -->
-                <div>
-                  <!-- 男性 -->
+                <!-- 性別圖示 -->
+                <div
+                  v-if="!isLoading && authStore.user?.gender"
+                  class="absolute bottom-1 right-1 bg-white dark:bg-gray-800 rounded-full p-1.5 shadow-md border border-gray-100 dark:border-gray-700"
+                >
                   <svg
                     v-if="authStore.user?.gender === 'Male'"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 512 512"
-                    class="w-4 h-4 fill-current text-blue-500"
+                    class="w-5 h-5 fill-current text-blue-500"
                   >
                     <path
                       d="M320 32c0-17.7 14.3-32 32-32L480 0c17.7 0 32 14.3 32 32l0 128c0 17.7-14.3 32-32 32s-32-14.3-32-32l0-50.7-95 95c19.5 28.4 31 62.7 31 99.8 0 97.2-78.8 176-176 176S32 401.2 32 304 110.8 128 208 128c37 0 71.4 11.4 99.8 31l95-95-50.7 0c-17.7 0-32-14.3-32-32zM208 416a112 112 0 1 0 0-224 112 112 0 1 0 0 224z"
                     />
                   </svg>
-                  <!-- 女性 -->
                   <svg
-                    v-else
+                    v-else-if="authStore.user?.gender === 'Female'"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 384 512"
-                    class="w-4 h-4 fill-current text-pink-500"
+                    class="w-5 h-5 fill-current text-pink-500"
                   >
                     <path
                       d="M80 176a112 112 0 1 1 224 0 112 112 0 1 1 -224 0zM223.9 349.1C305.9 334.1 368 262.3 368 176 368 78.8 289.2 0 192 0S16 78.8 16 176c0 86.3 62.1 158.1 144.1 173.1-.1 1-.1 1.9-.1 2.9l0 64-32 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l32 0 0 32c0 17.7 14.3 32 32 32s32-14.3 32-32l0-32 32 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-32 0 0-64c0-1 0-1.9-.1-2.9z"
                     />
                   </svg>
                 </div>
-                <!-- 出生日期 -->
-                <div>
-                  <USkeleton v-if="isLoading" class="h-4 w-full" />
-                  <p v-else class="text-gray-900 dark:text-white">
-                    {{ formatDate(authStore.user?.birthDate || "-") }}
-                  </p>
-                </div>
-                <!-- 角色權限 -->
-                <div class="">
-                  <USkeleton
-                    v-if="isLoading"
-                    class="h-5 w-24 rounded-full mx-auto sm:mx-0"
-                  />
-                  <div v-else-if="authStore.user?.role">
-                    <!-- <span
-                      class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-                    >
-                      <UIcon
-                        name="i-heroicons-shield-check"
-                        class="w-4 h-4 mr-1"
-                      />
-                      {{
-                        authStore.user.role === "ROLE_ADMIN"
-                          ? "管理員"
-                          : "一般會員"
-                      }}
-                    </span> -->
-                    <UBadge
-                      v-if="authStore.user"
-                      color="primary"
-                      variant="subtle"
-                    >
-                      <!-- <UIcon
-                        name="i-heroicons-shield-check"
-                        class="w-4 h-4 mr-1"
-                      /> -->
-                      {{
-                        authStore.user.role === "ROLE_ADMIN"
-                          ? "管理員"
-                          : "一般會員"
-                      }}</UBadge
-                    >
-                  </div>
-                </div>
-                <!-- <div>
-                  <USkeleton v-if="isLoading" class="h-4 w-full" />
-                  <p v-else class="text-gray-900 dark:text-white">
-                    {{ authStore.user?.email || "-" }}
-                  </p>
-                </div> -->
+              </div>
+
+              <!-- 角色標籤 -->
+              <div v-if="!isLoading" class="flex flex-col items-center">
+                <UBadge
+                  color="primary"
+                  variant="subtle"
+                  class="px-3 py-1 text-sm font-medium"
+                >
+                  {{
+                    authStore.user?.role === "ROLE_ADMIN"
+                      ? "管理員"
+                      : "一般會員"
+                  }}
+                </UBadge>
               </div>
             </div>
 
-            <!-- 文字資訊 -->
-            <div
-              class="flex flex-col items-center md:items-start gap-3 text-center"
-            >
-              <!-- 電子信箱 -->
-              <div
-                class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-3"
-              >
-                <p class="text-gray-500 dark:text-gray-400 text-sm">
-                  電子信箱:
-                </p>
-
-                <USkeleton v-if="isLoading" class="h-4 w-full" />
-                <p v-else class="text-gray-900 dark:text-white">
-                  {{ authStore.user?.email || "-" }}
-                </p>
-              </div>
-
-              <!-- 手機號碼 -->
-              <div
-                class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-3"
-              >
-                <p class="text-gray-500 dark:text-gray-400 text-sm">
-                  手機號碼:
-                </p>
-                <!-- Skeleton / Real Text -->
-                <USkeleton v-if="isLoading" class="h-4 w-full" />
-                <p v-else class="text-gray-900 dark:text-white">
-                  {{ formatPhone(authStore.user?.phone || "") }}
-                </p>
-              </div>
-
-              <!-- 住址 -->
-              <div
-                class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-3"
-              >
-                <p class="text-gray-500 dark:text-gray-400 text-sm">住址:</p>
-                <USkeleton v-if="isLoading" class="h-4 w-full" />
-                <p v-else class="text-gray-900 dark:text-white">
-                  {{ authStore.user?.address || "-" }}
-                </p>
-              </div>
-
-              <!-- 角色權限 -->
-              <!-- <div class="pt-2 h-6">
+            <div class="flex-1 w-full min-w-0">
+              <!-- 標題區：姓名 -->
+              <div class="mb-6 text-center md:text-left">
                 <USkeleton
                   v-if="isLoading"
-                  class="h-5 w-24 rounded-full mx-auto sm:mx-0"
+                  class="h-8 w-48 mb-2 mx-auto md:mx-0"
                 />
-                <div v-else-if="authStore.user?.role">
-                  <span
-                    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-                  >
-                    <UIcon
-                      name="i-heroicons-shield-check"
-                      class="w-4 h-4 mr-1"
-                    />
-                    {{
-                      authStore.user.role === "ROLE_ADMIN"
-                        ? "管理員"
-                        : "一般會員"
-                    }}
-                  </span>
-                  <UBadge
-                    v-if="authStore.user"
-                    color="primary"
-                    variant="subtle"
-                  >
-                    <UIcon
-                      name="i-heroicons-shield-check"
-                      class="w-4 h-4 mr-1"
-                    />
-                    {{
-                      authStore.user.role === "ROLE_ADMIN"
-                        ? "管理員"
-                        : "一般會員"
-                    }}</UBadge
-                  >
+                <h2
+                  v-else
+                  class="text-2xl font-bold text-gray-900 dark:text-white"
+                >
+                  {{ authStore.user?.displayName || "未設定暱稱" }}
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">
+                  加入時間：{{
+                    isLoading
+                      ? "..."
+                      : formatDate(authStore.user?.createdAt || "")
+                  }}
+                </p>
+              </div>
+
+              <!-- 資訊網格：使用 grid 兩欄排列，提升可讀性 -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Email -->
+                <div class="group flex items-center gap-3">
+                  <UIcon
+                    name="i-heroicons-envelope"
+                    class="w-5 h-5 text-gray-500"
+                  />
+
+                  <div class="flex-1 min-w-0">
+                    <p
+                      class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5"
+                    >
+                      電子信箱
+                    </p>
+                    <USkeleton v-if="isLoading" class="h-5 w-32" />
+                    <p
+                      v-else
+                      class="text-gray-900 dark:text-white font-medium truncate"
+                    >
+                      {{ authStore.user?.email || "-" }}
+                    </p>
+                  </div>
                 </div>
-              </div> -->
+
+                <!-- 手機 -->
+                <div class="group flex items-center gap-3">
+                  <UIcon
+                    name="i-heroicons-device-phone-mobile"
+                    class="w-5 h-5 text-gray-500"
+                  />
+
+                  <div class="flex-1 min-w-0">
+                    <p
+                      class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5"
+                    >
+                      手機號碼
+                    </p>
+                    <USkeleton v-if="isLoading" class="h-5 w-32" />
+                    <p v-else class="text-gray-900 dark:text-white font-medium">
+                      {{ formatPhone(authStore.user?.phone || "-") }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 生日 -->
+                <div class="group flex items-center gap-3">
+                  <UIcon
+                    name="i-heroicons-cake"
+                    class="w-5 h-5 text-gray-500"
+                  />
+
+                  <div class="flex-1 min-w-0">
+                    <p
+                      class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5"
+                    >
+                      出生日期
+                    </p>
+                    <USkeleton v-if="isLoading" class="h-5 w-32" />
+                    <p v-else class="text-gray-900 dark:text-white font-medium">
+                      {{
+                        authStore.user?.birthDate
+                          ? formatDate(authStore.user.birthDate)
+                          : "-"
+                      }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 地址 -->
+                <div class="group flex items-center gap-3">
+                  <UIcon
+                    name="i-heroicons-map-pin"
+                    class="w-5 h-5 text-gray-500"
+                  />
+
+                  <div class="flex-1 min-w-0">
+                    <p
+                      class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5"
+                    >
+                      居住城市
+                    </p>
+                    <USkeleton v-if="isLoading" class="h-5 w-full" />
+                    <p
+                      v-else
+                      class="text-gray-900 dark:text-white font-medium truncate"
+                    >
+                      {{ authStore.user?.address || "-" }}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           <template #footer>
-            <div class="flex justify-between items-center">
-              <p class="text-xs text-gray-400">
-                加入時間：{{ formatDate(authStore.user?.createdAt || "") }}
-              </p>
+            <div class="flex justify-end items-center px-4 py-3">
               <div class="flex gap-3">
                 <UButton
                   color="error"

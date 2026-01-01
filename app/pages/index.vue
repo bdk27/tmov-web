@@ -112,9 +112,7 @@ const isTrendingLoading = computed(() =>
 
 <template>
   <div class="relative">
-    <div
-      class="min-h-[calc(100vh-64px)] absolute inset-0 w-full overflow-hidden z-0"
-    >
+    <div class="min-h-full absolute inset-0 w-full overflow-hidden z-0">
       <!-- 背景圖片層 -->
       <div class="absolute inset-0">
         <picture v-if="backdropMobileUrl">
@@ -138,12 +136,12 @@ const isTrendingLoading = computed(() =>
 
       <!-- 漸層遮罩 (讓底部完美融合到頁面背景) -->
       <div
-        class="absolute inset-0 bg-linear-to-t from-white to-transparent dark:from-neutral-900 z-10"
+        class="absolute inset-0 bg-linear-to-t from-gray-100 to-transparent dark:from-gray-950 z-10"
       ></div>
 
       <!-- 頂部暗角 (讓文字更清楚) -->
       <div
-        class="absolute inset-0 bg-linear-to-b from-black to-transparent z-10"
+        class="absolute inset-0 bg-linear-to-b from-black/50 to-transparent z-10"
       ></div>
     </div>
 
@@ -163,7 +161,7 @@ const isTrendingLoading = computed(() =>
           <span class="block">下一部必看</span>
           <span> 從 <span class="text-primary">TMOV.</span> 開始 </span>
         </h1>
-        <h3 class="text-xl sm:text-2xl mb-14 text-neutral-200 font-light">
+        <h3 class="text-xl sm:text-2xl mb-14 font-light">
           上百萬部電影、電視節目和演員資料等你來探索
         </h3>
       </template>

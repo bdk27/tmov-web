@@ -29,12 +29,13 @@ export const formatRating = (val?: number) => {
 
 // 格式化電話 (e.g. 0912345678 => 0912***678)
 export const formatPhone = (phone: string) => {
-  if (phone.length !== 10) return phone;
+  if (phone.length !== 10) return phone || "-";
   return `${phone.slice(0, 4)}***${phone.slice(7)}`;
 };
 
 // 格式化日期 (e.g. "2023-12-25" => "2023/12/25")
 export const formatDate = (dateStr: string) => {
+  if (dateStr === "-") return dateStr;
   const date = new Date(dateStr);
   return date.toLocaleDateString();
 };
