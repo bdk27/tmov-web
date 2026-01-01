@@ -135,8 +135,6 @@ async function onFileSelect(event: Event) {
         description: "請記得點擊下方按鈕儲存設定",
         color: "primary",
       });
-
-      router.push("/user");
     } else {
       throw new Error("Upload failed");
     }
@@ -301,13 +299,6 @@ async function handleChangePassword(payload: FormSubmitEvent<PasswordSchema>) {
             >
               <!-- 大頭貼上傳區 -->
               <div class="flex flex-col items-center">
-                <input
-                  ref="fileInputRef"
-                  type="file"
-                  class="hidden"
-                  accept="image/*"
-                  @change="onFileSelect"
-                />
                 <div
                   class="relative group cursor-pointer"
                   @click="triggerFileInput"
@@ -332,6 +323,14 @@ async function handleChangePassword(payload: FormSubmitEvent<PasswordSchema>) {
                 <p class="text-sm text-gray-400 mt-2">
                   支援 JPG, PNG, WebP, SVG (最大為 2MB)
                 </p>
+
+                <input
+                  ref="fileInputRef"
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  @change="onFileSelect"
+                />
               </div>
 
               <div class="w-full">
