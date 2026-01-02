@@ -7,6 +7,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: "",
+      googleClientId: process.env.GOOGLE_CLIENT_ID || "",
       tmdbImageBase: "https://image.tmdb.org/t/p",
       tmdbPosterSize: "w342",
       tmdbBackdropSize: "w780",
@@ -17,33 +18,23 @@ export default defineNuxtConfig({
   routeRules: {
     // 認證相關
     "/api/auth/**": {
-      proxy: process.env.API_BASE
-        ? `${process.env.API_BASE}/api/auth/**`
-        : "http://localhost:8080/api/auth/**",
+      proxy: `${process.env.API_BASE}/api/auth/**`,
     },
     // TMDB 資料相關
     "/api/tmdb/**": {
-      proxy: process.env.API_BASE
-        ? `${process.env.API_BASE}/api/tmdb/**`
-        : "http://localhost:8080/api/tmdb/**",
+      proxy: `${process.env.API_BASE}/api/tmdb/**`,
     },
     // 收藏相關
     "/api/favorites/**": {
-      proxy: process.env.API_BASE
-        ? `${process.env.API_BASE}/api/favorites/**`
-        : "http://localhost:8080/api/favorites/**",
+      proxy: `${process.env.API_BASE}/api/favorites/**`,
     },
     // 歷史紀錄相關
     "/api/history/**": {
-      proxy: process.env.API_BASE
-        ? `${process.env.API_BASE}/api/history/**`
-        : "http://localhost:8080/api/history/**",
+      proxy: `${process.env.API_BASE}/api/history/**`,
     },
     // 上傳相關
     "/api/upload": {
-      proxy: process.env.API_BASE
-        ? `${process.env.API_BASE}/api/upload`
-        : "http://localhost:8080/api/upload",
+      proxy: `${process.env.API_BASE}/api/upload`,
     },
   },
   css: ["./app/assets/css/main.css"],

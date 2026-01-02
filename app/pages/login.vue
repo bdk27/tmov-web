@@ -35,17 +35,6 @@ const fields: AuthFormField[] = [
   },
 ];
 
-// Google 登入
-const providers = [
-  {
-    label: "Google",
-    icon: "i-simple-icons-google",
-    onClick: () => {
-      toast.add({ title: "Google", description: "使用 Google 登入中" });
-    },
-  },
-];
-
 // 驗證
 type Schema = z.output<typeof schema>;
 const schema = z.object({
@@ -96,16 +85,32 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
         title="登入"
         icon="i-lucide-user"
         :fields="fields"
-        :providers="providers"
-        separator="或"
         :submit="{
           label: '登入',
         }"
         @submit="onSubmit"
       >
         <template #description>
-          還沒有帳號嗎？
-          <ULink to="/register" class="text-primary font-medium">註冊</ULink>
+          <div class="space-y-4">
+            <p>
+              還沒有帳號嗎？
+              <ULink to="/register" class="text-primary font-medium"
+                >註冊</ULink
+              >
+            </p>
+
+            <!-- 插入 Google 按鈕元件 -->
+            <GoogleLoginButton />
+
+            <!-- 分隔線 -->
+            <div class="flex items-center gap-2 py-2">
+              <span class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></span>
+              <span class="text-gray-500 dark:text-gray-400 text-sm font-medium"
+                >或</span
+              >
+              <span class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></span>
+            </div>
+          </div>
         </template>
         <template #password-hint>
           <ULink to="#" class="text-primary font-medium" tabindex="-1"

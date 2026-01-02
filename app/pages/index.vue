@@ -136,12 +136,12 @@ const isTrendingLoading = computed(() =>
 
       <!-- 漸層遮罩 (讓底部完美融合到頁面背景) -->
       <div
-        class="absolute inset-0 bg-linear-to-t from-gray-100 to-transparent dark:from-gray-950 z-10"
+        class="absolute inset-0 bg-linear-to-t from-gray-100 dark:from-gray-950 to-transparent z-10"
       ></div>
 
       <!-- 頂部暗角 (讓文字更清楚) -->
       <div
-        class="absolute inset-0 bg-linear-to-b from-black/50 to-transparent z-10"
+        class="absolute inset-0 bg-linear-to-b from-transparent dark:to-gray-950 to-white z-10"
       ></div>
     </div>
 
@@ -155,9 +155,7 @@ const isTrendingLoading = computed(() =>
       }"
     >
       <template #title>
-        <h1
-          class="text-white text-5xl sm:text-6xl font-extrabold mb-4 leading-tight"
-        >
+        <h1 class="text-5xl sm:text-6xl font-extrabold mb-4 leading-tight">
           <span class="block">下一部必看</span>
           <span> 從 <span class="text-primary">TMOV.</span> 開始 </span>
         </h1>

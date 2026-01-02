@@ -1,6 +1,6 @@
 // 使用者資料介面
 export interface User {
-  id: number;
+  // id?: number;
   displayName: string;
   email: string;
   role?: string;
