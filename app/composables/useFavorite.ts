@@ -3,9 +3,6 @@ export function useFavorite(item: any) {
   const router = useRouter();
   const toast = useToast();
 
-  const config = useRuntimeConfig().public;
-  const api = config.apiBase;
-
   const isFavorite = ref(false);
   const isLoading = ref(false);
 
@@ -61,7 +58,7 @@ export function useFavorite(item: any) {
       ]);
 
       const response = await fetch(
-        `${api}/api/favorites/check?${params.toString()}`,
+        `/api/favorites/check?${params.toString()}`,
         {
           headers: getAuthHeaders(),
         }
@@ -115,7 +112,7 @@ export function useFavorite(item: any) {
 
       const method = newState ? "POST" : "DELETE";
 
-      const response = await fetch(`${api}/api/favorites`, {
+      const response = await fetch(`/api/favorites`, {
         method,
         headers: getAuthHeaders(),
         body: requestBody,

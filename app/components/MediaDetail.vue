@@ -208,7 +208,7 @@ const providers = computed(() => getWatchProviders(props.item));
     v-if="item"
     class="relative min-h-screen pb-20 bg-white dark:bg-gray-950 dark:text-white"
   >
-    <!-- 1. 沉浸式背景區 -->
+    <!-- 沉浸式背景區 -->
     <div class="absolute inset-0 h-[55vh] lg:h-[65vh] w-full overflow-hidden">
       <!-- 背景圖片層 -->
       <div class="absolute inset-0">
@@ -231,7 +231,7 @@ const providers = computed(() => getWatchProviders(props.item));
       ></div>
     </div>
 
-    <!-- 2. 主要內容區 -->
+    <!-- 主要內容區 -->
     <div class="container mx-auto px-4 relative z-20 pt-[15vh]">
       <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 lg:items-start">
         <!-- 左側：海報與操作 -->
@@ -416,6 +416,15 @@ const providers = computed(() => getWatchProviders(props.item));
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <!-- 評論區 -->
+              <div class="">
+                <!-- <UDivider class="mb-8" /> -->
+                <CommentSection
+                  :tmdbId="item.id"
+                  :mediaType="item.media_type"
+                />
               </div>
 
               <!-- 季數總覽 -->

@@ -7,9 +7,6 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 
-const config = useRuntimeConfig().public;
-const api = config.apiBase;
-
 // 定義頁籤
 const items = [
   {
@@ -119,7 +116,7 @@ async function onFileSelect(event: Event) {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${api}/api/upload`, {
+    const response = await fetch(`/api/upload`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${authStore.token}`,
@@ -169,7 +166,7 @@ async function handleUpdateProfile(payload: FormSubmitEvent<ProfileSchema>) {
   loading.value = true;
 
   try {
-    const response = await fetch(`${api}/api/auth/me`, {
+    const response = await fetch(`/api/auth/me`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -224,7 +221,7 @@ type PasswordSchema = z.output<typeof passwordSchema>;
 async function handleChangePassword(payload: FormSubmitEvent<PasswordSchema>) {
   loading.value = true;
   try {
-    const response = await fetch(`${api}/api/auth/me`, {
+    const response = await fetch(`/api/auth/me`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify({

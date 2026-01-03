@@ -6,7 +6,6 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   runtimeConfig: {
     public: {
-      apiBase: "",
       googleClientId: process.env.GOOGLE_CLIENT_ID || "",
       tmdbImageBase: "https://image.tmdb.org/t/p",
       tmdbPosterSize: "w342",
@@ -35,6 +34,10 @@ export default defineNuxtConfig({
     // 上傳相關
     "/api/upload": {
       proxy: `${process.env.API_BASE}/api/upload`,
+    },
+    // 評論相關
+    "/api/comments": {
+      proxy: `${process.env.API_BASE}/api/comments`,
     },
   },
   css: ["./app/assets/css/main.css"],

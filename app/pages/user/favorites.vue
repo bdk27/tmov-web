@@ -1,8 +1,6 @@
 <script setup lang="ts">
 const authStore = useAuthStore();
 const router = useRouter();
-const config = useRuntimeConfig().public;
-const api = config.apiBase;
 
 // 定義資料介面
 interface FavoriteItem {
@@ -54,7 +52,7 @@ async function fetchFavorites() {
   error.value = null;
 
   try {
-    const response = await fetch(`${api}/api/favorites`, {
+    const response = await fetch(`/api/favorites`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${authStore.token}`,

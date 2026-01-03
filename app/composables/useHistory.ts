@@ -1,7 +1,5 @@
 export function useHistory() {
   const authStore = useAuthStore();
-  const config = useRuntimeConfig().public;
-  const api = config.apiBase;
 
   // 加入歷史紀錄
   async function addToHistory(item: any) {
@@ -16,7 +14,7 @@ export function useHistory() {
     }
 
     try {
-      await fetch(`${api}/api/history`, {
+      await fetch(`/api/history`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

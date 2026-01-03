@@ -2,8 +2,6 @@
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
-const config = useRuntimeConfig().public;
-const api = config.apiBase;
 
 // 定義後端回傳的資料介面
 interface HistoryItem {
@@ -83,7 +81,7 @@ async function fetchHistory() {
   loading.value = true;
   error.value = null;
   try {
-    const response = await fetch(`${api}/api/history`, {
+    const response = await fetch(`/api/history`, {
       headers: getAuthHeaders(),
     });
     if (response.ok) {
@@ -103,7 +101,7 @@ async function clearAllHistory() {
   if (!confirm("確定要清除所有觀看紀錄嗎？此動作無法復原。")) return;
 
   try {
-    const response = await fetch(`${api}/api/history/all`, {
+    const response = await fetch(`/api/history/all`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });

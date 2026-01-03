@@ -67,15 +67,14 @@ const items = computed<NavigationMenuItem[]>(() => [
   {
     label: "戲院",
     // icon: "i-lucide-ticket",
-    // to: "https://go.nuxt.com/figma-ui",
-    target: "_blank",
+    // to: "/theaters",
   },
-  {
-    label: "消息",
-    // icon: "i-lucide-newspaper",
-    to: "https://github.com/nuxt/ui/releases",
-    target: "_blank",
-  },
+  // {
+  //   label: "消息",
+  //   // icon: "i-lucide-newspaper",
+  //   to: "https://github.com/nuxt/ui/releases",
+  //   target: "_blank",
+  // },
 ]);
 
 // 搜尋

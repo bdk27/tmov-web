@@ -134,7 +134,7 @@ const isTrendingLoading = computed(() =>
         ></div>
       </div>
 
-      <!-- 漸層遮罩 (讓底部完美融合到頁面背景) -->
+      <!-- 漸層遮罩 (讓底部融合到頁面背景) -->
       <div
         class="absolute inset-0 bg-linear-to-t from-gray-100 dark:from-gray-950 to-transparent z-10"
       ></div>

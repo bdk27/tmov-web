@@ -68,13 +68,10 @@ async function handleGoogleCallback(response: any) {
   const idToken = response.credential;
 
   try {
-    const data = await $fetch<GoogleLoginResponse>(
-      `${config.apiBase}/api/auth/google`,
-      {
-        method: "POST",
-        body: { idToken },
-      }
-    );
+    const data = await $fetch<GoogleLoginResponse>(`/api/auth/google`, {
+      method: "POST",
+      body: { idToken },
+    });
 
     if (data.token) {
       authStore.token = data.token;
