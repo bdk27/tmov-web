@@ -1,3 +1,6 @@
+import { formatDistanceToNow } from "date-fns";
+import { zhTW } from "date-fns/locale";
+
 // 格式化金額 (e.g. 1000000 => $1,000,000)
 export const formatCurrency = (amount?: number) => {
   if (!amount) return "";
@@ -38,4 +41,12 @@ export const formatDate = (dateStr: string) => {
   if (dateStr === "-") return dateStr;
   const date = new Date(dateStr);
   return date.toLocaleDateString();
+};
+
+// 格式化距今時間 (e.g. "2023-12-20" => "5天前")
+export const formatDateDistance = (dateStr: string) => {
+  return formatDistanceToNow(new Date(dateStr), {
+    addSuffix: true,
+    locale: zhTW,
+  });
 };

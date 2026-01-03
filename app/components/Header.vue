@@ -10,7 +10,6 @@ const items = computed<NavigationMenuItem[]>(() => [
   },
   {
     label: "電影",
-    to: "/movie",
     children: [
       {
         label: "熱門",
@@ -32,7 +31,6 @@ const items = computed<NavigationMenuItem[]>(() => [
   },
   {
     label: "電視節目",
-    to: "/tv/drama",
     children: [
       {
         label: "電視劇",

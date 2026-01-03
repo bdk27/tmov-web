@@ -136,13 +136,13 @@ const isTrendingLoading = computed(() =>
 
       <!-- 漸層遮罩 (讓底部融合到頁面背景) -->
       <div
-        class="absolute inset-0 bg-linear-to-t from-gray-100 dark:from-gray-950 to-transparent z-10"
+        class="absolute inset-0 bg-linear-to-t from-gray-100 to-gray-100/70 dark:from-gray-950 dark:to-gray-950/70 z-10"
       ></div>
 
       <!-- 頂部暗角 (讓文字更清楚) -->
-      <div
-        class="absolute inset-0 bg-linear-to-b from-transparent dark:to-gray-950 to-white z-10"
-      ></div>
+      <!-- <div
+        class="absolute inset-0 bg-linear-to-b from-gray-100/50 dark:from-gray-950/70 dark:to-gray-950 to-gray-100 z-10"
+      ></div> -->
     </div>
 
     <!-- 標題 + 表單 -->
