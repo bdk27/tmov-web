@@ -62,17 +62,6 @@ const items = computed<NavigationMenuItem[]>(() => [
     label: "人物",
     to: "/person",
   },
-  {
-    label: "戲院",
-    // icon: "i-lucide-ticket",
-    // to: "/theaters",
-  },
-  // {
-  //   label: "消息",
-  //   // icon: "i-lucide-newspaper",
-  //   to: "https://github.com/nuxt/ui/releases",
-  //   target: "_blank",
-  // },
 ]);
 
 // 搜尋

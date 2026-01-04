@@ -16,6 +16,9 @@ const {
   getWatchProviders,
   getSocialLinks,
 } = useTmdb();
+const authStore = useAuthStore();
+const router = useRouter();
+const toast = useToast();
 const { isFavorite, handleFavorite } = useFavorite(props.item);
 
 // 判斷類型
@@ -201,6 +204,29 @@ const social = computed(() => getSocialLinks(props.item));
 
 // 觀看平台
 const providers = computed(() => getWatchProviders(props.item));
+
+// 訂票點擊
+const handleBooking = () => {
+  if (!authStore.isAuthenticated) {
+    toast.add({
+      title: "請先登入會員",
+      description: "登入後即可使用線上訂票功能",
+      color: "primary",
+      actions: [
+        {
+          label: "前往登入",
+          onClick: () => {
+            router.push("/login");
+          },
+        },
+      ],
+    });
+    return;
+  }
+
+  // 已登入，跳轉到訂票頁
+  router.push(`/booking/${props.item.id}`);
+};
 </script>
 
 <template>
@@ -250,7 +276,7 @@ const providers = computed(() => getWatchProviders(props.item));
           </div>
 
           <!-- 播放按鈕 (僅影視) -->
-          <div v-if="videos.length" class="mt-6">
+          <div v-if="videos.length" class="mt-6 flex flex-col gap-3">
             <UButton
               block
               size="xl"
@@ -261,6 +287,18 @@ const providers = computed(() => getWatchProviders(props.item));
               @click="openMainTrailer"
             >
               播放預告片
+            </UButton>
+
+            <UButton
+              block
+              size="xl"
+              color="secondary"
+              variant="soft"
+              class="font-bold cursor-pointer"
+              icon="i-heroicons-ticket"
+              @click="handleBooking"
+            >
+              立即訂票
             </UButton>
           </div>
         </div>
