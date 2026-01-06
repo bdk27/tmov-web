@@ -3,7 +3,7 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 const { fetchDetail, posterUrl, titleOf } = useTmdb();
-const { getDates, getShowtimes, getSeats } = useTicket();
+const { getDates, getSchedules, generateSeats, createBooking } = useTicket();
 const authStore = useAuthStore();
 
 // 電影 ID
@@ -18,30 +18,6 @@ const steps = [
   { label: "確認結帳", icon: "i-heroicons-credit-card" },
 ];
 
-const areaValue = ref("");
-const area = ref([
-  { label: "請選擇地區", value: "" },
-  { label: "基榮", value: "keelung" },
-  { label: "台北", value: "taipei" },
-  { label: "新北", value: "new-taipei" },
-  { label: "桃園", value: "taoyuan" },
-  { label: "新竹", value: "hsinchu" },
-  { label: "苗栗", value: "miaoli" },
-  { label: "台中", value: "taichung" },
-  { label: "彰化", value: "changhua" },
-  { label: "雲林", value: "yunlin" },
-  { label: "南投", value: "nantou" },
-  { label: "嘉義", value: "chiayi" },
-  { label: "台南", value: "tainan" },
-  { label: "高雄", value: "kaohsiung" },
-  { label: "宜蘭", value: "yilan" },
-  { label: "花蓮", value: "hualien" },
-  { label: "台東", value: "taitung" },
-  { label: "屏東", value: "pingtung" },
-  { label: "澎湖", value: "penghu" },
-  { label: "金門", value: "kinmen" },
-]);
-
 // --- 初始化 ---
 onMounted(async () => {
   try {
@@ -53,36 +29,30 @@ onMounted(async () => {
 
 // --- Step 1: 場次選擇 ---
 const dates = getDates();
-const selectedDate = ref(dates[0]?.value || "");
-const showtimes = ref<Showtime[]>([]);
-const selectedShowtime = ref<Showtime | null>(null);
-const loadingShowtimes = ref(false);
+const selectedDate = ref(dates[0]?.value || ""); // YYYY-MM-DD
+const scheduleList = ref<Schedule[]>([]);
+const selectedSchedule = ref<Schedule | null>(null);
+const loadingSchedules = ref(false);
 
 // 當日期改變時，重新抓取場次
 watch(
-  [selectedDate, areaValue],
-  async ([newDate, newArea]) => {
-    selectedShowtime.value = null;
-    showtimes.value = []; // 先清空
-
-    // 如果沒有選擇地區，就不載入
-    if (!newArea) {
-      return;
-    }
-
-    loadingShowtimes.value = true;
+  selectedDate,
+  async (newDate) => {
+    if (!newDate) return;
+    selectedSchedule.value = null;
+    loadingSchedules.value = true;
     try {
-      // 傳入地區參數
-      showtimes.value = await getShowtimes(newArea);
+      scheduleList.value = await getSchedules(movieId, newDate);
+      console.log("Schedules for", newDate, ":", scheduleList.value);
     } finally {
-      loadingShowtimes.value = false;
+      loadingSchedules.value = false;
     }
   },
   { immediate: true }
 );
 
-function selectShowtime(time: Showtime) {
-  selectedShowtime.value = time;
+function selectSchedule(schedule: Schedule) {
+  selectedSchedule.value = schedule;
   currentStep.value = 2;
   loadSeats();
 }
@@ -92,11 +62,15 @@ const seats = ref<Seat[]>([]);
 const selectedSeats = ref<Seat[]>([]);
 const loadingSeats = ref(false);
 
-async function loadSeats() {
-  if (!selectedShowtime.value) return;
+// 根據選中的場次生成座位圖
+function loadSeats() {
+  if (!selectedSchedule.value) return;
   loadingSeats.value = true;
-  seats.value = await getSeats(selectedShowtime.value.id);
-  selectedSeats.value = []; // 清空已選
+
+  // 使用後端回傳的 row/col 和 bookedSeats 生成
+  seats.value = generateSeats(selectedSchedule.value);
+
+  selectedSeats.value = [];
   loadingSeats.value = false;
 }
 
@@ -120,15 +94,8 @@ function toggleSeat(seat: Seat) {
   }
 }
 
-// 取得座位名稱 (例如 A排5號)
-const getSeatName = (seat: Seat) => {
-  const rowName = String.fromCharCode(64 + seat.row); // 1->A, 2->B
-  return `${rowName}排${seat.col}號`;
-};
-
-// 總金額
 const totalPrice = computed(() => {
-  return (selectedShowtime.value?.price || 0) * selectedSeats.value.length;
+  return (selectedSchedule.value?.price || 0) * selectedSeats.value.length;
 });
 
 // --- Step 3: 結帳 ---
@@ -141,19 +108,36 @@ async function handleCheckout() {
     return;
   }
 
+  if (!selectedSchedule.value || !movie.value) return;
+
   isProcessing.value = true;
-  // 模擬送出訂單給後端
-  setTimeout(() => {
-    isProcessing.value = false;
+
+  try {
+    await createBooking({
+      tmdbId: movie.value.id,
+      movieTitle: titleOf(movie.value),
+      posterUrl: movie.value.poster_path,
+      cinemaName: selectedSchedule.value.hallName,
+      showDate: selectedSchedule.value.showDate,
+      showTime: selectedSchedule.value.showTime,
+      seats: selectedSeats.value.map((s) => s.id), // ["A1", "A2"]
+      scheduleId: selectedSchedule.value.scheduleId,
+    });
+
     toast.add({
       title: "訂票成功！",
-      description: "您的訂單已確認，請至信箱查看電子票券。",
+      description: "您的訂單已確認，請至會員中心查看。",
       color: "success",
       icon: "i-heroicons-check-circle",
     });
-    // 導回首頁或訂單頁
-    router.push("/");
-  }, 2000);
+
+    // 成功後導回首頁或訂單列表
+    router.push("/member/tickets"); // 假設有這個頁面
+  } catch (error) {
+    toast.add({ title: "訂票失敗", description: "請稍後再試", color: "error" });
+  } finally {
+    isProcessing.value = false;
+  }
 }
 </script>
 
@@ -194,10 +178,10 @@ async function handleCheckout() {
             class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300"
             :class="[
               currentStep > index + 1
-                ? 'bg-primary-500 border-primary-500 text-white' // 已完成
+                ? 'bg-primary-500 border-primary-500 text-white'
                 : currentStep === index + 1
-                ? 'bg-white dark:bg-gray-900 border-primary-500 text-primary-500' // 進行中
-                : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-400', // 未進行
+                ? 'bg-white dark:bg-gray-900 border-primary-500 text-primary-500'
+                : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-400',
             ]"
           >
             <UIcon
@@ -221,58 +205,64 @@ async function handleCheckout() {
       </div>
 
       <!-- 內容區 -->
-      <UCard>
+      <UCard class="min-h-[400px]">
         <!-- STEP 1: 選擇場次 -->
         <div v-if="currentStep === 1">
           <h2 class="text-lg font-bold mb-4">選擇日期與場次</h2>
 
-          <div class="mb-6">
-            <div class="flex-1 min-w-0 w-ful">
-              <!-- 日期 Tabs -->
-              <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-4">
-                <button
-                  v-for="date in dates"
-                  :key="date.value"
-                  @click="date.value && (selectedDate = date.value)"
-                  class="flex flex-col items-center justify-center w-20 h-20 rounded-xl border-2 transition-all shrink-0"
-                  :class="[
-                    selectedDate === date.value
-                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-                      : 'border-gray-200 dark:border-gray-800 hover:border-gray-300',
-                  ]"
-                >
-                  <span class="text-xs text-gray-500">{{ date.day }}</span>
-                  <span class="text-lg">{{ date.label }}</span>
-                </button>
-              </div>
-              <div>
-                <USelect v-model="areaValue" :items="area" />
-              </div>
-            </div>
+          <!-- 日期 Tabs -->
+          <div class="flex gap-2 overflow-x-auto pb-4 custom-scrollbar mb-6">
+            <button
+              v-for="date in dates"
+              :key="date.value"
+              @click="selectedDate = date.value"
+              class="flex flex-col items-center justify-center w-20 h-20 rounded-xl border-2 transition-all shrink-0"
+              :class="[
+                selectedDate === date.value
+                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600'
+                  : 'border-gray-200 dark:border-gray-800 hover:border-gray-300',
+              ]"
+            >
+              <span class="text-xs text-gray-500">{{ date.day }}</span>
+              <span class="text-lg">{{ date.label }}</span>
+            </button>
           </div>
 
           <!-- 場次列表 -->
-          <div v-if="loadingShowtimes" class="space-y-4">
+          <div v-if="loadingSchedules" class="space-y-4">
             <USkeleton class="h-20 w-full" v-for="i in 3" :key="i" />
           </div>
+
+          <div
+            v-else-if="scheduleList.length === 0"
+            class="py-12 text-center text-gray-500"
+          >
+            <UIcon
+              name="i-heroicons-calendar"
+              class="w-12 h-12 mx-auto mb-2 opacity-30"
+            />
+            <p>該日期沒有場次</p>
+          </div>
+
           <div v-else class="grid gap-4">
             <div
-              v-for="time in showtimes"
-              :key="time.id"
+              v-for="time in scheduleList"
+              :key="time.scheduleId"
               class="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary-500 cursor-pointer transition-colors group"
-              @click="selectShowtime(time)"
+              @click="selectSchedule(time)"
             >
               <div>
-                <div class="font-bold text-lg text-gray-900 dark:text-white">
-                  {{ time.time }}
+                <div class="text-lg text-gray-900 dark:text-white">
+                  {{ time.showTime.substring(0, 5) }}
+                  <!-- 只顯示 HH:mm -->
                 </div>
-                <div class="text-sm text-gray-500">{{ time.theaterName }}</div>
+                <div class="text-sm text-gray-500">{{ time.hallName }}</div>
               </div>
               <div class="text-right">
                 <UBadge color="neutral" variant="soft" class="mb-1">{{
-                  time.type
+                  time.hallType
                 }}</UBadge>
-                <div class="text-primary-600 font-bold">${{ time.price }}</div>
+                <div class="text-primary-600">${{ time.price }}</div>
               </div>
             </div>
           </div>
@@ -290,16 +280,15 @@ async function handleCheckout() {
               重選場次
             </UButton>
             <div class="text-center">
-              <p class="font-bold">{{ selectedShowtime?.theaterName }}</p>
+              <p class="font-bold">{{ selectedSchedule?.hallName }}</p>
               <p class="text-xs text-gray-500">
-                {{ selectedShowtime?.time }} - {{ selectedShowtime?.type }}
+                {{ selectedSchedule?.showDate }}
+                {{ selectedSchedule?.showTime?.substring(0, 5) }}
               </p>
             </div>
             <div class="w-20"></div>
-            <!-- 佔位 -->
           </div>
 
-          <!-- 銀幕指示 -->
           <div class="w-full max-w-lg mb-10">
             <div
               class="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full mb-2 shadow-[0_4px_10px_rgba(255,255,255,0.2)]"
@@ -307,30 +296,27 @@ async function handleCheckout() {
             <p class="text-center text-xs text-gray-400">銀幕 SCREEN</p>
           </div>
 
-          <!-- 座位圖 -->
-          <div v-if="loadingSeats" class="py-20">
-            <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin" />
-          </div>
+          <!-- 動態計算 Grid Column 數 -->
           <div
-            v-else
             class="grid gap-2 mb-8"
-            :style="`grid-template-columns: repeat(10, min-content)`"
+            :style="`grid-template-columns: repeat(${
+              selectedSchedule?.colCount || 10
+            }, min-content)`"
           >
             <div
               v-for="seat in seats"
               :key="seat.id"
-              class="w-6 h-6 sm:w-8 sm:h-8 rounded-t-lg text-[8px] flex items-center justify-center cursor-pointer transition-colors border border-transparent"
+              class="w-6 h-6 sm:w-8 sm:h-8 rounded-t-lg text-[10px] flex items-center justify-center cursor-pointer transition-colors border border-transparent"
               :class="[
                 seat.status === 'occupied'
-                  ? 'bg-gray-200 dark:bg-gray-800 text-transparent cursor-not-allowed' // 已售出
+                  ? 'bg-gray-200 dark:bg-gray-800 text-transparent cursor-not-allowed'
                   : seat.status === 'selected'
-                  ? 'bg-primary-500 text-white shadow-lg scale-110' // 已選
-                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-primary-400', // 可選
+                  ? 'bg-primary-500 text-white shadow-lg scale-110'
+                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-primary-400',
               ]"
               @click="toggleSeat(seat)"
             >
-              <!-- 只有選取時顯示座位號 -->
-              <span v-if="seat.status === 'selected'">{{ seat.col }}</span>
+              <span v-if="seat.status === 'selected'">{{ seat.colLabel }}</span>
             </div>
           </div>
 
@@ -354,7 +340,6 @@ async function handleCheckout() {
             </div>
           </div>
 
-          <!-- 底部選單 -->
           <div
             class="w-full border-t border-gray-100 dark:border-gray-800 pt-4 flex justify-between items-center"
           >
@@ -387,7 +372,6 @@ async function handleCheckout() {
           <div
             class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 space-y-4 mb-8 border border-dashed border-gray-300 dark:border-gray-700 relative overflow-hidden"
           >
-            <!-- 票券裝飾圓圈 -->
             <div
               class="absolute -left-3 top-1/2 w-6 h-6 bg-white dark:bg-gray-950 rounded-full"
             ></div>
@@ -401,13 +385,14 @@ async function handleCheckout() {
             </div>
             <div class="flex justify-between">
               <span class="text-gray-500">影城</span>
-              <span>{{ selectedShowtime?.theaterName }}</span>
+              <span>{{ selectedSchedule?.hallName }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-gray-500">時間</span>
-              <span class="text-primary-500 font-bold"
-                >{{ selectedDate }} {{ selectedShowtime?.time }}</span
-              >
+              <span class="text-primary-500 font-bold">
+                {{ selectedDate }}
+                {{ selectedSchedule?.showTime.substring(0, 5) }}
+              </span>
             </div>
             <div class="flex justify-between items-start">
               <span class="text-gray-500">座位</span>
@@ -417,7 +402,8 @@ async function handleCheckout() {
                   :key="seat.id"
                   class="block"
                 >
-                  {{ getSeatName(seat) }}
+                  {{ seat.id }}
+                  <!-- 顯示 A1, A2 -->
                 </span>
               </div>
             </div>
@@ -458,8 +444,14 @@ async function handleCheckout() {
 </template>
 
 <style scoped>
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 1) transparent;
+.custom-scrollbar::-webkit-scrollbar {
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 4px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #444;
 }
 </style>

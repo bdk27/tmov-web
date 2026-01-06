@@ -39,6 +39,14 @@ export default defineNuxtConfig({
     "/api/comments": {
       proxy: `${process.env.API_BASE}/api/comments`,
     },
+    // 電影院相關
+    "/api/theater/**": {
+      proxy: `${process.env.API_BASE}/api/theater/**`,
+    },
+    // 訂票相關
+    "/api/bookings/**": {
+      proxy: `${process.env.API_BASE}/api/bookings/**`,
+    },
   },
   css: ["./app/assets/css/main.css"],
   vite: {

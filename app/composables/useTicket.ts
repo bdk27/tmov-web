@@ -1,168 +1,116 @@
-export interface Showtime {
-  id: string;
-  theaterName: string;
-  time: string;
-  type: string; // 數位, IMAX
+// 對應後端 Scheduleresponseponse DTO
+export interface Schedule {
+  scheduleId: number;
+  tmdbId: number;
+  movieTitle: string;
+  hallName: string;
+  hallType: string;
+  showDate: string;
+  showTime: string;
   price: number;
-  region: string;
+  rowCount: number;
+  colCount: number;
+  bookedSeats: string[]; // e.g. ["A1", "B5"]
 }
 
+// 前端座位物件 (用於 UI 顯示)
 export interface Seat {
-  id: string;
-  row: number;
-  col: number;
+  id: string; // "A-1"
+  rowLabel: string; // "A"
+  colLabel: string; // "1"
   status: "available" | "occupied" | "selected";
   type: "standard" | "wheelchair";
 }
 
+// 對應後端 BookingRequest DTO
+export interface BookingRequest {
+  tmdbId: number;
+  movieTitle: string;
+  posterUrl: string;
+  cinemaName: string;
+  showDate: string;
+  showTime: string;
+  seats: string[]; // ["A1", "A2"]
+  scheduleId: number;
+}
+
 export function useTicket() {
+  const authStore = useAuthStore();
+  const toast = useToast();
+
+  function getAuthHeaders() {
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authStore.token}`,
+    };
+  }
+
+  // 1. 產生日期選項
   const getDates = () => {
     const dates = [];
     const today = new Date();
     for (let i = 0; i < 7; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() + i);
+
+      // 格式化為 YYYY-MM-DD
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const date = String(d.getDate()).padStart(2, "0");
+      const day = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"][
+        d.getDay()
+      ];
+
       dates.push({
-        value: d.toISOString().split("T")[0],
+        value: `${year}-${month}-${date}`,
         label: `${d.getMonth() + 1}/${d.getDate()}`,
-        day: ["週日", "週一", "週二", "週三", "週四", "週五", "週六"][
-          d.getDay()
-        ],
+        day: day,
       });
     }
     return dates;
   };
 
-  // 不同地區的戲院
-  const getShowtimes = async (region: string) => {
-    const allShowtimes: Showtime[] = [
-      // 台北
-      {
-        id: "tp1",
-        theaterName: "台北信義威秀影城",
-        time: "10:30",
-        type: "數位 2D",
-        price: 330,
-        region: "taipei",
-      },
-      {
-        id: "tp2",
-        theaterName: "台北信義威秀影城",
-        time: "13:40",
-        type: "IMAX 3D",
-        price: 460,
-        region: "taipei",
-      },
-      {
-        id: "tp3",
-        theaterName: "台北松仁威秀影城",
-        time: "15:20",
-        type: "TITAN",
-        price: 500,
-        region: "taipei",
-      },
-      // 新北
-      {
-        id: "nt1",
-        theaterName: "板橋大遠百威秀影城",
-        time: "11:00",
-        type: "數位 2D",
-        price: 310,
-        region: "new-taipei",
-      },
-      {
-        id: "nt2",
-        theaterName: "板橋大遠百威秀影城",
-        time: "14:20",
-        type: "IMAX",
-        price: 440,
-        region: "new-taipei",
-      },
-      // 桃園
-      {
-        id: "ty1",
-        theaterName: "桃園統領威秀影城",
-        time: "12:00",
-        type: "數位 2D",
-        price: 300,
-        region: "taoyuan",
-      },
-      // 新竹
-      {
-        id: "hc1",
-        theaterName: "新竹巨城威秀影城",
-        time: "16:30",
-        type: "IMAX",
-        price: 420,
-        region: "hsinchu",
-      },
-      // 台中
-      {
-        id: "tc1",
-        theaterName: "台中大遠百威秀影城",
-        time: "10:00",
-        type: "IMAX",
-        price: 410,
-        region: "taichung",
-      },
-      {
-        id: "tc2",
-        theaterName: "台中大遠百威秀影城",
-        time: "14:30",
-        type: "數位 2D",
-        price: 290,
-        region: "taichung",
-      },
-      // 台南
-      {
-        id: "tn1",
-        theaterName: "台南南紡威秀影城",
-        time: "11:30",
-        type: "IMAX",
-        price: 400,
-        region: "tainan",
-      },
-      // 高雄
-      {
-        id: "ks1",
-        theaterName: "高雄大遠百威秀影城",
-        time: "13:00",
-        type: "數位 2D",
-        price: 280,
-        region: "kaohsiung",
-      },
-      {
-        id: "ks2",
-        theaterName: "高雄大遠百威秀影城",
-        time: "16:40",
-        type: "4DX",
-        price: 500,
-        region: "kaohsiung",
-      },
-    ];
-
-    if (!region) return [];
-
-    // 過濾出符合地區的場次
-    return allShowtimes.filter((s) => s.region === region);
+  // 2. 取得場次 (Call Backend)
+  const getSchedules = async (
+    tmdbId: number,
+    date: string
+  ): Promise<Schedule[]> => {
+    try {
+      // GET /api/theater/schedules?tmdbId=550&date=2024-01-01
+      const data = await $fetch<Schedule[]>(`/api/theater/schedules`, {
+        method: "GET",
+        params: {
+          tmdbId,
+          date,
+        },
+      });
+      console.log("Fetched schedules:", data);
+      return data;
+    } catch (e) {
+      console.error("Fetch schedules error", e);
+      return [];
+    }
   };
 
-  // 3. 模擬產生座位圖 (8列 x 10行)
-  const getSeats = async (showtimeId: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    const rows = 8;
-    const cols = 10;
+  // 3. 產生座位圖 (根據 Schedule 的 row/col 和 bookedSeats)
+  const generateSeats = (schedule: Schedule): Seat[] => {
     const seats: Seat[] = [];
+    const bookedSet = new Set(schedule.bookedSeats); // 轉 Set 提升查找效能
 
-    for (let r = 1; r <= rows; r++) {
-      for (let c = 1; c <= cols; c++) {
-        // 隨機產生一些已售出的座位
-        const isOccupied = Math.random() < 0.2;
+    for (let r = 1; r <= schedule.rowCount; r++) {
+      const rowLabel = String.fromCharCode(64 + r); // 1->A, 2->B
+
+      for (let c = 1; c <= schedule.colCount; c++) {
+        const colLabel = String(c);
+        const seatCode = `${rowLabel}${colLabel}`; // "A3"
+
+        // 判斷是否已售出
+        const isOccupied = bookedSet.has(seatCode);
+
         seats.push({
-          id: `${r}-${c}`,
-          row: r,
-          col: c,
+          id: seatCode,
+          rowLabel,
+          colLabel,
           status: isOccupied ? "occupied" : "available",
           type: "standard",
         });
@@ -171,9 +119,32 @@ export function useTicket() {
     return seats;
   };
 
+  // 4. 送出訂單 (Call Backend)
+  // 假設後端有一個 BookingController 對應 /api/bookings
+  const createBooking = async (payload: BookingRequest) => {
+    if (!authStore.isAuthenticated) {
+      toast.add({ title: "請先登入", color: "error" });
+      throw new Error("Unauthorized");
+    }
+
+    try {
+      const res = await $fetch(`/api/bookings`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: payload, // $fetch 會自動做 JSON.stringify
+      });
+
+      return res;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  };
+
   return {
     getDates,
-    getShowtimes,
-    getSeats,
+    getSchedules,
+    generateSeats,
+    createBooking,
   };
 }

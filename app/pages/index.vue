@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { tr } from "date-fns/locale";
 import { storeToRefs } from "pinia";
 
 const tmdbStore = useTmdbStore();
@@ -17,7 +18,13 @@ const {
 } = storeToRefs(tmdbStore);
 
 // 背景圖片
-await useAsyncData("heroData", () => tmdbStore.getBackdrop());
+await useAsyncData("heroData", async () => {
+  if (!backdropMobileUrl.value) {
+    await tmdbStore.getBackdrop();
+  }
+
+  return true;
+});
 
 onMounted(() => {
   tmdbStore.getTrendingToday();
