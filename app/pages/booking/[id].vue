@@ -18,6 +18,22 @@ const steps = [
   { label: "確認結帳", icon: "i-heroicons-credit-card" },
 ];
 
+const selectedTheater = ref("請選擇影城");
+const tmovTheaters = ref<Array<{ value: string; label: string }>>([
+  { value: "請選擇影城", label: "請選擇影城" },
+  { value: "台北信義 TMOV 影城", label: "台北信義 TMOV 影城" },
+  { value: "台北松仁 TMOV TITAN", label: "台北松仁 TMOV TITAN" },
+  { value: "台北京站 TMOV 影城", label: "台北京站 TMOV 影城" },
+  { value: "板橋大遠百 TMOV 影城", label: "板橋大遠百 TMOV 影城" },
+  { value: "桃園統領 TMOV 影城", label: "桃園統領 TMOV 影城" },
+  { value: "新竹巨城 TMOV 影城", label: "新竹巨城 TMOV 影城" },
+  { value: "台中大遠百 TMOV 影城", label: "台中大遠百 TMOV 影城" },
+  { value: "台中 TMOV 影城", label: "台中 TMOV 影城" },
+  { value: "台南大遠百 TMOV 影城", label: "台南大遠百 TMOV 影城" },
+  { value: "台南南紡 TMOV 影城", label: "台南南紡 TMOV 影城" },
+  { value: "高雄大遠百 TMOV 影城", label: "高雄大遠百 TMOV 影城" },
+]);
+
 // --- 初始化 ---
 onMounted(async () => {
   try {
@@ -43,7 +59,6 @@ watch(
     loadingSchedules.value = true;
     try {
       scheduleList.value = await getSchedules(movieId, newDate);
-      console.log("Schedules for", newDate, ":", scheduleList.value);
     } finally {
       loadingSchedules.value = false;
     }
@@ -51,16 +66,127 @@ watch(
   { immediate: true }
 );
 
+const typeOrder: Record<string, number> = {
+  "Digital-A": 1,
+  "Digital-B": 2,
+  "3D": 4,
+  IMAX: 5,
+  GoldClass: 6,
+};
+
+interface GroupedTheater {
+  name: string;
+  types: {
+    name: string;
+    schedules: Schedule[];
+  }[];
+}
+
+const groupedSchedules = computed<GroupedTheater[]>(() => {
+  if (!scheduleList.value.length) return [];
+
+  // 1. 篩選影城
+  let list = scheduleList.value;
+  if (selectedTheater.value) {
+    list = list.filter((s) => s.hallName.startsWith(selectedTheater.value));
+  }
+
+  // 2. 依影城分組
+  const theaterMap = new Map<string, Schedule[]>();
+  list.forEach((s) => {
+    // 從 "台北信義威秀 - A廳" 提取出 "台北信義威秀"
+    const hallName = s.hallName.split(" - ")[0] || s.hallName;
+    if (!theaterMap.has(hallName)) {
+      theaterMap.set(hallName, []);
+    }
+    theaterMap.get(hallName)?.push(s);
+  });
+
+  // 3. 依廳種分組並轉換結構
+  const result = [];
+  for (const [hallName, schedules] of theaterMap.entries()) {
+    // 找到對應的 TMOV 顯示名稱 (如果有的話)
+    const theater = tmovTheaters.value.find((t) => t.value === hallName);
+    const displayName = theater?.label ?? hallName;
+
+    const typeMap = new Map<string, Schedule[]>();
+    schedules.forEach((s) => {
+      if (!typeMap.has(s.hallType)) {
+        typeMap.set(s.hallType, []);
+      }
+      typeMap.get(s.hallType)?.push(s);
+    });
+
+    // 將 Map 轉為陣列並排序 (例如先 Digital 再 IMAX)
+    const types = Array.from(typeMap.entries())
+      .map(([typeName, scheds]) => ({
+        name: typeName,
+        // 時間排序
+        schedules: scheds.sort((a, b) => a.showTime.localeCompare(b.showTime)),
+      }))
+      .sort((a, b) => {
+        const scoreA = typeOrder[a.name] ?? 99; // 沒定義的排最後
+        const scoreB = typeOrder[b.name] ?? 99;
+        return scoreA - scoreB;
+      });
+
+    result.push({
+      name: displayName,
+      types,
+    });
+  }
+
+  return result;
+});
+
 function selectSchedule(schedule: Schedule) {
   selectedSchedule.value = schedule;
   currentStep.value = 2;
   loadSeats();
 }
 
+const getTypeColor = (type: string) => {
+  if (type.includes("IMAX"))
+    return "text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-300";
+  if (type.includes("3D"))
+    return "text-red-600 bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-800 dark:text-red-300";
+  if (type.includes("GoldClass"))
+    return "text-yellow-600 bg-yellow-50 border-yellow-200 dark:bg-yellow-900/30 dark:border-yellow-800 dark:text-yellow-300";
+  if (type.includes("Digital"))
+    return "text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-300";
+  return "text-gray-600 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300";
+};
+
 // --- Step 2: 座位選擇 ---
 const seats = ref<Seat[]>([]);
 const selectedSeats = ref<Seat[]>([]);
 const loadingSeats = ref(false);
+
+const isAisle = (seat: Seat) => {
+  if (!selectedSchedule.value) return false;
+
+  const type = selectedSchedule.value.hallType.toUpperCase();
+  if (type.includes("GOLD") || type.includes("CLASS")) return false;
+
+  const col = parseInt(seat.colLabel);
+  const total = selectedSchedule.value.colCount;
+
+  const leftAisle = Math.floor(total / 4);
+  const rightAisle = total - leftAisle;
+
+  return col === leftAisle || col === rightAisle;
+};
+
+const rows = computed(() => {
+  const map = new Map<string, Seat[]>();
+  seats.value.forEach((seat) => {
+    if (!map.has(seat.rowLabel)) {
+      map.set(seat.rowLabel, []);
+    }
+    map.get(seat.rowLabel)?.push(seat);
+  });
+  return Array.from(map.entries()); // [ ["A", [Seat1, Seat2...]], ["B", [...]] ]
+});
 
 // 根據選中的場次生成座位圖
 function loadSeats() {
@@ -120,7 +246,7 @@ async function handleCheckout() {
       cinemaName: selectedSchedule.value.hallName,
       showDate: selectedSchedule.value.showDate,
       showTime: selectedSchedule.value.showTime,
-      seats: selectedSeats.value.map((s) => s.id), // ["A1", "A2"]
+      seats: selectedSeats.value.map((s) => s.id),
       scheduleId: selectedSchedule.value.scheduleId,
     });
 
@@ -132,7 +258,7 @@ async function handleCheckout() {
     });
 
     // 成功後導回首頁或訂單列表
-    router.push("/member/tickets"); // 假設有這個頁面
+    router.push("/"); // 假設有這個頁面
   } catch (error) {
     toast.add({ title: "訂票失敗", description: "請稍後再試", color: "error" });
   } finally {
@@ -228,6 +354,14 @@ async function handleCheckout() {
             </button>
           </div>
 
+          <div class="mb-6">
+            <USelect
+              v-model="selectedTheater"
+              :items="tmovTheaters"
+              class="w-48"
+            />
+          </div>
+
           <!-- 場次列表 -->
           <div v-if="loadingSchedules" class="space-y-4">
             <USkeleton class="h-20 w-full" v-for="i in 3" :key="i" />
@@ -244,25 +378,69 @@ async function handleCheckout() {
             <p>該日期沒有場次</p>
           </div>
 
-          <div v-else class="grid gap-4">
+          <div v-else class="space-y-6">
+            <!-- 影城區塊 -->
             <div
-              v-for="time in scheduleList"
-              :key="time.scheduleId"
-              class="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary-500 cursor-pointer transition-colors group"
-              @click="selectSchedule(time)"
+              v-for="theater in groupedSchedules"
+              :key="theater.name"
+              class="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden"
             >
-              <div>
-                <div class="text-lg text-gray-900 dark:text-white">
-                  {{ time.showTime.substring(0, 5) }}
-                  <!-- 只顯示 HH:mm -->
-                </div>
-                <div class="text-sm text-gray-500">{{ time.hallName }}</div>
+              <!-- 影城標題 -->
+              <div
+                class="bg-gray-50 dark:bg-gray-800/50 p-4 border-b border-gray-200 dark:border-gray-800"
+              >
+                <h3
+                  class="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2"
+                >
+                  <UIcon name="i-heroicons-map-pin" class="text-primary-500" />
+                  {{ theater.name }}
+                </h3>
               </div>
-              <div class="text-right">
-                <UBadge color="neutral" variant="soft" class="mb-1">{{
-                  time.hallType
-                }}</UBadge>
-                <div class="text-primary-600">${{ time.price }}</div>
+
+              <!-- 廳種與時間 -->
+              <div class="p-5 space-y-5">
+                <div
+                  v-for="type in theater.types"
+                  :key="type.name"
+                  class="flex flex-col sm:flex-row sm:items-start gap-4"
+                >
+                  <!-- 左側：版本標籤 -->
+                  <div class="shrink-0 w-24 pt-1">
+                    <span
+                      class="inline-block px-2 py-1 text-xs font-bold rounded border uppercase tracking-wider text-center w-full"
+                      :class="getTypeColor(type.name)"
+                    >
+                      {{
+                        type.name === "Digital-A"
+                          ? "數位(A廳)"
+                          : type.name === "Digital-B"
+                          ? "數位(B廳)"
+                          : type.name
+                      }}
+                    </span>
+                  </div>
+
+                  <!-- 右側：時間按鈕 -->
+                  <div class="flex flex-wrap gap-3 flex-1">
+                    <button
+                      v-for="time in type.schedules"
+                      :key="time.scheduleId"
+                      @click="selectSchedule(time)"
+                      class="group relative px-5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all text-center min-w-[5rem]"
+                    >
+                      <div
+                        class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                      >
+                        {{ time.showTime.substring(0, 5) }}
+                      </div>
+                      <div
+                        class="text-[10px] text-gray-400 group-hover:text-primary-500/70"
+                      >
+                        ${{ time.price }}
+                      </div>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -297,40 +475,76 @@ async function handleCheckout() {
           </div>
 
           <!-- 動態計算 Grid Column 數 -->
-          <div
-            class="grid gap-2 mb-8"
-            :style="`grid-template-columns: repeat(${
-              selectedSchedule?.colCount || 10
-            }, min-content)`"
-          >
-            <div
-              v-for="seat in seats"
-              :key="seat.id"
-              class="w-6 h-6 sm:w-8 sm:h-8 rounded-t-lg text-[10px] flex items-center justify-center cursor-pointer transition-colors border border-transparent"
-              :class="[
-                seat.status === 'occupied'
-                  ? 'bg-gray-200 dark:bg-gray-800 text-transparent cursor-not-allowed'
-                  : seat.status === 'selected'
-                  ? 'bg-primary-500 text-white shadow-lg scale-110'
-                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-primary-400',
-              ]"
-              @click="toggleSeat(seat)"
-            >
-              <span v-if="seat.status === 'selected'">{{ seat.colLabel }}</span>
+          <div v-if="loadingSeats" class="py-20">
+            <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin" />
+          </div>
+
+          <!-- 座位圖容器，改為 Flex 直列顯示每一排 -->
+          <div v-else class="w-full overflow-x-auto pb-6 mb-6 custom-scrollbar">
+            <div class="w-fit mx-auto flex flex-col gap-2">
+              <!-- 迴圈渲染每一排 -->
+              <div
+                v-for="(entry, rowIndex) in rows"
+                :key="entry[0]"
+                class="flex items-center gap-3"
+              >
+                <!-- 左側：排號 (A, B, C...) -->
+                <div
+                  class="w-4 sm:w-6 text-center text-xs font-bold text-gray-400 shrink-0"
+                >
+                  {{ entry[0] }}
+                </div>
+
+                <!-- 座位：Flex 排列 -->
+                <div class="flex gap-1">
+                  <div
+                    v-for="seat in entry[1]"
+                    :key="seat.id"
+                    class="w-4 h-4 md:w-6 md:h-6 rounded-t-sm md:rounded-t-lg text-[8px] md:text-[10px] flex items-center justify-center cursor-pointer transition-colors border shrink-0"
+                    :class="[
+                      // 座位樣式與圖示一致
+                      seat.status === 'occupied'
+                        ? 'bg-gray-400 border-transparent dark:bg-gray-700 text-transparent cursor-not-allowed' // 已售: 深灰
+                        : seat.status === 'selected'
+                        ? 'bg-primary-500 border-primary-500 text-white shadow-lg scale-110' // 已選
+                        : 'bg-white border-gray-300 dark:bg-gray-800 dark:border-gray-500 hover:border-primary-500 hover:text-primary-500', // 可選: 白底+淺灰框
+
+                      // 走道 margin
+                      isAisle(seat) ? 'mr-4 md:mr-8' : '',
+                    ]"
+                    @click="toggleSeat(seat)"
+                  >
+                    <span
+                      v-if="seat.status === 'selected'"
+                      class="scale-75 md:scale-100"
+                      >{{ seat.colLabel }}</span
+                    >
+                  </div>
+                </div>
+
+                <!-- 右側：排號 (可選，對稱顯示) -->
+                <div
+                  class="w-4 sm:w-6 text-center text-xs font-bold text-gray-400 shrink-0"
+                >
+                  {{ entry[0] }}
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- 圖示說明 -->
-          <div class="flex gap-6 text-sm text-gray-500 mb-8">
+          <div
+            class="flex gap-6 text-sm text-gray-600 dark:text-gray-400 mb-8 font-medium"
+          >
             <div class="flex items-center gap-2">
               <div
-                class="w-4 h-4 bg-white dark:bg-gray-700 border border-gray-300 rounded-t-sm"
+                class="w-4 h-4 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-500 rounded-t-sm"
               ></div>
               可選
             </div>
             <div class="flex items-center gap-2">
               <div
-                class="w-4 h-4 bg-gray-200 dark:bg-gray-800 rounded-t-sm"
+                class="w-4 h-4 bg-gray-400 border border-transparent dark:bg-gray-700 rounded-t-sm"
               ></div>
               已售
             </div>

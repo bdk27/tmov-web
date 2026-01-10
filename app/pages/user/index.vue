@@ -27,7 +27,7 @@ function handleLogout() {
 <template>
   <div class="min-h-full py-12 md:px-4 px-6 lg:px-8">
     <!-- 內容 -->
-    <div class="max-w-3xl mx-auto space-y-8">
+    <div class="max-w-4xl mx-auto space-y-8">
       <UCard
         class="overflow-hidden shadow-md ring-1 ring-gray-200 dark:ring-gray-800"
       >
@@ -242,7 +242,28 @@ function handleLogout() {
       </UCard>
 
       <!-- 功能區塊 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <UCard
+          @click="$router.push('/user/tickets')"
+          class="hover:border-primary-500/50 transition-colors cursor-pointer group shadow-md"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-500 flex items-center justify-center"
+            >
+              <UIcon name="i-heroicons-ticket" class="w-6 h-6" />
+            </div>
+            <div>
+              <h4
+                class="font-bold text-gray-900 dark:text-white group-hover:text-primary-500"
+              >
+                訂票紀錄
+              </h4>
+              <p class="text-sm text-gray-500">查看訂票紀錄與電子票券</p>
+            </div>
+          </div>
+        </UCard>
+
         <UCard
           @click="$router.push('/user/favorites')"
           class="hover:border-primary-500/50 transition-colors cursor-pointer group shadow-md"

@@ -25,7 +25,7 @@ nuxtApp.hook("page:finish", () => {
           class="w-12 h-12 text-primary-500 animate-spin"
         />
 
-        <!-- 文字提示 (可選) -->
+        <!-- 文字提示 -->
         <p
           class="text-gray-500 dark:text-gray-400 font-medium animate-pulse tracking-widest"
         >

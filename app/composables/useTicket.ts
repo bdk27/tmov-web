@@ -84,7 +84,7 @@ export function useTicket() {
           date,
         },
       });
-      console.log("Fetched schedules:", data);
+
       return data;
     } catch (e) {
       console.error("Fetch schedules error", e);
@@ -141,10 +141,30 @@ export function useTicket() {
     }
   };
 
+  const groupSchedulesByHall = (schedules: Schedule[]) => {
+    const grouped: Record<string, Schedule[]> = {};
+
+    schedules.forEach((s) => {
+      const type = s.hallType || "一般廳";
+      if (!grouped[type]) {
+        grouped[type] = [];
+      }
+      grouped[type].push(s);
+    });
+
+    // 每個群組內依照時間排序
+    Object.keys(grouped).forEach((key) => {
+      grouped[key]?.sort((a, b) => a.showTime.localeCompare(b.showTime));
+    });
+
+    return grouped;
+  };
+
   return {
     getDates,
     getSchedules,
     generateSeats,
     createBooking,
+    groupSchedulesByHall,
   };
 }
