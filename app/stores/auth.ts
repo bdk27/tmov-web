@@ -1,6 +1,5 @@
 // 使用者資料介面
 export interface User {
-  // id?: number;
   displayName: string;
   email: string;
   role?: string;
@@ -16,12 +15,6 @@ export interface User {
 export interface AuthResponse {
   token: string;
   user: User;
-}
-
-// 錯誤回應介面
-export interface ApiError {
-  message: string;
-  status: number;
 }
 
 export const useAuthStore = defineStore("auth", () => {
@@ -43,7 +36,7 @@ export const useAuthStore = defineStore("auth", () => {
   }) => {
     loading.value = true;
     try {
-      const res = await $fetch<AuthResponse>(`/api/auth/login`, {
+      const res = await $fetch<AuthResponse>("/api/auth/login", {
         method: "POST",
         body: credentials,
       });
@@ -72,7 +65,7 @@ export const useAuthStore = defineStore("auth", () => {
   const register = async (userData: { email: string; password: string }) => {
     loading.value = true;
     try {
-      const res = await $fetch<AuthResponse>(`/api/auth/register`, {
+      const res = await $fetch<AuthResponse>("/api/auth/register", {
         method: "POST",
         body: userData,
       });
@@ -108,7 +101,7 @@ export const useAuthStore = defineStore("auth", () => {
     if (!token.value) return;
 
     try {
-      const res = await $fetch<User>(`/api/auth/me`, {
+      const res = await $fetch<User>("/api/auth/me", {
         headers: { Authorization: `Bearer ${token.value}` },
       });
       user.value = res;

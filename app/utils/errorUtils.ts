@@ -1,5 +1,3 @@
-import { H3Error } from "h3";
-
 const errorMessages: Record<string | number, string> = {
   // HTTP 狀態碼
   400: "請求無效，請檢查您的輸入",

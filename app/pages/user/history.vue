@@ -30,13 +30,6 @@ onMounted(() => {
   fetchHistory();
 });
 
-function getAuthHeaders() {
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${authStore.token}`,
-  };
-}
-
 // 資料處理核心
 const historyItems = computed<TmdbItem[]>(() => {
   return rawItems.value.map((item) => {
@@ -81,14 +74,11 @@ async function fetchHistory() {
   loading.value = true;
   error.value = null;
   try {
-    const response = await fetch(`/api/history`, {
+    const data = await $fetch<HistoryItem[]>("/api/history", {
       headers: getAuthHeaders(),
     });
-    if (response.ok) {
-      rawItems.value = await response.json();
-    } else {
-      error.value = "無法取得歷史紀錄";
-    }
+
+    rawItems.value = data;
   } catch (err) {
     error.value = "連線發生錯誤";
   } finally {
@@ -101,23 +91,19 @@ async function clearAllHistory() {
   if (!confirm("確定要清除所有觀看紀錄嗎？此動作無法復原。")) return;
 
   try {
-    const response = await fetch(`/api/history/all`, {
+    await $fetch("/api/history/all", {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
 
-    if (response.ok) {
-      rawItems.value = [];
-      toast.add({ title: "已清除觀看紀錄", color: "primary" });
-    } else {
-      toast.add({
-        title: "清除失敗",
-        description: "請稍後再試",
-        color: "error",
-      });
-    }
+    rawItems.value = [];
+    toast.add({ title: "已清除觀看紀錄", color: "primary" });
   } catch (e) {
-    toast.add({ title: "連線錯誤", color: "error" });
+    toast.add({
+      title: "清除失敗",
+      description: "請稍後再試",
+      color: "error",
+    });
   }
 }
 </script>

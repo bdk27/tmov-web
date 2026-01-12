@@ -1,3 +1,12 @@
+export const getAuthHeaders = () => {
+  const authStore = useAuthStore();
+
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${authStore.token}`,
+  };
+};
+
 /**
  * 移除演員、劇組等陣列中的重複項目，根據 id 屬性判斷
  */

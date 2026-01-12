@@ -14,16 +14,13 @@ export function useHistory() {
     }
 
     try {
-      await fetch(`/api/history`, {
+      await $fetch("/api/history", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authStore.token}`,
-        },
-        body: JSON.stringify({
+        headers: getAuthHeaders(),
+        body: {
           tmdbId: item.id,
           mediaType: mediaType,
-        }),
+        },
       });
     } catch (error) {
       console.error("加入歷史紀錄失敗", error);

@@ -60,13 +60,6 @@ const genderOptions = [
   { label: "女性", value: "Female" },
 ];
 
-function getAuthHeaders() {
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${authStore.token}`,
-  };
-}
-
 const loading = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
@@ -116,7 +109,7 @@ async function onFileSelect(event: Event) {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`/api/upload`, {
+    const data = await $fetch<{ url: string }>(`/api/upload`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${authStore.token}`,
@@ -124,17 +117,12 @@ async function onFileSelect(event: Event) {
       body: formData,
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      state.pictureUrl = data.url;
-      toast.add({
-        title: "圖片上傳成功",
-        description: "請記得點擊下方按鈕儲存設定",
-        color: "primary",
-      });
-    } else {
-      throw new Error("Upload failed");
-    }
+    state.pictureUrl = data.url;
+    toast.add({
+      title: "圖片上傳成功",
+      description: "請記得點擊下方按鈕儲存設定",
+      color: "primary",
+    });
   } catch (error) {
     state.pictureUrl = oldUrl;
     toast.add({ title: "圖片上傳失敗", color: "error" });
@@ -166,37 +154,32 @@ async function handleUpdateProfile(payload: FormSubmitEvent<ProfileSchema>) {
   loading.value = true;
 
   try {
-    const response = await fetch(`/api/auth/me`, {
+    await $fetch(`/api/auth/me`, {
       method: "PUT",
       headers: getAuthHeaders(),
-      body: JSON.stringify({
+      body: {
         displayName: payload.data.displayName,
-        pictureUrl: payload.data.pictureUrl,
+        pictureUrl: state.pictureUrl,
         gender: payload.data.gender,
         birthDate: payload.data.birthDate,
         phone: payload.data.phone,
         address: payload.data.address,
-      }),
+      },
     });
 
-    if (response.ok) {
-      // const updatedData = await response.json();
-      if (authStore.user) {
-        Object.assign(authStore.user, {
-          displayName: state.displayName,
-          pictureUrl: state.pictureUrl,
-          gender: state.gender,
-          birthDate: state.birthDate,
-          phone: state.phone,
-          address: state.address,
-        });
-      }
-      toast.add({ title: "個人資料已更新", color: "primary" });
-
-      router.push("/user");
-    } else {
-      throw new Error("Update failed");
+    if (authStore.user) {
+      Object.assign(authStore.user, {
+        displayName: state.displayName,
+        pictureUrl: state.pictureUrl,
+        gender: state.gender,
+        birthDate: state.birthDate,
+        phone: state.phone,
+        address: state.address,
+      });
     }
+    toast.add({ title: "個人資料已更新", color: "primary" });
+
+    router.push("/user");
   } catch (error) {
     toast.add({ title: "更新失敗", color: "error" });
   } finally {
@@ -221,29 +204,24 @@ type PasswordSchema = z.output<typeof passwordSchema>;
 async function handleChangePassword(payload: FormSubmitEvent<PasswordSchema>) {
   loading.value = true;
   try {
-    const response = await fetch(`/api/auth/me`, {
+    await $fetch(`/api/auth/me`, {
       method: "PUT",
       headers: getAuthHeaders(),
-      body: JSON.stringify({
+      body: {
         oldPassword: payload.data.currentPassword,
         newPassword: payload.data.newPassword,
-      }),
+      },
     });
 
-    if (response.ok) {
-      toast.add({
-        title: "密碼修改成功",
-        description: "請使用新密碼重新登入",
-        color: "primary",
-      });
+    toast.add({
+      title: "密碼修改成功",
+      description: "請使用新密碼重新登入",
+      color: "primary",
+    });
 
-      passwordState.currentPassword = "";
-      passwordState.newPassword = "";
-      passwordState.confirmPassword = "";
-    } else {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || "密碼修改失敗");
-    }
+    passwordState.currentPassword = "";
+    passwordState.newPassword = "";
+    passwordState.confirmPassword = "";
   } catch (error: any) {
     toast.add({
       title: "修改失敗",

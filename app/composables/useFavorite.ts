@@ -10,7 +10,6 @@ export function useFavorite(item: any) {
     checkFavoriteStatus();
   });
 
-  // 監聽登入狀態變化
   watch(
     () => authStore.isAuthenticated,
     (isAuth) => {
@@ -37,13 +36,6 @@ export function useFavorite(item: any) {
     return "movie";
   });
 
-  function getAuthHeaders() {
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${authStore.token}`,
-    };
-  }
-
   // 檢查狀態
   async function checkFavoriteStatus() {
     if (!authStore.isAuthenticated) {
@@ -51,25 +43,21 @@ export function useFavorite(item: any) {
       return;
     }
 
-    try {
-      const params = new URLSearchParams([
-        ["tmdbId", String(item.id)],
-        ["mediaType", computedMediaType.value],
-      ]);
+    if (!item?.id) return;
 
-      const response = await fetch(
-        `/api/favorites/check?${params.toString()}`,
+    try {
+      const data = await $fetch<{ isFavorite: boolean }>(
+        "/api/favorites/check",
         {
           headers: getAuthHeaders(),
+          params: {
+            tmdbId: item.id,
+            mediaType: computedMediaType.value,
+          },
         }
       );
 
-      if (response.ok) {
-        const data = await response.json();
-        isFavorite.value = data.isFavorite;
-      } else {
-        isFavorite.value = false;
-      }
+      isFavorite.value = data.isFavorite;
     } catch (error) {
       console.error("檢查收藏狀態失敗:", error);
       isFavorite.value = false;
@@ -105,20 +93,16 @@ export function useFavorite(item: any) {
     isLoading.value = true;
 
     try {
-      const requestBody = JSON.stringify({
-        tmdbId: item.id,
-        mediaType: computedMediaType.value,
-      });
-
       const method = newState ? "POST" : "DELETE";
 
-      const response = await fetch(`/api/favorites`, {
+      await $fetch("/api/favorites", {
         method,
         headers: getAuthHeaders(),
-        body: requestBody,
+        body: {
+          tmdbId: item.id,
+          mediaType: computedMediaType.value,
+        },
       });
-
-      if (!response.ok) throw new Error("更新收藏狀態失敗");
 
       toast.add({
         title: newState ? "已加入收藏" : "已從收藏移除",

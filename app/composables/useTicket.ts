@@ -46,7 +46,7 @@ export function useTicket() {
     };
   }
 
-  // 1. 產生日期選項
+  // 產生日期選項
   const getDates = () => {
     const dates = [];
     const today = new Date();
@@ -71,15 +71,13 @@ export function useTicket() {
     return dates;
   };
 
-  // 2. 取得場次 (Call Backend)
+  // 取得場次 (Call Backend)
   const getSchedules = async (
     tmdbId: number,
     date: string
   ): Promise<Schedule[]> => {
     try {
-      // GET /api/theater/schedules?tmdbId=550&date=2024-01-01
-      const data = await $fetch<Schedule[]>(`/api/theater/schedules`, {
-        method: "GET",
+      const data = await $fetch<Schedule[]>("/api/theater/schedules", {
         params: {
           tmdbId,
           date,
@@ -93,10 +91,10 @@ export function useTicket() {
     }
   };
 
-  // 3. 產生座位圖 (根據 Schedule 的 row/col 和 bookedSeats)
+  // 產生座位圖
   const generateSeats = (schedule: Schedule): Seat[] => {
     const seats: Seat[] = [];
-    const bookedSet = new Set(schedule.bookedSeats); // 轉 Set 提升查找效能
+    const bookedSet = new Set(schedule.bookedSeats); // 用 Set 提升查找效能
 
     for (let r = 1; r <= schedule.rowCount; r++) {
       const rowLabel = String.fromCharCode(64 + r); // 1->A, 2->B
@@ -120,8 +118,7 @@ export function useTicket() {
     return seats;
   };
 
-  // 4. 送出訂單 (Call Backend)
-  // 假設後端有一個 BookingController 對應 /api/bookings
+  // 送出訂單
   const createBooking = async (payload: BookingRequest) => {
     if (!authStore.isAuthenticated) {
       toast.add({ title: "請先登入", color: "error" });
@@ -129,7 +126,7 @@ export function useTicket() {
     }
 
     try {
-      const res = await $fetch(`/api/bookings`, {
+      const res = await $fetch("/api/bookings", {
         method: "POST",
         headers: getAuthHeaders(),
         body: payload,

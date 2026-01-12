@@ -45,29 +45,19 @@ function loadMore() {
   displayCount.value += 5;
 }
 
-// 取得 Header
-function getAuthHeaders() {
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${authStore.token}`,
-  };
-}
-
 // 抓取留言列表
 async function fetchComments() {
   loading.value = true;
   try {
-    const params = new URLSearchParams({
-      tmdbId: String(props.tmdbId),
-      mediaType: props.mediaType,
+    const data = await $fetch<Comment[]>("/api/comments", {
+      headers: getAuthHeaders(),
+      params: {
+        tmdbId: props.tmdbId,
+        mediaType: props.mediaType,
+      },
     });
 
-    const response = await fetch(`/api/comments?${params.toString()}`, {
-      headers: getAuthHeaders(),
-    });
-    if (response.ok) {
-      comments.value = await response.json();
-    }
+    comments.value = data;
   } catch (error) {
     console.error("無法取得留言:", error);
   } finally {
@@ -98,28 +88,19 @@ async function handleSubmit() {
 
   submitting.value = true;
   try {
-    const response = await fetch(`/api/comments`, {
+    const newComment = await $fetch<Comment>("/api/comments", {
       method: "POST",
       headers: getAuthHeaders(),
-      body: JSON.stringify({
+      body: {
         tmdbId: props.tmdbId,
         mediaType: props.mediaType,
         content: newCommentContent.value,
-      }),
+      },
     });
-    console.log("response", response);
 
-    if (response.ok) {
-      const data = await response.json();
-
-      comments.value.unshift(data);
-
-      newCommentContent.value = "";
-
-      toast.add({ title: "留言發送成功", color: "primary" });
-    } else {
-      throw new Error("Failed");
-    }
+    comments.value.unshift(newComment);
+    newCommentContent.value = "";
+    toast.add({ title: "留言發送成功", color: "primary" });
   } catch (error) {
     toast.add({ title: "留言失敗", color: "error" });
   } finally {

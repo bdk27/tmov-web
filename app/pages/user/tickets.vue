@@ -55,30 +55,27 @@ async function fetchBookings() {
   }
   loading.value = true;
   try {
-    const response = await fetch("/api/bookings", {
+    const data = await $fetch<any[]>("/api/bookings", {
       headers: getAuthHeaders(),
     });
-    if (response.ok) {
-      // 依照建立時間排序 (新的在前)
-      const data = await response.json();
-      bookings.value = data.sort((a: BookingItem, b: BookingItem) => {
-        // 排序邏輯：有效訂單在前，取消/過期訂單在後
-        const aIsInactive = a.status === "CANCELLED" || checkIsExpired(a);
-        const bIsInactive = b.status === "CANCELLED" || checkIsExpired(b);
 
-        if (aIsInactive !== bIsInactive) {
-          // 如果狀態不同，無效的 (Inactive) 放後面 (return 1)
-          return aIsInactive ? 1 : -1;
-        }
+    // 依照建立時間排序 (新的在前)
+    bookings.value = data.sort((a: BookingItem, b: BookingItem) => {
+      // 排序邏輯：有效訂單在前，取消/過期訂單在後
+      const aIsInactive = a.status === "CANCELLED" || checkIsExpired(a);
+      const bIsInactive = b.status === "CANCELLED" || checkIsExpired(b);
 
-        // 如果狀態相同 (都是有效 或 都是無效)，則依照 ID 倒序 (新->舊)
-        return b.bookingId - a.bookingId;
-      });
+      if (aIsInactive !== bIsInactive) {
+        // 如果狀態不同，無效的 (Inactive) 放後面 (return 1)
+        return aIsInactive ? 1 : -1;
+      }
 
-      await processAutoCancel();
-    }
+      // 如果狀態相同 (都是有效 或 都是無效)，則依照 ID 倒序 (新->舊)
+      return b.bookingId - a.bookingId;
+    });
+
+    await processAutoCancel();
   } catch (error) {
-    console.error(error);
     toast.add({ title: "無法取得訂票紀錄", color: "error" });
   } finally {
     loading.value = false;
@@ -90,20 +87,17 @@ const isActionLoading = ref<number | null>(null);
 async function handlePay(id: number) {
   isActionLoading.value = id;
   try {
-    const res = await fetch(`/api/bookings/${id}/pay`, {
+    await $fetch(`/api/bookings/${id}/pay`, {
       method: "POST",
       headers: getAuthHeaders(),
     });
-    if (res.ok) {
-      toast.add({
-        title: "付款成功",
-        color: "success",
-        icon: "i-heroicons-check-circle",
-      });
-      fetchBookings(); // 重新整理列表
-    } else {
-      throw new Error("Payment failed");
-    }
+
+    toast.add({
+      title: "付款成功",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+    fetchBookings(); // 重新整理列表
   } catch (e) {
     toast.add({ title: "付款失敗", color: "error" });
   } finally {
@@ -123,20 +117,16 @@ async function handleCancel(id: number) {
 // 自動取消訂單
 async function executeCancel(id: number, silent = false) {
   try {
-    const res = await fetch(`/api/bookings/${id}/cancel`, {
+    await $fetch(`/api/bookings/${id}/cancel`, {
       method: "POST",
       headers: getAuthHeaders(),
     });
 
-    if (res.ok) {
-      if (!silent) {
-        toast.add({ title: "訂單已取消", color: "neutral" });
-        fetchBookings();
-      }
-      return true;
-    } else {
-      throw new Error("Cancel failed");
+    if (!silent) {
+      toast.add({ title: "訂單已取消", color: "neutral" });
+      fetchBookings();
     }
+    return true;
   } catch (e) {
     if (!silent) {
       toast.add({ title: "取消失敗", color: "error" });
@@ -154,7 +144,7 @@ async function processAutoCancel() {
   for (const ticket of expiredOrders) {
     console.log(`訂單 #${ticket.bookingId} 已逾期，正在自動取消...`);
 
-    // 先更新前端狀態，避免重複觸發 (Optimistic Update)
+    // 先更新前端狀態，避免重複觸發
     ticket.status = "CANCELLED";
 
     // 呼叫後端 API
@@ -395,14 +385,7 @@ function getStatusBadge(ticket: BookingItem) {
 
               <!-- 已付款時顯示 -->
               <template v-else-if="ticket.status === 'PAID'">
-                <UButton
-                  color="neutral"
-                  variant="soft"
-                  size="sm"
-                  icon="i-heroicons-qr-code"
-                >
-                  顯示 QR Code
-                </UButton>
+                <span class="text-sm text-gray-400">成功</span>
               </template>
 
               <!-- 已取消 -->

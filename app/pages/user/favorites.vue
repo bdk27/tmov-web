@@ -52,18 +52,11 @@ async function fetchFavorites() {
   error.value = null;
 
   try {
-    const response = await fetch(`/api/favorites`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authStore.token}`,
-      },
+    const data = await $fetch<FavoriteItem[]>(`/api/favorites`, {
+      headers: getAuthHeaders(),
     });
 
-    if (response.ok) {
-      rawItems.value = await response.json();
-    } else {
-      error.value = "無法取得收藏資料";
-    }
+    rawItems.value = data;
   } catch (err) {
     error.value = "連線發生錯誤";
   } finally {
