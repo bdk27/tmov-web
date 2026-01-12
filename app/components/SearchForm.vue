@@ -5,17 +5,8 @@ const { search, posterUrl, titleOf, dateOf } = useTmdb();
 const isSearchOpen = defineModel<boolean>("isSearchOpen");
 
 const query = ref("");
-const type = ref<TmdbSearchOptions["type"]>("multi");
-const year = ref<number | null>(null);
 const isLoading = ref(false);
 const suggestions = ref<TmdbItem[]>([]);
-
-const typeOptions = [
-  { label: "全部", value: "multi" },
-  { label: "電影", value: "movie" },
-  { label: "電視", value: "tv" },
-  { label: "人物", value: "person" },
-];
 
 onMounted(() => {
   const handleEsc = (event: KeyboardEvent) => {
@@ -36,7 +27,7 @@ function closeModal() {
   isSearchOpen.value = false;
 }
 
-// 執行搜尋 (跳轉)
+// 執行搜尋
 function handleSubmit(reset = false) {
   if (reset) {
     resetQuery();
@@ -46,12 +37,7 @@ function handleSubmit(reset = false) {
     const newQuery: Record<string, any> = {
       q: query.value,
       page: 1,
-      type: type.value,
     };
-
-    if (year.value) {
-      newQuery.year = year.value;
-    }
 
     // 重置並跳轉
     resetQuery();
@@ -74,8 +60,6 @@ function navigateToItem(item: TmdbItem) {
 
 function resetQuery() {
   query.value = "";
-  type.value = "multi";
-  year.value = null;
   suggestions.value = [];
 }
 
@@ -142,7 +126,7 @@ watch(query, (newVal) => {
       @click.stop
     >
       <div class="p-4 space-y-4 bg-gray-50/50 dark:bg-gray-800/50">
-        <div class="relative">
+        <div class="flex gap-2">
           <UInput
             v-model="query"
             class="w-full"
@@ -171,38 +155,18 @@ watch(query, (newVal) => {
               <span v-else class="text-xs text-gray-400 mr-1">ESC 關閉</span>
             </template>
           </UInput>
-        </div>
 
-        <div class="flex gap-3">
-          <USelect
-            v-model="type"
-            :items="typeOptions"
-            option-attribute="label"
-            size="sm"
-            class="w-32"
+          <UButton
+            size="md"
+            variant="solid"
+            color="primary"
+            label="搜尋"
+            @click="handleSubmit(false)"
           />
-          <UInput
-            v-model.number="year"
-            type="number"
-            placeholder="年份 (選填)"
-            :min="1800"
-            :max="new Date().getFullYear() + 1"
-            size="sm"
-            class="w-28"
-          />
-          <div class="flex-1 text-right">
-            <UButton
-              size="sm"
-              variant="solid"
-              color="primary"
-              label="搜尋"
-              @click="handleSubmit(false)"
-            />
-          </div>
         </div>
       </div>
 
-      <div class="overflow-y-auto custom-scrollbar">
+      <div class="overflow-y-auto">
         <!-- 有結果時 -->
         <ul
           v-if="suggestions.length > 0"
