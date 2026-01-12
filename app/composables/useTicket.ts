@@ -32,6 +32,7 @@ export interface BookingRequest {
   showTime: string;
   seats: string[]; // ["A1", "A2"]
   scheduleId: number;
+  totalPrice: number;
 }
 
 export function useTicket() {
@@ -131,7 +132,7 @@ export function useTicket() {
       const res = await $fetch(`/api/bookings`, {
         method: "POST",
         headers: getAuthHeaders(),
-        body: payload, // $fetch 會自動做 JSON.stringify
+        body: payload,
       });
 
       return res;

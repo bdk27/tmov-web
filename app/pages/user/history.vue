@@ -124,17 +124,6 @@ async function clearAllHistory() {
 
 <template>
   <div class="container mx-auto max-w-6xl px-4 py-8">
-    <div class="flex items-center justify-between mb-6">
-      <UButton
-        color="neutral"
-        variant="ghost"
-        icon="i-heroicons-arrow-left"
-        @click="$router.back()"
-      >
-        返回
-      </UButton>
-    </div>
-
     <div>
       <PagedMediaGrid
         title="觀看紀錄"

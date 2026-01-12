@@ -2,9 +2,10 @@
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const authStore = useAuthStore();
+
 const { fetchDetail, posterUrl, titleOf } = useTmdb();
 const { getDates, getSchedules, generateSeats, createBooking } = useTicket();
-const authStore = useAuthStore();
 
 // 電影 ID
 const movieId = Number(route.params.id);
@@ -248,17 +249,10 @@ async function handleCheckout() {
       showTime: selectedSchedule.value.showTime,
       seats: selectedSeats.value.map((s) => s.id),
       scheduleId: selectedSchedule.value.scheduleId,
+      totalPrice: totalPrice.value,
     });
 
-    toast.add({
-      title: "訂票成功！",
-      description: "您的訂單已確認，請至會員中心查看。",
-      color: "success",
-      icon: "i-heroicons-check-circle",
-    });
-
-    // 成功後導回首頁或訂單列表
-    router.push("/"); // 假設有這個頁面
+    router.push("/user/tickets");
   } catch (error) {
     toast.add({ title: "訂票失敗", description: "請稍後再試", color: "error" });
   } finally {
@@ -426,7 +420,7 @@ async function handleCheckout() {
                       v-for="time in type.schedules"
                       :key="time.scheduleId"
                       @click="selectSchedule(time)"
-                      class="group relative px-5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all text-center min-w-[5rem]"
+                      class="group relative px-5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all text-center min-w-20"
                     >
                       <div
                         class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400"
