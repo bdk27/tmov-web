@@ -3,6 +3,10 @@ const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
 
+useHead({
+  title: "觀看紀錄",
+});
+
 // 定義後端回傳的資料介面
 interface HistoryItem {
   tmdbId?: number;
@@ -30,7 +34,7 @@ onMounted(() => {
   fetchHistory();
 });
 
-// 資料處理核心
+// 資料處理
 const historyItems = computed<TmdbItem[]>(() => {
   return rawItems.value.map((item) => {
     const finalId = item.id || 0;

@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { tr } from "date-fns/locale";
-import { storeToRefs } from "pinia";
-
 const tmdbStore = useTmdbStore();
 
 const {
@@ -17,23 +14,38 @@ const {
   popularVariety,
 } = storeToRefs(tmdbStore);
 
-// 背景圖片
-await useAsyncData("heroData", async () => {
+useHead({
+  title: "首頁",
+});
+
+await useAsyncData("homeCriticalData", async () => {
+  const promises = [];
+
+  // 背景圖
   if (!backdropMobileUrl.value) {
-    await tmdbStore.getBackdrop();
+    promises.push(tmdbStore.getBackdrop());
   }
 
+  // 今日趨勢 & 現正熱映
+  if (trendingToday.value.length === 0)
+    promises.push(tmdbStore.getTrendingToday());
+  if (nowPlayingMovies.value.length === 0)
+    promises.push(tmdbStore.getNowPlayingMovies());
+  // 本週趨勢
+  if (trendingWeek.value.length === 0)
+    promises.push(tmdbStore.getTrendingWeek());
+
+  await Promise.all(promises);
   return true;
 });
 
 onMounted(() => {
-  tmdbStore.getTrendingToday();
-  tmdbStore.getTrendingWeek();
-  tmdbStore.getNowPlayingMovies();
-  tmdbStore.getPopularMovies();
-  tmdbStore.getPopularTv();
-  tmdbStore.getPopularAnime();
-  tmdbStore.getPopularVariety();
+  setTimeout(() => {
+    if (popularMovies.value.length === 0) tmdbStore.getPopularMovies();
+    if (popularTv.value.length === 0) tmdbStore.getPopularTv();
+    if (popularAnime.value.length === 0) tmdbStore.getPopularAnime();
+    if (popularVariety.value.length === 0) tmdbStore.getPopularVariety();
+  }, 0);
 });
 
 const isVideoOpen = ref(false);
@@ -50,7 +62,7 @@ const youtubeId = computed(() => {
   return match && match[7] && match[7].length === 11 ? match[7] : null;
 });
 
-// 預告片縮圖網址 (使用 maxresdefault 畫質較好)
+// 預告片縮圖網址
 const trailerThumb = computed(() =>
   youtubeId.value
     ? `https://img.youtube.com/vi/${youtubeId.value}/maxresdefault.jpg`
@@ -157,9 +169,6 @@ const isTrendingLoading = computed(() =>
       headline="歡迎來到 TMOV !"
       orientation="horizontal"
       :links="links"
-      :ui="{
-        container: 'px-4',
-      }"
     >
       <template #title>
         <h1 class="text-5xl sm:text-6xl font-extrabold mb-4 leading-tight">

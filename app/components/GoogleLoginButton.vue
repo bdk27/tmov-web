@@ -21,7 +21,7 @@ const toast = useToast();
 
 const buttonRef = ref<HTMLElement | null>(null);
 
-// 使用 useHead 載入 Google SDK
+// 載入 Google SDK
 useHead({
   script: [
     {

@@ -3,13 +3,16 @@ const tmdbStore = useTmdbStore();
 const route = useRoute();
 const router = useRouter();
 
-// 使用 Store 中對應的狀態
 const {
   nowPlayingMovies,
   nowPlayingMoviesTotal,
   nowPlayingMoviesLoading,
   nowPlayingMoviesError,
 } = storeToRefs(tmdbStore);
+
+useHead({
+  title: "現正熱映",
+});
 
 // 分頁邏輯
 const currentPage = computed({

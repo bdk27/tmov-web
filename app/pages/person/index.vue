@@ -11,6 +11,10 @@ const {
   popularPersonError,
 } = storeToRefs(tmdbStore);
 
+useHead({
+  title: "熱門人物",
+});
+
 // 分頁邏輯
 const currentPage = computed({
   get: () => parseInt(route.query.page as string) || 1,

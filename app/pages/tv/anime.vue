@@ -3,13 +3,16 @@ const tmdbStore = useTmdbStore();
 const route = useRoute();
 const router = useRouter();
 
-// 使用 Store 中對應的狀態
 const {
   popularAnime,
   popularAnimeTotal,
   popularAnimeLoading,
   popularAnimeError,
 } = storeToRefs(tmdbStore);
+
+useHead({
+  title: "熱門動畫",
+});
 
 // 分頁邏輯
 const currentPage = computed({

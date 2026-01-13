@@ -2,6 +2,10 @@
 const authStore = useAuthStore();
 const router = useRouter();
 
+useHead({
+  title: "我的收藏",
+});
+
 // 定義資料介面
 interface FavoriteItem {
   // ID

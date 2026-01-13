@@ -10,6 +10,10 @@ const {
   topRatedMoviesError,
 } = storeToRefs(tmdbStore);
 
+useHead({
+  title: "好評推薦",
+});
+
 // 分頁邏輯
 const currentPage = computed({
   get: () => parseInt(route.query.page as string) || 1,

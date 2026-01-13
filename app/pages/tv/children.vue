@@ -3,13 +3,16 @@ const tmdbStore = useTmdbStore();
 const route = useRoute();
 const router = useRouter();
 
-// 使用 Store 中對應的狀態
 const {
   popularChildren,
   popularChildrenTotal,
   popularChildrenLoading,
   popularChildrenError,
 } = storeToRefs(tmdbStore);
+
+useHead({
+  title: "熱門兒童節目",
+});
 
 // 分頁邏輯
 const currentPage = computed({

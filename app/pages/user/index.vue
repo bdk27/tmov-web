@@ -5,14 +5,18 @@ const toast = useToast();
 
 const isLoading = computed(() => !authStore.user);
 
-// 如果有 Token 但沒有 User 資料 (例如重新整理)，嘗試抓取
+useHead({
+  title: "會員中心",
+});
+
+// 如果有 Token 但沒有 User 資料，嘗試抓取
 onMounted(async () => {
   if (authStore.isAuthenticated && !authStore.user) {
     await authStore.fetchUser();
   }
 });
 
-// 登出邏輯
+// 登出
 function handleLogout() {
   authStore.logout();
   toast.add({

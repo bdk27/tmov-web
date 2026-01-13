@@ -10,6 +10,23 @@ nuxtApp.hook("page:finish", () => {
     isLoading.value = false;
   }, 300);
 });
+
+useHead({
+  titleTemplate: (titleChunk) => {
+    return titleChunk ? `${titleChunk} - TMOV.` : "TMOV.";
+  },
+  title: "",
+  meta: [
+    {
+      name: "description",
+      content:
+        "TMOV. - 您的下一部電影從這裡開始。提供最完整的電影、影集資訊與訂票服務。",
+    },
+    { property: "og:site_name", content: "TMOV." },
+    { property: "og:type", content: "website" },
+  ],
+  link: [{ rel: "icon", type: "image/svg+xml", href: "/favicon.ico" }],
+});
 </script>
 
 <template>

@@ -7,9 +7,7 @@ export const getAuthHeaders = () => {
   };
 };
 
-/**
- * 移除演員、劇組等陣列中的重複項目，根據 id 屬性判斷
- */
+// 移除演員、劇組等陣列中的重複項目，根據 id 屬性判斷
 export function getUniqueItems<T extends { id?: number | string }>(
   list: T[]
 ): T[] {
@@ -23,19 +21,14 @@ export function getUniqueItems<T extends { id?: number | string }>(
   });
 }
 
-/**
- * 根據分數回傳顏色 Class
- */
+// 根據分數回傳顏色 Class
 export const getRatingColor = (rating: number) => {
   if (rating >= 70) return "text-primary";
   if (rating >= 40) return "text-warning";
   return "text-error";
 };
 
-/**
- * 防抖函式 (Debounce)
- * 用於搜尋輸入框，避免每打一個字就發一次請求
- */
+// 防抖
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number

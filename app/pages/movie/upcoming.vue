@@ -3,7 +3,6 @@ const tmdbStore = useTmdbStore();
 const route = useRoute();
 const router = useRouter();
 
-// 使用 Store 中對應的狀態
 const {
   upcomingMovies,
   upcomingMoviesTotal,
@@ -11,7 +10,11 @@ const {
   upcomingMoviesError,
 } = storeToRefs(tmdbStore);
 
-// 分頁邏輯 (一樣同步 URL)
+useHead({
+  title: "即將上映",
+});
+
+// 分頁邏輯
 const currentPage = computed({
   get: () => parseInt(route.query.page as string) || 1,
   set: (val) => {

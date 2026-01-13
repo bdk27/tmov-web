@@ -7,6 +7,10 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 
+useHead({
+  title: "編輯資料",
+});
+
 // 定義頁籤
 const items = [
   {

@@ -29,11 +29,11 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = computed(() => !!token.value);
 
   // 登入
-  const login = async (credentials: {
+  async function login(credentials: {
     email: string;
     password: string;
     rememberMe?: boolean;
-  }) => {
+  }) {
     loading.value = true;
     try {
       const res = await $fetch<AuthResponse>("/api/auth/login", {
@@ -59,10 +59,10 @@ export const useAuthStore = defineStore("auth", () => {
     } finally {
       loading.value = false;
     }
-  };
+  }
 
   // 註冊
-  const register = async (userData: { email: string; password: string }) => {
+  async function register(userData: { email: string; password: string }) {
     loading.value = true;
     try {
       const res = await $fetch<AuthResponse>("/api/auth/register", {
@@ -84,20 +84,20 @@ export const useAuthStore = defineStore("auth", () => {
     } finally {
       loading.value = false;
     }
-  };
+  }
 
   // 登出
-  const logout = () => {
+  function logout() {
     token.value = null; // 清除 Cookie
     user.value = null; // 清除狀態
 
     // 導回首頁或登入頁
     const router = useRouter();
     router.push("/login");
-  };
+  }
 
   // 重新整理後恢復 user 狀態
-  const fetchUser = async () => {
+  async function fetchUser() {
     if (!token.value) return;
 
     try {
@@ -109,7 +109,7 @@ export const useAuthStore = defineStore("auth", () => {
       // Token 可能過期，執行登出
       logout();
     }
-  };
+  }
 
   return {
     user,

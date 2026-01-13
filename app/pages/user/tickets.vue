@@ -5,6 +5,10 @@ const toast = useToast();
 
 const { posterUrl } = useTmdb();
 
+useHead({
+  title: "訂票紀錄",
+});
+
 // 定義資料介面
 interface BookingItem {
   bookingId: number;
