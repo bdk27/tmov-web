@@ -18,29 +18,18 @@ useHead({
   title: "首頁",
 });
 
-await useAsyncData("homeCriticalData", async () => {
-  const promises = [];
-
-  // 背景圖
+await useAsyncData("heroData", async () => {
   if (!backdropMobileUrl.value) {
-    promises.push(tmdbStore.getBackdrop());
+    await tmdbStore.getBackdrop();
   }
-
-  // 今日趨勢 & 現正熱映
-  if (trendingToday.value.length === 0)
-    promises.push(tmdbStore.getTrendingToday());
-  if (nowPlayingMovies.value.length === 0)
-    promises.push(tmdbStore.getNowPlayingMovies());
-  // 本週趨勢
-  if (trendingWeek.value.length === 0)
-    promises.push(tmdbStore.getTrendingWeek());
-
-  await Promise.all(promises);
   return true;
 });
 
 onMounted(() => {
   setTimeout(() => {
+    if (trendingToday.value.length === 0) tmdbStore.getTrendingToday();
+    if (trendingWeek.value.length === 0) tmdbStore.getTrendingWeek();
+    if (nowPlayingMovies.value.length === 0) tmdbStore.getNowPlayingMovies();
     if (popularMovies.value.length === 0) tmdbStore.getPopularMovies();
     if (popularTv.value.length === 0) tmdbStore.getPopularTv();
     if (popularAnime.value.length === 0) tmdbStore.getPopularAnime();

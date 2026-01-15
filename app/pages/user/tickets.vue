@@ -44,13 +44,6 @@ onUnmounted(() => {
   if (timer) clearInterval(timer);
 });
 
-function getAuthHeaders() {
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${authStore.token}`,
-  };
-}
-
 // 取得訂單列表
 async function fetchBookings() {
   if (!authStore.isAuthenticated) {

@@ -104,7 +104,9 @@ function handleLogout() {
             <!-- 角色標籤 -->
             <div v-if="!isLoading" class="flex flex-col items-center">
               <UBadge
-                color="primary"
+                :color="
+                  authStore.user?.role === 'ROLE_ADMIN' ? 'primary' : 'neutral'
+                "
                 variant="subtle"
                 class="px-3 py-1 text-sm font-medium"
               >

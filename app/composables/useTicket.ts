@@ -1,4 +1,4 @@
-// 對應後端 Scheduleresponseponse DTO
+// 場次
 export interface Schedule {
   scheduleId: number;
   tmdbId: number;
@@ -13,7 +13,7 @@ export interface Schedule {
   bookedSeats: string[]; // e.g. ["A1", "B5"]
 }
 
-// 前端座位物件 (用於 UI 顯示)
+// 座位
 export interface Seat {
   id: string; // "A-1"
   rowLabel: string; // "A"
@@ -22,7 +22,7 @@ export interface Seat {
   type: "standard" | "wheelchair";
 }
 
-// 對應後端 BookingRequest DTO
+// 訂單格式
 export interface BookingRequest {
   tmdbId: number;
   movieTitle: string;
@@ -38,13 +38,6 @@ export interface BookingRequest {
 export function useTicket() {
   const authStore = useAuthStore();
   const toast = useToast();
-
-  function getAuthHeaders() {
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${authStore.token}`,
-    };
-  }
 
   // 產生日期選項
   const getDates = () => {
@@ -71,7 +64,7 @@ export function useTicket() {
     return dates;
   };
 
-  // 取得場次 (Call Backend)
+  // 取得場次
   const getSchedules = async (
     tmdbId: number,
     date: string
@@ -86,7 +79,7 @@ export function useTicket() {
 
       return data;
     } catch (e) {
-      console.error("Fetch schedules error", e);
+      console.error("取得場次錯誤", e);
       return [];
     }
   };
@@ -94,7 +87,7 @@ export function useTicket() {
   // 產生座位圖
   const generateSeats = (schedule: Schedule): Seat[] => {
     const seats: Seat[] = [];
-    const bookedSet = new Set(schedule.bookedSeats); // 用 Set 提升查找效能
+    const bookedSet = new Set(schedule.bookedSeats);
 
     for (let r = 1; r <= schedule.rowCount; r++) {
       const rowLabel = String.fromCharCode(64 + r); // 1->A, 2->B
@@ -121,8 +114,8 @@ export function useTicket() {
   // 送出訂單
   const createBooking = async (payload: BookingRequest) => {
     if (!authStore.isAuthenticated) {
-      toast.add({ title: "請先登入", color: "error" });
-      throw new Error("Unauthorized");
+      toast.add({ title: "請先登入會員", color: "error" });
+      return;
     }
 
     try {
@@ -134,7 +127,7 @@ export function useTicket() {
 
       return res;
     } catch (e) {
-      console.error(e);
+      toast.add({ title: "訂單建立失敗", color: "error" });
       throw e;
     }
   };
@@ -143,7 +136,7 @@ export function useTicket() {
     const grouped: Record<string, Schedule[]> = {};
 
     schedules.forEach((s) => {
-      const type = s.hallType || "一般廳";
+      const type = s.hallType || "數位(A廳)";
       if (!grouped[type]) {
         grouped[type] = [];
       }
